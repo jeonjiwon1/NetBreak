@@ -57,19 +57,49 @@ public class FishMovement : MonoBehaviour
         float schoolStrength =
             fishController.Data.SchoolStrength;
 
-        float verticalMovement =
+        Vector2 schoolDirection = new Vector2(
+            1f,
             verticalDifference
             * schoolCorrectionSpeed
-            * schoolStrength;
-
-        Vector2 direction = new Vector2(
-            1f,
-            verticalMovement
+            * schoolStrength
         ).normalized;
+
+        Vector2 finalDirection = schoolDirection;
+
+        BaitController bait = BaitController.Instance;
+
+        if (bait != null && bait.IsActive)
+        {
+            Vector2 toBait =
+                bait.Position
+                - (Vector2)transform.position;
+
+            float distance = toBait.magnitude;
+
+            if (distance <= bait.AttractionRadius)
+            {
+                float distanceFactor =
+                    1f - distance / bait.AttractionRadius;
+
+                float baitStrength =
+                    fishController.Data.BaitAttraction
+                    * distanceFactor;
+
+                Vector2 baitDirection =
+                    toBait.normalized;
+
+                finalDirection =
+                    Vector2.Lerp(
+                        schoolDirection,
+                        baitDirection,
+                        baitStrength
+                    ).normalized;
+            }
+        }
 
         transform.position +=
             (Vector3)(
-                direction
+                finalDirection
                 * fishController.Data.MoveSpeed
                 * Time.deltaTime
             );
