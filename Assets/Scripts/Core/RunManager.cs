@@ -12,7 +12,7 @@ public class RunManager : MonoBehaviour
 
     private int currentLevel = 1;
     private int currentExp = 0;
-    private int expToNextLevel = 10;
+    private int expToNextLevel = 20;
 
     private bool levelUpPending;
 

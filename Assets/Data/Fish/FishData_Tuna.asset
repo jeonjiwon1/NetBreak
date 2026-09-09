@@ -16,7 +16,7 @@ MonoBehaviour:
   maxResistance: 25
   catchValue: 6
   goldReward: 10
-  expReward: 5
+  expReward: 1
   moveSpeed: 4
   baitAttraction: 0.4
   schoolStrength: 0.3

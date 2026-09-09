@@ -29,6 +29,18 @@ public class CastNetController : MonoBehaviour
 
     private void Update()
     {
+        if (PrototypeAugmentManager.Instance != null &&
+    PrototypeAugmentManager.Instance.IsChoosingAugment)
+        {
+            return;
+        }
+
+        if (PrototypeGameFlowManager.Instance != null &&
+            PrototypeGameFlowManager.Instance.IsGameEnded)
+        {
+            return;
+        }
+
         if (cooldownTimer > 0f)
         {
             cooldownTimer -= Time.deltaTime;

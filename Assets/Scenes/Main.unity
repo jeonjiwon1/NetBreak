@@ -642,9 +642,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c421df43d4b12384b891d91ef8810035, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CastNetController
-  capturePower: 20
-  captureRadius: 3.5
-  cooldown: 6
+  capturePower: 15
+  captureRadius: 3
+  cooldown: 7
   castVisual: {fileID: 214365347}
   visualDuration: 0.2
 --- !u!4 &821204957
@@ -737,7 +737,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a29eb4059e018114f8842bee56135b5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrototypeGameFlowManager
-  finalFishingDuration: 20
+  finalFishingDuration: 12
   clearCatchRate: 0.8
 --- !u!4 &889583751
 Transform:
@@ -922,10 +922,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0477a1608ccf4f6468f0fb6e4e82f685, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LandingNetController
-  capturePower: 5
-  captureRadius: 1.2
-  attackCooldown: 0.3
+  capturePower: 3
+  captureRadius: 1.1
+  attackCooldown: 0.45
   rangeVisual: {fileID: 355279320}
+  maxTargets: 3
 --- !u!4 &1325090140
 Transform:
   m_ObjectHideFlags: 0
@@ -1219,6 +1220,7 @@ MonoBehaviour:
   thickness: 0.3
   minLength: 0.5
   maxLength: 8
+  maxActiveNets: 3
 --- !u!4 &2057654403
 Transform:
   m_ObjectHideFlags: 0

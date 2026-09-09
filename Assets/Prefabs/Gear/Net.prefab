@@ -179,5 +179,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ed4223ab04b9634bb5db68d1c2f378c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetController
-  slowMultiplier: 0.35
-  captureDamagePerSecond: 3
+  slowMultiplier: 0.5
+  captureDamagePerSecond: 1.5

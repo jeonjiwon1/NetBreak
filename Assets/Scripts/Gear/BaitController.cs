@@ -40,6 +40,18 @@ public class BaitController : MonoBehaviour
 
     private void HandleInput()
     {
+        if (PrototypeAugmentManager.Instance != null &&
+            PrototypeAugmentManager.Instance.IsChoosingAugment)
+        {
+            return;
+        }
+
+        if (PrototypeGameFlowManager.Instance != null &&
+            PrototypeGameFlowManager.Instance.IsGameEnded)
+        {
+            return;
+        }
+
         if (Mouse.current == null ||
             Keyboard.current == null)
         {

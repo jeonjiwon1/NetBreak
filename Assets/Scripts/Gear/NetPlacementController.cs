@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
 
 public class NetPlacementController : MonoBehaviour
 {
@@ -13,6 +14,11 @@ public class NetPlacementController : MonoBehaviour
     [SerializeField] private float thickness = 0.3f;
     [SerializeField] private float minLength = 0.5f;
     [SerializeField] private float maxLength = 8f;
+
+    [Header("Net Limit")]
+    [SerializeField] private int maxActiveNets = 3;
+
+    private readonly List<NetController> activeNets = new();
 
     private Camera mainCamera;
 
@@ -39,6 +45,20 @@ public class NetPlacementController : MonoBehaviour
         }
 
         HandleModeInput();
+
+        bool inputBlocked =
+            (PrototypeAugmentManager.Instance != null &&
+            PrototypeAugmentManager.Instance.IsChoosingAugment)
+            ||
+            (PrototypeGameFlowManager.Instance != null &&
+            PrototypeGameFlowManager.Instance.IsGameEnded);
+
+        if (inputBlocked)
+        {
+            IsNetModeActive = false;
+            CancelPlacement();
+            return;
+        }
 
         if (!IsNetModeActive)
         {
@@ -104,6 +124,11 @@ public class NetPlacementController : MonoBehaviour
 
     private void StartPlacement()
     {
+        if (activeNets.Count >= maxActiveNets)
+        {
+            return;
+        }
+
         isDragging = true;
 
         startPosition = GetMouseWorldPosition();
@@ -157,13 +182,15 @@ public class NetPlacementController : MonoBehaviour
         if (length >= minLength)
         {
             NetController net =
-                Instantiate(netPrefab);
+            Instantiate(netPrefab);
 
             net.Initialize(
                 startPosition,
                 currentEndPosition,
                 thickness
             );
+
+            activeNets.Add(net);
         }
 
         IsNetModeActive = false;

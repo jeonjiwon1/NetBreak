@@ -16,7 +16,14 @@ public class PrototypeAugmentManager : MonoBehaviour
     [SerializeField] private BaitController bait;
     [SerializeField] private NetPlacementController netPlacement;
 
+    [SerializeField] private float selectionInputDelay = 0.25f;
+
+    private bool canSelect;
+    private float selectionUnlockTime;
+
     private bool showChoices;
+
+    public bool IsChoosingAugment => showChoices;
 
     private AugmentType[] currentChoices =
         new AugmentType[3];
@@ -46,6 +53,11 @@ public class PrototypeAugmentManager : MonoBehaviour
         GenerateChoices();
 
         showChoices = true;
+        canSelect = false;
+
+        selectionUnlockTime =
+            Time.realtimeSinceStartup
+            + selectionInputDelay;
 
         Time.timeScale = 0f;
     }
@@ -112,6 +124,8 @@ public class PrototypeAugmentManager : MonoBehaviour
                 height
             );
 
+            GUI.enabled = canSelect;
+
             if (GUI.Button(
                 rect,
                 GetDescription(currentChoices[i])
@@ -119,6 +133,8 @@ public class PrototypeAugmentManager : MonoBehaviour
             {
                 ApplyAugment(currentChoices[i]);
             }
+
+            GUI.enabled = true;
         }
     }
 
@@ -208,5 +224,26 @@ public class PrototypeAugmentManager : MonoBehaviour
         {
             Time.timeScale = 1f;
         }
+    }
+
+    private void Update()
+    {
+        if (!showChoices || canSelect)
+        {
+            return;
+        }
+
+        if (Time.realtimeSinceStartup < selectionUnlockTime)
+        {
+            return;
+        }
+
+        if (UnityEngine.InputSystem.Mouse.current != null &&
+            UnityEngine.InputSystem.Mouse.current.leftButton.isPressed)
+        {
+            return;
+        }
+
+        canSelect = true;
     }
 }

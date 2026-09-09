@@ -9,6 +9,8 @@ public class LandingNetController : MonoBehaviour
 
     [SerializeField] private Transform rangeVisual;
 
+    [SerializeField] private int maxTargets = 3;
+
     private Camera mainCamera;
     private float nextAttackTime;
 
@@ -19,6 +21,18 @@ public class LandingNetController : MonoBehaviour
 
     private void Update()
     {
+        if (PrototypeAugmentManager.Instance != null &&
+            PrototypeAugmentManager.Instance.IsChoosingAugment)
+        {
+            return;
+        }
+
+        if (PrototypeGameFlowManager.Instance != null &&
+            PrototypeGameFlowManager.Instance.IsGameEnded)
+        {
+            return;
+        }
+
         if (Mouse.current == null)
         {
             return;
@@ -50,7 +64,10 @@ public class LandingNetController : MonoBehaviour
     private void UseLandingNet(Vector3 mouseWorldPosition)
     {
         Vector2 capturePosition =
-            new Vector2(mouseWorldPosition.x, mouseWorldPosition.y);
+            new Vector2(
+                mouseWorldPosition.x,
+                mouseWorldPosition.y
+            );
 
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
@@ -58,14 +75,45 @@ public class LandingNetController : MonoBehaviour
                 captureRadius
             );
 
+        System.Array.Sort(
+            hits,
+            (a, b) =>
+            {
+                float distanceA =
+                    Vector2.Distance(
+                        capturePosition,
+                        a.transform.position
+                    );
+
+                float distanceB =
+                    Vector2.Distance(
+                        capturePosition,
+                        b.transform.position
+                    );
+
+                return distanceA.CompareTo(distanceB);
+            }
+        );
+
+        int hitCount = 0;
+
         foreach (Collider2D hit in hits)
         {
             FishController fish =
                 hit.GetComponent<FishController>();
 
-            if (fish != null)
+            if (fish == null)
             {
-                fish.TakeCaptureDamage(capturePower);
+                continue;
+            }
+
+            fish.TakeCaptureDamage(capturePower);
+
+            hitCount++;
+
+            if (hitCount >= maxTargets)
+            {
+                break;
             }
         }
     }
