@@ -37,8 +37,9 @@ public class LandingNetController : MonoBehaviour
             rangeVisual.position = mouseWorldPosition;
         }
 
-        if (Mouse.current.leftButton.wasPressedThisFrame &&
-            Time.time >= nextAttackTime)
+        if (!NetPlacementController.IsNetModeActive &&
+             Mouse.current.leftButton.wasPressedThisFrame &&
+             Time.time >= nextAttackTime)
         {
             UseLandingNet(mouseWorldPosition);
 

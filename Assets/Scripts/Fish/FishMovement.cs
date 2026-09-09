@@ -17,6 +17,9 @@ public class FishMovement : MonoBehaviour
     private float personalOffsetY;
     private float wavePhase;
 
+    private float netSpeedMultiplier = 1f;
+    private int netContactCount = 0;
+
     private void Awake()
     {
         mainCamera = Camera.main;
@@ -101,6 +104,7 @@ public class FishMovement : MonoBehaviour
             (Vector3)(
                 finalDirection
                 * fishController.Data.MoveSpeed
+                * netSpeedMultiplier
                 * Time.deltaTime
             );
     }
@@ -116,6 +120,25 @@ public class FishMovement : MonoBehaviour
             cameraRight + exitMargin)
         {
             gameObject.SetActive(false);
+        }
+    }
+
+    public void EnterNet(float slowMultiplier)
+    {
+        netContactCount++;
+
+        netSpeedMultiplier =
+            Mathf.Min(netSpeedMultiplier, slowMultiplier);
+    }
+
+    public void ExitNet()
+    {
+        netContactCount =
+            Mathf.Max(0, netContactCount - 1);
+
+        if (netContactCount == 0)
+        {
+            netSpeedMultiplier = 1f;
         }
     }
 }

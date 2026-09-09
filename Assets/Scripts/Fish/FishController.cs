@@ -34,11 +34,6 @@ public class FishController : MonoBehaviour
 
         currentResistance -= amount;
 
-        Debug.Log(
-            $"{fishData.FishName} Resistance: " +
-            $"{currentResistance}/{fishData.MaxResistance}"
-        );
-
         if (currentResistance <= 0f)
         {
             Capture();

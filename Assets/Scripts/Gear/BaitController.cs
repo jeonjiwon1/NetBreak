@@ -40,12 +40,13 @@ public class BaitController : MonoBehaviour
 
     private void HandleInput()
     {
-        if (Mouse.current == null)
+        if (Mouse.current == null ||
+            Keyboard.current == null)
         {
             return;
         }
 
-        if (Mouse.current.rightButton.wasPressedThisFrame &&
+        if (Keyboard.current.qKey.wasPressedThisFrame &&
             cooldownTimer <= 0f)
         {
             PlaceBait();
