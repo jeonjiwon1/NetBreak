@@ -25,11 +25,11 @@ public class FishController : MonoBehaviour
         }
     }
 
-    public void TakeCaptureDamage(float amount)
+    public bool TakeCaptureDamage(float amount)
     {
         if (fishData == null)
         {
-            return;
+            return false;
         }
 
         currentResistance -= amount;
@@ -37,13 +37,14 @@ public class FishController : MonoBehaviour
         if (currentResistance <= 0f)
         {
             Capture();
+            return true;
         }
+
+        return false;
     }
 
     private void Capture()
     {
-        Debug.Log($"{fishData.FishName} CAPTURED!");
-
         gameObject.SetActive(false);
     }
 }
