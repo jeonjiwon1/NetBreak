@@ -8,12 +8,13 @@ public class FishSpawner : MonoBehaviour
     [SerializeField] private FishData[] fishTypes;
 
     [Header("Pool")]
-    [SerializeField] private int poolSize = 100;
+    [SerializeField] private int poolSize = 150;
 
     [Header("School Spawn")]
-    [SerializeField] private float schoolSpawnInterval = 3f;
-    [SerializeField] private int minSchoolSize = 6;
-    [SerializeField] private int maxSchoolSize = 12;
+    [SerializeField] private int totalSchoolCount = 6;
+    [SerializeField] private float schoolSpawnInterval = 4f;
+    [SerializeField] private int minSchoolSize = 20;
+    [SerializeField] private int maxSchoolSize = 30;
 
     [Header("Spawn Area")]
     [SerializeField] private float spawnMargin = 0.5f;
@@ -25,6 +26,13 @@ public class FishSpawner : MonoBehaviour
 
     private Camera mainCamera;
     private float spawnTimer;
+
+    private int spawnedSchoolCount;
+    private bool spawningFinished;
+
+    public int SpawnedSchoolCount => spawnedSchoolCount;
+    public int TotalSchoolCount => totalSchoolCount;
+    public bool SpawningFinished => spawningFinished;
 
     private void Awake()
     {
@@ -40,6 +48,11 @@ public class FishSpawner : MonoBehaviour
 
     private void Update()
     {
+        if (spawningFinished)
+        {
+            return;
+        }
+
         spawnTimer += Time.deltaTime;
 
         if (spawnTimer >= schoolSpawnInterval)
@@ -65,7 +78,9 @@ public class FishSpawner : MonoBehaviour
 
     private void SpawnSchool()
     {
-        if (fishTypes == null || fishTypes.Length == 0)
+        if (fishTypes == null ||
+            fishTypes.Length == 0 ||
+            spawningFinished)
         {
             return;
         }
@@ -103,7 +118,7 @@ public class FishSpawner : MonoBehaviour
 
             if (fish == null)
             {
-                return;
+                break;
             }
 
             float offsetX =
@@ -134,7 +149,9 @@ public class FishSpawner : MonoBehaviour
 
             if (RunManager.Instance != null)
             {
-                RunManager.Instance.RegisterFishSpawned(selectedData);
+                RunManager.Instance.RegisterFishSpawned(
+                    selectedData
+                );
             }
 
             FishMovement movement =
@@ -145,6 +162,19 @@ public class FishSpawner : MonoBehaviour
             );
 
             fish.gameObject.SetActive(true);
+        }
+
+        spawnedSchoolCount++;
+
+        if (spawnedSchoolCount >= totalSchoolCount)
+        {
+            spawningFinished = true;
+
+            if (PrototypeGameFlowManager.Instance != null)
+            {
+                PrototypeGameFlowManager.Instance
+                    .BeginFinalFishing();
+            }
         }
     }
 

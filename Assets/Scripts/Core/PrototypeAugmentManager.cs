@@ -100,7 +100,7 @@ public class PrototypeAugmentManager : MonoBehaviour
                 300f,
                 50f
             ),
-            "LEVEL UP - Choose Augment"
+            "레벨 업! 증강을 선택하세요"
         );
 
         for (int i = 0; i < 3; i++)
@@ -127,31 +127,31 @@ public class PrototypeAugmentManager : MonoBehaviour
         switch (type)
         {
             case AugmentType.LandingNetPower:
-                return "Heavy Landing Net\nCapture Power +2";
+                return "강화 뜰채\n포획력 +2";
 
             case AugmentType.LandingNetRadius:
-                return "Wide Landing Net\nRadius +0.25";
+                return "넓은 뜰채\n범위 +0.25";
 
             case AugmentType.CastNetPower:
-                return "Reinforced Cast Net\nPower +5";
+                return "강화 투망\n포획력 +5";
 
             case AugmentType.CastNetRadius:
-                return "Large Cast Net\nRadius +0.5";
+                return "대형 투망\n범위 +0.5";
 
             case AugmentType.CastNetCooldown:
-                return "Rapid Cast\nCooldown -0.5s";
+                return "신속 투망\n재사용 대기시간 -0.5초";
 
             case AugmentType.BaitRadius:
-                return "Strong Scent\nBait Radius +0.75";
+                return "강한 향\n미끼 유인 범위 +0.75";
 
             case AugmentType.BaitDuration:
-                return "Long-Lasting Bait\nDuration +1s";
+                return "지속형 미끼\n미끼 지속시간 +1초";
 
             case AugmentType.NetLength:
-                return "Long Net\nMax Length +1";
+                return "긴 그물\n최대 길이 +1";
 
             default:
-                return "Unknown";
+                return "알 수 없는 증강";
         }
     }
 
