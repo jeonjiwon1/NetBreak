@@ -693,6 +693,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrototypeHUD
   fishSpawner: {fileID: 1679640293}
+  castNet: {fileID: 821204956}
 --- !u!4 &876261350
 Transform:
   m_ObjectHideFlags: 0

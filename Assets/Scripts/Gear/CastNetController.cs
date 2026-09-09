@@ -6,7 +6,7 @@ public class CastNetController : MonoBehaviour
 {
     [Header("Cast Net")]
     [SerializeField] private float capturePower = 15f;
-    [SerializeField] private float captureRadius = 1.8f;
+    [SerializeField] private float captureRadius = 1f;
     [SerializeField] private float cooldown = 7f;
 
     [Header("Visual")]
@@ -19,10 +19,32 @@ public class CastNetController : MonoBehaviour
     private bool isAiming;
 
     private Vector2 currentAimPosition;
+    private int currentTargetCount;
+
+    private int lastCapturedCount;
+    private Vector2 lastCastPosition;
+    private float catchFeedbackTimer;
 
     public bool IsAiming => isAiming;
-    public float CooldownTimer => Mathf.Max(0f, cooldownTimer);
     public bool IsReady => cooldownTimer <= 0f;
+
+    public float CooldownTimer =>
+        Mathf.Max(0f, cooldownTimer);
+
+    public Vector2 CurrentAimPosition =>
+        currentAimPosition;
+
+    public int CurrentTargetCount =>
+        currentTargetCount;
+
+    public int LastCapturedCount =>
+        lastCapturedCount;
+
+    public Vector2 LastCastPosition =>
+        lastCastPosition;
+
+    public bool IsShowingCatchFeedback =>
+        catchFeedbackTimer > 0f;
 
     private void Awake()
     {
@@ -42,6 +64,11 @@ public class CastNetController : MonoBehaviour
             cooldownTimer -= Time.deltaTime;
         }
 
+        if (catchFeedbackTimer > 0f)
+        {
+            catchFeedbackTimer -= Time.deltaTime;
+        }
+
         if (Mouse.current == null ||
             Keyboard.current == null)
         {
@@ -53,7 +80,7 @@ public class CastNetController : MonoBehaviour
              PrototypeAugmentManager.Instance.IsChoosingAugment)
             ||
             (PrototypeGameFlowManager.Instance != null &&
-            PrototypeGameFlowManager.Instance.IsPreparation)
+             PrototypeGameFlowManager.Instance.IsPreparation)
             ||
             (PrototypeGameFlowManager.Instance != null &&
              PrototypeGameFlowManager.Instance.IsGameEnded)
@@ -138,6 +165,32 @@ public class CastNetController : MonoBehaviour
         {
             castVisual.position = currentAimPosition;
         }
+
+        UpdateTargetCount();
+    }
+
+    private void UpdateTargetCount()
+    {
+        Collider2D[] hits =
+            Physics2D.OverlapCircleAll(
+                currentAimPosition,
+                captureRadius
+            );
+
+        int count = 0;
+
+        foreach (Collider2D hit in hits)
+        {
+            FishController fish =
+                hit.GetComponent<FishController>();
+
+            if (fish != null)
+            {
+                count++;
+            }
+        }
+
+        currentTargetCount = count;
     }
 
     private void UseCastNet(Vector2 castPosition)
@@ -171,7 +224,11 @@ public class CastNetController : MonoBehaviour
 
         cooldownTimer = cooldown;
 
-        Debug.Log($"+{capturedCount} CATCH!");
+        lastCapturedCount = capturedCount;
+        lastCastPosition = castPosition;
+        catchFeedbackTimer = 1.2f;
+
+        currentTargetCount = 0;
 
         if (castVisual != null)
         {
@@ -194,6 +251,7 @@ public class CastNetController : MonoBehaviour
     private void CancelAiming()
     {
         isAiming = false;
+        currentTargetCount = 0;
 
         if (castVisual != null)
         {
@@ -208,7 +266,8 @@ public class CastNetController : MonoBehaviour
             return;
         }
 
-        float diameter = captureRadius * 2f;
+        float diameter =
+            captureRadius * 2f;
 
         castVisual.localScale =
             new Vector3(
@@ -233,6 +292,9 @@ public class CastNetController : MonoBehaviour
     public void ReduceCooldown(float amount)
     {
         cooldown =
-            Mathf.Max(0.5f, cooldown - amount);
+            Mathf.Max(
+                0.5f,
+                cooldown - amount
+            );
     }
 }

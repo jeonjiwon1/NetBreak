@@ -3,6 +3,7 @@ using UnityEngine;
 public class PrototypeHUD : MonoBehaviour
 {
     [SerializeField] private FishSpawner fishSpawner;
+    [SerializeField] private CastNetController castNet;
 
     private GUIStyle style;
     private GUIStyle centerStyle;
@@ -29,7 +30,8 @@ public class PrototypeHUD : MonoBehaviour
             return;
         }
 
-        RunManager run = RunManager.Instance;
+        RunManager run =
+            RunManager.Instance;
 
         GUI.Label(
             new Rect(20, 20, 500, 40),
@@ -65,13 +67,99 @@ public class PrototypeHUD : MonoBehaviour
         {
             GUI.Label(
                 new Rect(20, 195, 500, 40),
-                $"어군 유입: {fishSpawner.SpawnedSchoolCount} / " +
+                $"어군 유입: " +
+                $"{fishSpawner.SpawnedSchoolCount} / " +
                 $"{fishSpawner.TotalSchoolCount}",
                 style
             );
         }
 
+        if (castNet != null)
+        {
+            string castNetText;
+
+            if (castNet.IsReady)
+            {
+                castNetText =
+                    "투망 [E]: 준비 완료";
+            }
+            else
+            {
+                castNetText =
+                    $"투망 [E]: " +
+                    $"{castNet.CooldownTimer:F1}초";
+            }
+
+            GUI.Label(
+                new Rect(20, 230, 500, 40),
+                castNetText,
+                style
+            );
+        }
+
+        DrawCastNetInfo();
         DrawGameFlow();
+    }
+
+    private void DrawCastNetInfo()
+    {
+        if (castNet == null)
+        {
+            return;
+        }
+
+        Camera mainCamera =
+            Camera.main;
+
+        if (mainCamera == null)
+        {
+            return;
+        }
+
+        if (castNet.IsAiming)
+        {
+            Vector3 screenPosition =
+                mainCamera.WorldToScreenPoint(
+                    castNet.CurrentAimPosition
+                );
+
+            float guiY =
+                Screen.height - screenPosition.y;
+
+            GUI.Label(
+                new Rect(
+                    screenPosition.x - 100f,
+                    guiY + 45f,
+                    200f,
+                    40f
+                ),
+                $"범위 내: " +
+                $"{castNet.CurrentTargetCount}마리",
+                centerStyle
+            );
+        }
+
+        if (castNet.IsShowingCatchFeedback)
+        {
+            Vector3 screenPosition =
+                mainCamera.WorldToScreenPoint(
+                    castNet.LastCastPosition
+                );
+
+            float guiY =
+                Screen.height - screenPosition.y;
+
+            GUI.Label(
+                new Rect(
+                    screenPosition.x - 150f,
+                    guiY - 50f,
+                    300f,
+                    50f
+                ),
+                $"+{castNet.LastCapturedCount}마리 포획!",
+                centerStyle
+            );
+        }
     }
 
     private void DrawGameFlow()
@@ -132,7 +220,8 @@ public class PrototypeHUD : MonoBehaviour
                     500f,
                     60f
                 ),
-                $"마감 조업: {flow.FinalFishingTimer:F1}초",
+                $"마감 조업: " +
+                $"{flow.FinalFishingTimer:F1}초",
                 centerStyle
             );
         }
