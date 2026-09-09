@@ -498,7 +498,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 6.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -643,7 +643,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CastNetController
   capturePower: 15
-  captureRadius: 3
+  captureRadius: 1
   cooldown: 7
   castVisual: {fileID: 214365347}
   visualDuration: 0.2
@@ -739,6 +739,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PrototypeGameFlowManager
   finalFishingDuration: 12
   clearCatchRate: 0.8
+  fishSpawner: {fileID: 1679640293}
 --- !u!4 &889583751
 Transform:
   m_ObjectHideFlags: 0
@@ -878,6 +879,7 @@ MonoBehaviour:
   castNet: {fileID: 821204956}
   bait: {fileID: 1763526207}
   netPlacement: {fileID: 2057654402}
+  selectionInputDelay: 0.25
 --- !u!4 &1261418162
 Transform:
   m_ObjectHideFlags: 0
@@ -984,7 +986,7 @@ MonoBehaviour:
   spawnMargin: 0.5
   verticalPadding: 1
   schoolSpreadX: 1.5
-  schoolSpreadY: 1
+  schoolSpreadY: 2
 --- !u!4 &1679640294
 Transform:
   m_ObjectHideFlags: 0

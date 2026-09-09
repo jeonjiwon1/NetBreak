@@ -34,6 +34,23 @@ public class FishSpawner : MonoBehaviour
     public int TotalSchoolCount => totalSchoolCount;
     public bool SpawningFinished => spawningFinished;
 
+    private bool hasStarted;
+
+    public bool HasStarted => hasStarted;
+
+    public void StartSpawning()
+    {
+        if (hasStarted)
+        {
+            return;
+        }
+
+        hasStarted = true;
+        spawnTimer = 0f;
+
+        SpawnSchool();
+    }
+
     private void Awake()
     {
         mainCamera = Camera.main;
@@ -41,14 +58,9 @@ public class FishSpawner : MonoBehaviour
         CreatePool();
     }
 
-    private void Start()
-    {
-        SpawnSchool();
-    }
-
     private void Update()
     {
-        if (spawningFinished)
+        if (!hasStarted || spawningFinished)
         {
             return;
         }

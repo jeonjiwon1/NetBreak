@@ -15,6 +15,10 @@ public class PrototypeGameFlowManager : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float clearCatchRate = 0.8f;
 
+    [SerializeField] private FishSpawner fishSpawner;
+
+    private bool isFishingStarted;
+
     private bool isFinalFishing;
     private bool isGameEnded;
     private bool isSuccess;
@@ -29,6 +33,9 @@ public class PrototypeGameFlowManager : MonoBehaviour
         Mathf.Max(0f, finalFishingTimer);
 
     public float ClearCatchRate => clearCatchRate;
+
+    public bool IsPreparation => !isFishingStarted && !isGameEnded;
+    public bool IsFishingStarted => isFishingStarted;
 
     private void Awake()
     {
@@ -85,5 +92,20 @@ public class PrototypeGameFlowManager : MonoBehaviour
     private void OnDisable()
     {
         Time.timeScale = 1f;
+    }
+
+    public void StartFishing()
+    {
+        if (isFishingStarted || isGameEnded)
+        {
+            return;
+        }
+
+        isFishingStarted = true;
+
+        if (fishSpawner != null)
+        {
+            fishSpawner.StartSpawning();
+        }
     }
 }

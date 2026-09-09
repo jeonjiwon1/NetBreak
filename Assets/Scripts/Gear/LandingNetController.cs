@@ -38,6 +38,12 @@ public class LandingNetController : MonoBehaviour
             return;
         }
 
+        if (PrototypeGameFlowManager.Instance != null &&
+    PrototypeGameFlowManager.Instance.IsPreparation)
+        {
+            return;
+        }
+
         Vector2 mouseScreenPosition =
             Mouse.current.position.ReadValue();
 

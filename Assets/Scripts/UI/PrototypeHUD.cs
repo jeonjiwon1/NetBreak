@@ -84,6 +84,45 @@ public class PrototypeHUD : MonoBehaviour
             return;
         }
 
+        if (flow.IsPreparation)
+        {
+            GUI.Box(
+                new Rect(
+                    Screen.width * 0.5f - 180f,
+                    30f,
+                    360f,
+                    120f
+                ),
+                ""
+            );
+
+            GUI.Label(
+                new Rect(
+                    Screen.width * 0.5f - 160f,
+                    40f,
+                    320f,
+                    45f
+                ),
+                "조업 준비",
+                centerStyle
+            );
+
+            if (GUI.Button(
+                new Rect(
+                    Screen.width * 0.5f - 100f,
+                    90f,
+                    200f,
+                    45f
+                ),
+                "조업 시작"
+            ))
+            {
+                flow.StartFishing();
+            }
+
+            return;
+        }
+
         if (flow.IsFinalFishing)
         {
             GUI.Label(

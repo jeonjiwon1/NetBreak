@@ -15,7 +15,9 @@ MonoBehaviour:
   fishName: 
   maxResistance: 5
   catchValue: 1
-  moveSpeed: 2
+  goldReward: 1
+  expReward: 1
+  moveSpeed: 1.5
   baitAttraction: 1
   schoolStrength: 1
   lifetime: 15

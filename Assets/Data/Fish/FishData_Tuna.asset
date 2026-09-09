@@ -17,7 +17,7 @@ MonoBehaviour:
   catchValue: 6
   goldReward: 10
   expReward: 1
-  moveSpeed: 4
+  moveSpeed: 2.8
   baitAttraction: 0.4
   schoolStrength: 0.3
   lifetime: 15

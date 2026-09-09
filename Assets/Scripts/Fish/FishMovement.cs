@@ -6,7 +6,7 @@ public class FishMovement : MonoBehaviour
     [SerializeField] private float exitMargin = 0.5f;
 
     [Header("School Movement")]
-    [SerializeField] private float schoolCorrectionSpeed = 2f;
+    [SerializeField] private float schoolCorrectionSpeed = 1.5f;
     [SerializeField] private float waveAmplitude = 0.4f;
     [SerializeField] private float waveFrequency = 1.5f;
 
@@ -30,7 +30,7 @@ public class FishMovement : MonoBehaviour
     {
         schoolCenterY = centerY;
 
-        personalOffsetY = Random.Range(-0.8f, 0.8f);
+        personalOffsetY = Random.Range(-1.6f, 1.6f);
         wavePhase = Random.Range(0f, Mathf.PI * 2f);
     }
 
@@ -86,7 +86,10 @@ public class FishMovement : MonoBehaviour
 
                 float baitStrength =
                     fishController.Data.BaitAttraction
-                    * distanceFactor;
+                    * distanceFactor
+                    * 1.5f;
+
+                baitStrength = Mathf.Clamp01(baitStrength);
 
                 Vector2 baitDirection =
                     toBait.normalized;

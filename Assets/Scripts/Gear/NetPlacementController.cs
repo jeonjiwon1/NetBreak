@@ -80,7 +80,11 @@ public class NetPlacementController : MonoBehaviour
             }
         }
 
-        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        bool cancelPressed =
+            Keyboard.current.escapeKey.wasPressedThisFrame ||
+            Mouse.current.rightButton.wasPressedThisFrame;
+
+        if (cancelPressed && IsNetModeActive)
         {
             IsNetModeActive = false;
             CancelPlacement();

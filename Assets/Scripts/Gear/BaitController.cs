@@ -58,6 +58,12 @@ public class BaitController : MonoBehaviour
             return;
         }
 
+        if (PrototypeGameFlowManager.Instance != null &&
+    PrototypeGameFlowManager.Instance.IsPreparation)
+        {
+            return;
+        }
+
         if (Keyboard.current.qKey.wasPressedThisFrame &&
             cooldownTimer <= 0f)
         {

@@ -5,16 +5,24 @@ using UnityEngine.InputSystem;
 public class CastNetController : MonoBehaviour
 {
     [Header("Cast Net")]
-    [SerializeField] private float capturePower = 20f;
-    [SerializeField] private float captureRadius = 2.5f;
-    [SerializeField] private float cooldown = 5f;
+    [SerializeField] private float capturePower = 15f;
+    [SerializeField] private float captureRadius = 1.8f;
+    [SerializeField] private float cooldown = 7f;
 
     [Header("Visual")]
     [SerializeField] private Transform castVisual;
     [SerializeField] private float visualDuration = 0.2f;
 
     private Camera mainCamera;
+
     private float cooldownTimer;
+    private bool isAiming;
+
+    private Vector2 currentAimPosition;
+
+    public bool IsAiming => isAiming;
+    public float CooldownTimer => Mathf.Max(0f, cooldownTimer);
+    public bool IsReady => cooldownTimer <= 0f;
 
     private void Awake()
     {
@@ -29,18 +37,6 @@ public class CastNetController : MonoBehaviour
 
     private void Update()
     {
-        if (PrototypeAugmentManager.Instance != null &&
-    PrototypeAugmentManager.Instance.IsChoosingAugment)
-        {
-            return;
-        }
-
-        if (PrototypeGameFlowManager.Instance != null &&
-            PrototypeGameFlowManager.Instance.IsGameEnded)
-        {
-            return;
-        }
-
         if (cooldownTimer > 0f)
         {
             cooldownTimer -= Time.deltaTime;
@@ -52,15 +48,79 @@ public class CastNetController : MonoBehaviour
             return;
         }
 
-        if (Keyboard.current.eKey.wasPressedThisFrame &&
-            cooldownTimer <= 0f &&
-            !NetPlacementController.IsNetModeActive)
+        bool inputBlocked =
+            (PrototypeAugmentManager.Instance != null &&
+             PrototypeAugmentManager.Instance.IsChoosingAugment)
+            ||
+            (PrototypeGameFlowManager.Instance != null &&
+            PrototypeGameFlowManager.Instance.IsPreparation)
+            ||
+            (PrototypeGameFlowManager.Instance != null &&
+             PrototypeGameFlowManager.Instance.IsGameEnded)
+            ||
+            NetPlacementController.IsNetModeActive;
+
+        if (inputBlocked)
         {
-            UseCastNet();
+            CancelAiming();
+            return;
+        }
+
+        HandleCastNetInput();
+    }
+
+    private void HandleCastNetInput()
+    {
+        if (!isAiming &&
+            IsReady &&
+            Keyboard.current.eKey.wasPressedThisFrame)
+        {
+            StartAiming();
+        }
+
+        if (!isAiming)
+        {
+            return;
+        }
+
+        UpdateAimPosition();
+
+        bool cancelPressed =
+            Mouse.current.rightButton.wasPressedThisFrame ||
+            Keyboard.current.escapeKey.wasPressedThisFrame;
+
+        if (cancelPressed)
+        {
+            CancelAiming();
+            return;
+        }
+
+        if (Keyboard.current.eKey.wasReleasedThisFrame)
+        {
+            UseCastNet(currentAimPosition);
+
+            isAiming = false;
+
+            if (castVisual != null)
+            {
+                castVisual.gameObject.SetActive(false);
+            }
         }
     }
 
-    private void UseCastNet()
+    private void StartAiming()
+    {
+        isAiming = true;
+
+        UpdateAimPosition();
+
+        if (castVisual != null)
+        {
+            castVisual.gameObject.SetActive(true);
+        }
+    }
+
+    private void UpdateAimPosition()
     {
         Vector2 screenPosition =
             Mouse.current.position.ReadValue();
@@ -68,12 +128,20 @@ public class CastNetController : MonoBehaviour
         Vector3 worldPosition =
             mainCamera.ScreenToWorldPoint(screenPosition);
 
-        Vector2 castPosition =
+        currentAimPosition =
             new Vector2(
                 worldPosition.x,
                 worldPosition.y
             );
 
+        if (castVisual != null)
+        {
+            castVisual.position = currentAimPosition;
+        }
+    }
+
+    private void UseCastNet(Vector2 castPosition)
+    {
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
                 castPosition,
@@ -108,15 +176,14 @@ public class CastNetController : MonoBehaviour
         if (castVisual != null)
         {
             StartCoroutine(
-                ShowCastVisual(castPosition)
+                ShowCastEffect(castPosition)
             );
         }
     }
 
-    private IEnumerator ShowCastVisual(Vector2 position)
+    private IEnumerator ShowCastEffect(Vector2 position)
     {
         castVisual.position = position;
-
         castVisual.gameObject.SetActive(true);
 
         yield return new WaitForSeconds(visualDuration);
@@ -124,8 +191,23 @@ public class CastNetController : MonoBehaviour
         castVisual.gameObject.SetActive(false);
     }
 
+    private void CancelAiming()
+    {
+        isAiming = false;
+
+        if (castVisual != null)
+        {
+            castVisual.gameObject.SetActive(false);
+        }
+    }
+
     private void UpdateVisualScale()
     {
+        if (castVisual == null)
+        {
+            return;
+        }
+
         float diameter = captureRadius * 2f;
 
         castVisual.localScale =
