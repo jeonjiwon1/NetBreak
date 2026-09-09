@@ -17,14 +17,25 @@ public class FishController : MonoBehaviour
         currentResistance = fishData.MaxResistance;
         isCaptured = false;
 
-        gameObject.name = $"Fish_{fishData.FishName}";
+        transform.localScale =
+            new Vector3(
+                fishData.VisualScale.x,
+                fishData.VisualScale.y,
+                1f
+            );
+
+        gameObject.name =
+            $"Fish_{fishData.FishName}";
     }
 
     private void OnEnable()
     {
         if (fishData != null)
         {
-            currentResistance = fishData.MaxResistance;
+            currentResistance =
+                fishData.MaxResistance;
+
+            isCaptured = false;
         }
     }
 
@@ -57,7 +68,9 @@ public class FishController : MonoBehaviour
 
         if (RunManager.Instance != null)
         {
-            RunManager.Instance.RegisterFishCaptured(fishData);
+            RunManager.Instance.RegisterFishCaptured(
+                fishData
+            );
         }
 
         gameObject.SetActive(false);

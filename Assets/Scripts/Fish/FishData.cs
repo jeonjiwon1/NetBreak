@@ -21,7 +21,18 @@ public class FishData : ScriptableObject
     [SerializeField] private float schoolStrength = 1f;
     [SerializeField] private float lifetime = 15f;
 
+    [Header("School")]
+    [SerializeField] private int minSchoolSize = 10;
+    [SerializeField] private int maxSchoolSize = 20;
+    [SerializeField] private float schoolSpawnSpreadY = 1f;
+
+    [Header("Visual")]
+    [SerializeField]
+    private Vector2 visualScale =
+        new Vector2(0.5f, 0.25f);
+
     public string FishName => fishName;
+
     public float MaxResistance => maxResistance;
     public int CatchValue => catchValue;
     public int GoldReward => goldReward;
@@ -31,4 +42,10 @@ public class FishData : ScriptableObject
     public float BaitAttraction => baitAttraction;
     public float SchoolStrength => schoolStrength;
     public float Lifetime => lifetime;
+
+    public int MinSchoolSize => minSchoolSize;
+    public int MaxSchoolSize => maxSchoolSize;
+    public float SchoolSpawnSpreadY => schoolSpawnSpreadY;
+
+    public Vector2 VisualScale => visualScale;
 }

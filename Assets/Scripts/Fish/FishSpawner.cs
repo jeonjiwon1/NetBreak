@@ -8,19 +8,16 @@ public class FishSpawner : MonoBehaviour
     [SerializeField] private FishData[] fishTypes;
 
     [Header("Pool")]
-    [SerializeField] private int poolSize = 150;
+    [SerializeField] private int poolSize = 200;
 
     [Header("School Spawn")]
     [SerializeField] private int totalSchoolCount = 6;
     [SerializeField] private float schoolSpawnInterval = 4f;
-    [SerializeField] private int minSchoolSize = 20;
-    [SerializeField] private int maxSchoolSize = 30;
 
     [Header("Spawn Area")]
     [SerializeField] private float spawnMargin = 0.5f;
     [SerializeField] private float verticalPadding = 1f;
     [SerializeField] private float schoolSpreadX = 1.5f;
-    [SerializeField] private float schoolSpreadY = 1f;
 
     private readonly List<FishController> fishPool = new();
 
@@ -29,27 +26,12 @@ public class FishSpawner : MonoBehaviour
 
     private int spawnedSchoolCount;
     private bool spawningFinished;
+    private bool hasStarted;
 
     public int SpawnedSchoolCount => spawnedSchoolCount;
     public int TotalSchoolCount => totalSchoolCount;
     public bool SpawningFinished => spawningFinished;
-
-    private bool hasStarted;
-
     public bool HasStarted => hasStarted;
-
-    public void StartSpawning()
-    {
-        if (hasStarted)
-        {
-            return;
-        }
-
-        hasStarted = true;
-        spawnTimer = 0f;
-
-        SpawnSchool();
-    }
 
     private void Awake()
     {
@@ -75,12 +57,28 @@ public class FishSpawner : MonoBehaviour
         }
     }
 
+    public void StartSpawning()
+    {
+        if (hasStarted)
+        {
+            return;
+        }
+
+        hasStarted = true;
+        spawnTimer = 0f;
+
+        SpawnSchool();
+    }
+
     private void CreatePool()
     {
         for (int i = 0; i < poolSize; i++)
         {
             FishController fish =
-                Instantiate(fishPrefab, transform);
+                Instantiate(
+                    fishPrefab,
+                    transform
+                );
 
             fish.gameObject.SetActive(false);
 
@@ -98,12 +96,17 @@ public class FishSpawner : MonoBehaviour
         }
 
         FishData selectedData =
-            fishTypes[Random.Range(0, fishTypes.Length)];
+            fishTypes[
+                Random.Range(
+                    0,
+                    fishTypes.Length
+                )
+            ];
 
         int schoolSize =
             Random.Range(
-                minSchoolSize,
-                maxSchoolSize + 1
+                selectedData.MinSchoolSize,
+                selectedData.MaxSchoolSize + 1
             );
 
         float cameraLeft =
@@ -122,11 +125,15 @@ public class FishSpawner : MonoBehaviour
             - verticalPadding;
 
         float schoolCenterY =
-            Random.Range(cameraBottom, cameraTop);
+            Random.Range(
+                cameraBottom,
+                cameraTop
+            );
 
         for (int i = 0; i < schoolSize; i++)
         {
-            FishController fish = GetInactiveFish();
+            FishController fish =
+                GetInactiveFish();
 
             if (fish == null)
             {
@@ -141,8 +148,8 @@ public class FishSpawner : MonoBehaviour
 
             float offsetY =
                 Random.Range(
-                    -schoolSpreadY,
-                    schoolSpreadY
+                    -selectedData.SchoolSpawnSpreadY,
+                    selectedData.SchoolSpawnSpreadY
                 );
 
             Vector3 spawnPosition =
@@ -155,7 +162,8 @@ public class FishSpawner : MonoBehaviour
                     0f
                 );
 
-            fish.transform.position = spawnPosition;
+            fish.transform.position =
+                spawnPosition;
 
             fish.Initialize(selectedData);
 
