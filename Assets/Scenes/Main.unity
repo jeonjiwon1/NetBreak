@@ -694,6 +694,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PrototypeHUD
   fishSpawner: {fileID: 1679640293}
   castNet: {fileID: 821204956}
+  netPlacement: {fileID: 2057654402}
 --- !u!4 &876261350
 Transform:
   m_ObjectHideFlags: 0
@@ -1174,6 +1175,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c31b724c5fd4dc44b6ba5c7d07fe718, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RunManager
+  startingGold: 60
 --- !u!4 &1986760358
 Transform:
   m_ObjectHideFlags: 0
@@ -1224,6 +1226,8 @@ MonoBehaviour:
   minLength: 0.5
   maxLength: 8
   maxActiveNets: 3
+  baseCost: 5
+  costPerUnitLength: 4
 --- !u!4 &2057654403
 Transform:
   m_ObjectHideFlags: 0

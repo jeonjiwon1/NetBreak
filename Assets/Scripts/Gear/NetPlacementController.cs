@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Collections.Generic;
 
 public class NetPlacementController : MonoBehaviour
 {
@@ -18,13 +18,45 @@ public class NetPlacementController : MonoBehaviour
     [Header("Net Limit")]
     [SerializeField] private int maxActiveNets = 3;
 
-    private readonly List<NetController> activeNets = new();
+    [Header("Cost")]
+    [SerializeField] private int baseCost = 5;
+    [SerializeField] private float costPerUnitLength = 4f;
 
     private Camera mainCamera;
 
     private bool isDragging;
+
     private Vector2 startPosition;
     private Vector2 currentEndPosition;
+
+    private readonly List<NetController> activeNets = new();
+
+    public bool IsDragging => isDragging;
+
+    public int ActiveNetCount =>
+        activeNets.Count;
+
+    public int MaxActiveNets =>
+        maxActiveNets;
+
+    public int CurrentPlacementCost
+    {
+        get
+        {
+            if (!isDragging)
+            {
+                return 0;
+            }
+
+            float length =
+                Vector2.Distance(
+                    startPosition,
+                    currentEndPosition
+                );
+
+            return CalculateCost(length);
+        }
+    }
 
     private void Awake()
     {
@@ -44,14 +76,12 @@ public class NetPlacementController : MonoBehaviour
             return;
         }
 
-        HandleModeInput();
-
         bool inputBlocked =
             (PrototypeAugmentManager.Instance != null &&
-            PrototypeAugmentManager.Instance.IsChoosingAugment)
+             PrototypeAugmentManager.Instance.IsChoosingAugment)
             ||
             (PrototypeGameFlowManager.Instance != null &&
-            PrototypeGameFlowManager.Instance.IsGameEnded);
+             PrototypeGameFlowManager.Instance.IsGameEnded);
 
         if (inputBlocked)
         {
@@ -59,6 +89,8 @@ public class NetPlacementController : MonoBehaviour
             CancelPlacement();
             return;
         }
+
+        HandleModeInput();
 
         if (!IsNetModeActive)
         {
@@ -118,7 +150,9 @@ public class NetPlacementController : MonoBehaviour
             Mouse.current.position.ReadValue();
 
         Vector3 worldPosition =
-            mainCamera.ScreenToWorldPoint(screenPosition);
+            mainCamera.ScreenToWorldPoint(
+                screenPosition
+            );
 
         return new Vector2(
             worldPosition.x,
@@ -130,13 +164,17 @@ public class NetPlacementController : MonoBehaviour
     {
         if (activeNets.Count >= maxActiveNets)
         {
+            IsNetModeActive = false;
             return;
         }
 
         isDragging = true;
 
-        startPosition = GetMouseWorldPosition();
-        currentEndPosition = startPosition;
+        startPosition =
+            GetMouseWorldPosition();
+
+        currentEndPosition =
+            startPosition;
 
         if (netPreview != null)
         {
@@ -183,21 +221,42 @@ public class NetPlacementController : MonoBehaviour
                 currentEndPosition
             );
 
-        if (length >= minLength)
+        if (length < minLength)
         {
-            NetController net =
-            Instantiate(netPrefab);
-
-            net.Initialize(
-                startPosition,
-                currentEndPosition,
-                thickness
-            );
-
-            activeNets.Add(net);
+            IsNetModeActive = false;
+            return;
         }
 
+        int cost =
+            CalculateCost(length);
+
+        if (RunManager.Instance == null ||
+            !RunManager.Instance.TrySpendGold(cost))
+        {
+            IsNetModeActive = false;
+            return;
+        }
+
+        NetController net =
+            Instantiate(netPrefab);
+
+        net.Initialize(
+            startPosition,
+            currentEndPosition,
+            thickness
+        );
+
+        activeNets.Add(net);
+
         IsNetModeActive = false;
+    }
+
+    private int CalculateCost(float length)
+    {
+        return baseCost +
+            Mathf.CeilToInt(
+                length * costPerUnitLength
+            );
     }
 
     private void CancelPlacement()
@@ -221,21 +280,29 @@ public class NetPlacementController : MonoBehaviour
             return;
         }
 
-        Vector2 direction = end - start;
+        Vector2 direction =
+            end - start;
 
-        float length = direction.magnitude;
+        float length =
+            direction.magnitude;
 
         Vector2 center =
             (start + end) * 0.5f;
 
         float angle =
-            Mathf.Atan2(direction.y, direction.x)
-            * Mathf.Rad2Deg;
+            Mathf.Atan2(
+                direction.y,
+                direction.x
+            ) * Mathf.Rad2Deg;
 
         visual.position = center;
 
         visual.rotation =
-            Quaternion.Euler(0f, 0f, angle);
+            Quaternion.Euler(
+                0f,
+                0f,
+                angle
+            );
 
         visual.localScale =
             new Vector3(

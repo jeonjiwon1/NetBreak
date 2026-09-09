@@ -4,6 +4,9 @@ public class RunManager : MonoBehaviour
 {
     public static RunManager Instance { get; private set; }
 
+    [Header("Starting Resources")]
+    [SerializeField] private int startingGold = 60;
+
     private int currentGold;
     private int capturedFishCount;
 
@@ -48,6 +51,8 @@ public class RunManager : MonoBehaviour
         }
 
         Instance = this;
+
+        currentGold = startingGold;
     }
 
     public void RegisterFishSpawned(FishData fishData)
@@ -68,12 +73,29 @@ public class RunManager : MonoBehaviour
         }
 
         capturedFishCount++;
-        capturedCatchValue += fishData.CatchValue;
 
+        capturedCatchValue += fishData.CatchValue;
         currentGold += fishData.GoldReward;
         currentExp += fishData.ExpReward;
 
         CheckLevelUp();
+    }
+
+    public bool TrySpendGold(int amount)
+    {
+        if (amount <= 0)
+        {
+            return true;
+        }
+
+        if (currentGold < amount)
+        {
+            return false;
+        }
+
+        currentGold -= amount;
+
+        return true;
     }
 
     private void CheckLevelUp()
@@ -93,7 +115,9 @@ public class RunManager : MonoBehaviour
         currentLevel++;
 
         expToNextLevel =
-            Mathf.RoundToInt(expToNextLevel * 1.35f);
+            Mathf.RoundToInt(
+                expToNextLevel * 1.35f
+            );
 
         levelUpPending = true;
 

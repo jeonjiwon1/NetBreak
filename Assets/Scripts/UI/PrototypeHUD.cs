@@ -4,6 +4,7 @@ public class PrototypeHUD : MonoBehaviour
 {
     [SerializeField] private FishSpawner fishSpawner;
     [SerializeField] private CastNetController castNet;
+    [SerializeField] private NetPlacementController netPlacement;
 
     private GUIStyle style;
     private GUIStyle centerStyle;
@@ -93,6 +94,16 @@ public class PrototypeHUD : MonoBehaviour
             GUI.Label(
                 new Rect(20, 230, 500, 40),
                 castNetText,
+                style
+            );
+        }
+        if (netPlacement != null &&
+    netPlacement.IsDragging)
+        {
+            GUI.Label(
+                new Rect(20, 265, 500, 40),
+                $"그물 설치 비용: " +
+                $"{netPlacement.CurrentPlacementCost}G",
                 style
             );
         }
