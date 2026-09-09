@@ -21,3 +21,7 @@ MonoBehaviour:
   baitAttraction: 0.8
   schoolStrength: 0.7
   lifetime: 15
+  minSchoolSize: 12
+  maxSchoolSize: 20
+  schoolSpawnSpreadY: 1.6
+  visualScale: {x: 0.5, y: 0.25}
