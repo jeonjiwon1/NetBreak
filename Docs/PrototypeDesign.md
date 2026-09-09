@@ -16,7 +16,7 @@ The prototype is not intended to implement the full NETBREAK design.
 
 It exists to answer one primary question:
 
-> \*\*Is it fun to manipulate fish schools, prepare a capture setup, and then catch a large number of fish at once?\*\*
+> \\\*\\\*Is it fun to manipulate fish schools, prepare a capture setup, and then catch a large number of fish at once?\\\*\\\*
 
 Do not expand major content until this loop is proven.
 
@@ -527,7 +527,7 @@ Playtest.
 
 Most important playtest question:
 
-> \*\*What was the most fun moment of the run?\*\*
+> \\\*\\\*What was the most fun moment of the run?\\\*\\\*
 
 Ideally, multiple players mention mass capture or the preparation that led to it.
 
@@ -595,4 +595,104 @@ Feature count alone does not define completion.
 \- 조업 시작 후 어군 유입
 
 \- 해역당 준비 단계는 1회
+
+
+
+해역 진입
+
+↓
+
+조업 준비
+
+↓
+
+설치형 어구 배치
+
+↓
+
+조업 시작
+
+↓
+
+어군 유입
+
+↓
+
+미끼로 유도
+
+↓
+
+그물로 제어
+
+↓
+
+뜰채 / 투망으로 포획
+
+↓
+
+Gold + EXP
+
+↓
+
+증강 선택
+
+↓
+
+마지막 어군
+
+↓
+
+마감 조업
+
+↓
+
+어획률 판정
+
+↓
+
+성공 / 실패
+
+
+
+조작법: 
+
+LMB
+
+뜰채
+
+
+
+Q
+
+미끼
+
+
+
+W
+
+그물 설치 모드
+
+
+
+W → LMB Drag
+
+그물 설치
+
+
+
+E Hold
+
+투망 조준
+
+
+
+E Release
+
+투망 사용
+
+
+
+RMB / Esc
+
+그물 또는 투망 조준 취소
 

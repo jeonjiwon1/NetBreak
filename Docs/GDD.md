@@ -1,5 +1,6 @@
 # NETBREAK
-## Game Design Document v1.0
+
+## Game Design Document v1.10
 
 **Genre:** 2D Roguelite Fishing Defense / Strategy  
 **Platform:** PC  
@@ -8,9 +9,9 @@
 **Project Name:** NETBREAK (working title)  
 **Core Keywords:** Fish schools / Fishing / Free placement / Roguelite / Builds / Job progression / Mass capture
 
----
+\---
 
-# 1. Game Overview
+# 1\. Game Overview
 
 NETBREAK is a 2D roguelite fishing-defense game in which the player manipulates freely moving fish schools with bait, nets, rods, cast nets, and direct cursor-based capture.
 
@@ -20,9 +21,9 @@ The player observes these behaviors, manipulates the flow of fish, prepares capt
 
 Every run begins from Area 1. During the run, the player acquires augments and advances from a Beginner Fisher into a specialized fishing profession. The Normal-mode objective is to clear all major areas in a single expedition and capture the final legendary creature.
 
----
+\---
 
-# 2. Core Fantasy
+# 2\. Core Fantasy
 
 The player begins as an inexperienced fisher catching small coastal fish with basic gear.
 
@@ -32,9 +33,9 @@ The early game should feel relatively grounded. The later game can gradually bec
 
 Long-term expansion may include volcanic seas, frozen waters, ghost seas, hellish waters, void zones, and even space.
 
----
+\---
 
-# 3. Core Design Principles
+# 3\. Core Design Principles
 
 ## 3.1 LURE → TRAP → CATCH
 
@@ -55,9 +56,9 @@ It is the moment when the player successfully gathers a large school into a favo
 
 > Preparation is the strategy. Mass capture is the reward.
 
----
+\---
 
-# 4. Run Structure
+# 4\. Run Structure
 
 Every run begins as a **Beginner Fisher** in Area 1.
 
@@ -73,9 +74,9 @@ Repetition is made interesting through different augments, gear priorities, and 
 
 Run-specific power resets after the run ends.
 
----
+\---
 
-# 5. Area Progression
+# 5\. Area Progression
 
 Target Normal areas:
 
@@ -88,9 +89,9 @@ Target Normal areas:
 
 The exact number, order, and rules of areas may change during development.
 
----
+\---
 
-# 6. Fish-School System
+# 6\. Fish-School System
 
 Fish do not use fixed lanes.
 
@@ -102,39 +103,39 @@ School movement should be predictable enough for planning, rather than purely ra
 
 Prototype movement can use simplified versions of:
 
-- cohesion
-- alignment
-- separation
-- base movement
-- random variation
-- bait attraction
-- species-specific behavior
+* cohesion
+* alignment
+* separation
+* base movement
+* random variation
+* bait attraction
+* species-specific behavior
 
 Game readability is more important than realistic simulation.
 
----
+\---
 
-# 7. Fish Data
+# 7\. Fish Data
 
 Potential fish attributes:
 
-- Resistance
-- Move Speed
-- Size
-- Weight
-- School Affinity
-- Bait Response
-- Catch Value
-- Rarity
-- Traits
+* Resistance
+* Move Speed
+* Size
+* Weight
+* School Affinity
+* Bait Response
+* Catch Value
+* Rarity
+* Traits
 
 Fish are **captured** when Resistance reaches zero.
 
 They are not framed as being killed.
 
----
+\---
 
-# 8. Catch Rate and Area Clear
+# 8\. Catch Rate and Area Clear
 
 Fish have different Catch Values.
 
@@ -148,19 +149,19 @@ When the timer ends, the area result is calculated.
 
 Possible ranks:
 
-- C
-- B
-- A
-- S
-- PERFECT
+* C
+* B
+* A
+* S
+* PERFECT
 
 Normal progression should require a reasonable clear threshold rather than 100%.
 
 Exact thresholds are determined by playtesting.
 
----
+\---
 
-# 9. Direct Capture
+# 9\. Direct Capture
 
 There is no directly controlled walking character in the core design.
 
@@ -172,16 +173,16 @@ Early-game direct capture is important.
 
 Later, for most builds, it becomes a precision tool for:
 
-- rare fish
-- escaping fish
-- high-value targets
-- cleanup
+* rare fish
+* escaping fish
+* high-value targets
+* cleanup
 
 A landing-net specialization can keep it viable as a primary late-game build.
 
----
+\---
 
-# 10. Major Fishing Gear
+# 10\. Major Fishing Gear
 
 ## Landing Net
 
@@ -189,11 +190,11 @@ Direct cursor-based capture.
 
 Possible upgrade axes:
 
-- capture power
-- attack speed
-- radius
-- simultaneous targets
-- chain capture
+* capture power
+* attack speed
+* radius
+* simultaneous targets
+* chain capture
 
 ## Bait
 
@@ -201,10 +202,10 @@ Manipulates fish movement.
 
 Possible upgrades:
 
-- attraction radius
-- duration
-- species-specific attraction
-- school concentration
+* attraction radius
+* duration
+* species-specific attraction
+* school concentration
 
 ## Net
 
@@ -232,15 +233,15 @@ Automatic/specialized single-target tool, especially effective against large fis
 
 ## Future Gear
 
-- traps/pots
-- longlines
-- specialized bait
-- environment-specific gear
-- fantasy equipment
+* traps/pots
+* longlines
+* specialized bait
+* environment-specific gear
+* fantasy equipment
 
----
+\---
 
-# 11. Free Placement
+# 11\. Free Placement
 
 No grid is required.
 
@@ -254,29 +255,29 @@ When moving to a new area, physical placement resets.
 
 Owned gear, upgrades, augments, Gold, and the run build remain.
 
----
+\---
 
-# 12. Run Economy
+# 12\. Run Economy
 
 Captured fish grant Gold immediately.
 
 Gold is spent during the current run on:
 
-- gear placement
-- gear purchase
-- upgrades
-- repairs
-- shops
-- rerolls
-- other run decisions
+* gear placement
+* gear purchase
+* upgrades
+* repairs
+* shops
+* rerolls
+* other run decisions
 
 Gold resets when the run ends.
 
 A small base reward between schools/areas may prevent irreversible early snowball failure.
 
----
+\---
 
-# 13. Augments
+# 13\. Augments
 
 Captured fish also provide Fishing EXP.
 
@@ -286,9 +287,9 @@ The player chooses one.
 
 Possible rarity structure:
 
-- Common
-- Rare
-- Legendary
+* Common
+* Rare
+* Legendary
 
 Some stat augments can stack.
 
@@ -296,9 +297,9 @@ Rule-changing augments are generally unique.
 
 Augments reset after the run.
 
----
+\---
 
-# 14. Build Philosophy
+# 14\. Build Philosophy
 
 A player should not maximize every available gear type in a single run.
 
@@ -310,16 +311,16 @@ Typical structure:
 
 Examples:
 
-- Cast Net + Bait + Landing Net
-- Net + Bait + Fishing Rod
-- Landing Net + Cast Net + Bait
-- Fishing Rod + Net + Special Bait
+* Cast Net + Bait + Landing Net
+* Net + Bait + Fishing Rod
+* Landing Net + Cast Net + Bait
+* Fishing Rod + Net + Special Bait
 
 Focused investment should outperform spreading upgrades evenly across all gear.
 
----
+\---
 
-# 15. Job Progression
+# 15\. Job Progression
 
 Job progression is a major run-growth system.
 
@@ -333,10 +334,10 @@ Early/mid-run, the player selects a broad specialization.
 
 Examples:
 
-- Cast-Net Fisher
-- Net Fisher
-- Angler
-- Landing-Net Fisher
+* Cast-Net Fisher
+* Net Fisher
+* Angler
+* Landing-Net Fisher
 
 The first job determines the direction of the build and increases access to relevant augments.
 
@@ -347,20 +348,24 @@ Later in the run, the first job branches into more specialized professions.
 Example structure:
 
 **Cast-Net Fisher**
-- Special Cast-Net Unit
-- Big-Fish Net Hunter
+
+* Special Cast-Net Unit
+* Big-Fish Net Hunter
 
 **Net Fisher**
-- Net Craftsman
-- School Blockader
+
+* Net Craftsman
+* School Blockader
 
 **Angler**
-- Big-Game Angler
-- Longline Specialist
+
+* Big-Game Angler
+* Longline Specialist
 
 **Landing-Net Fisher**
-- Veteran Netter
-- Chain Catcher
+
+* Veteran Netter
+* Chain Catcher
 
 The first job chooses the build direction.
 
@@ -368,9 +373,9 @@ The second job determines the final play style.
 
 All job progress resets after the run.
 
----
+\---
 
-# 16. Job Selection Rules
+# 16\. Job Selection Rules
 
 Job progression should not be purely random.
 
@@ -382,20 +387,20 @@ Second-job branches should generally be directly selectable rather than randomly
 
 After specialization, the relevant augment pool receives increased weight.
 
----
+\---
 
-# 17. Late-Game Power
+# 17\. Late-Game Power
 
 Late-game builds are allowed to become extremely powerful.
 
 Examples:
 
-- cast nets covering a huge portion of the screen
-- hundreds of fish captured at once
-- cooldown refunds after mass capture
-- connected nets creating large lockdown zones
-- chain landing-net captures
-- instant high-value target capture
+* cast nets covering a huge portion of the screen
+* hundreds of fish captured at once
+* cooldown refunds after mass capture
+* connected nets creating large lockdown zones
+* chain landing-net captures
+* instant high-value target capture
 
 The goal is not perfect numerical uniformity.
 
@@ -403,9 +408,9 @@ Different builds should break the game in different ways.
 
 Later areas become correspondingly more extreme.
 
----
+\---
 
-# 18. Meta Progression
+# 18\. Meta Progression
 
 Meta progression should primarily unlock **options**, not raw power.
 
@@ -413,54 +418,54 @@ Meta progression should primarily unlock **options**, not raw power.
 
 Potential permanent unlocks:
 
-- new gear
-- new augments
-- new first jobs
-- new second jobs
-- shop systems
-- additional starting choices
-- encyclopedia features
-- quality-of-life features
+* new gear
+* new augments
+* new first jobs
+* new second jobs
+* shop systems
+* additional starting choices
+* encyclopedia features
+* quality-of-life features
 
 Permanent raw-stat growth should be limited.
 
----
+\---
 
-# 19. Persistent Currency
+# 19\. Persistent Currency
 
 Both success and failure grant persistent currency.
 
 The reward can be based on:
 
-- capture score
-- area reached
-- bosses captured
-- special objectives
-- full-run clear bonus
+* capture score
+* area reached
+* bosses captured
+* special objectives
+* full-run clear bonus
 
 Winning should be clearly more efficient than repeatedly failing.
 
----
+\---
 
-# 20. Fish Ecosystem Interactions
+# 20\. Fish Ecosystem Interactions
 
 Long-term fish species should interact with each other.
 
 Examples:
 
-- sharks consume small fish
-- school leaders influence movement
-- pufferfish interfere with nets
-- squid temporarily disable gear
-- predators scatter nearby schools
+* sharks consume small fish
+* school leaders influence movement
+* pufferfish interfere with nets
+* squid temporarily disable gear
+* predators scatter nearby schools
 
 A predator that consumes other fish may become heavier, harder to catch, and more valuable.
 
 This creates risk/reward decisions such as whether to catch it early or allow it to grow.
 
----
+\---
 
-# 21. Normal Ending
+# 21\. Normal Ending
 
 The Normal-mode objective is to clear Areas 1–6 in one expedition.
 
@@ -468,9 +473,9 @@ The final boss should test the player's complete fishing system rather than simp
 
 Capturing the final creature unlocks a clear Normal Ending.
 
----
+\---
 
-# 22. Post-Game
+# 22\. Post-Game
 
 Normal completion unlocks two separate content directions.
 
@@ -478,13 +483,13 @@ Normal completion unlocks two separate content directions.
 
 Existing areas gain modifiers such as:
 
-- stronger currents
-- larger schools
-- increased Resistance
-- lower net durability
-- lower economy
-- night fishing
-- environmental hazards
+* stronger currents
+* larger schools
+* increased Resistance
+* lower net durability
+* lower economy
+* night fishing
+* environmental hazards
 
 Hard mode may use a Risk Level system.
 
@@ -496,53 +501,53 @@ New regions are separate from difficulty scaling.
 
 Potential expansions:
 
-- volcanic sea
-- frozen sea
-- ghost sea
-- hell sea
-- void sea
-- space sea
+* volcanic sea
+* frozen sea
+* ghost sea
+* hell sea
+* void sea
+* space sea
 
 Every new region must introduce at least one new gameplay rule.
 
----
+\---
 
-# 23. Collection
+# 23\. Collection
 
 Long-term records may include:
 
-- species discovery
-- catch count
-- maximum size
-- maximum weight
-- rare variants
-- best catch score
+* species discovery
+* catch count
+* maximum size
+* maximum weight
+* rare variants
+* best catch score
 
 This provides goals beyond the Normal ending.
 
----
+\---
 
-# 24. Technical Direction
+# 24\. Technical Direction
 
 Target engine:
 
-- Unity 6
-- C#
+* Unity 6
+* C#
 
 Technical priorities:
 
-- Object Pooling
-- data-driven FishData / GearData / AugmentData
-- simplified school simulation
-- minimize unnecessary Rigidbody2D usage
-- avoid expensive per-fish operations
-- introduce Spatial Grid/Hash only if profiling justifies it
+* Object Pooling
+* data-driven FishData / GearData / AugmentData
+* simplified school simulation
+* minimize unnecessary Rigidbody2D usage
+* avoid expensive per-fish operations
+* introduce Spatial Grid/Hash only if profiling justifies it
 
 Do not begin with ECS/DOTS unless actual performance requirements demand it.
 
----
+\---
 
-# 25. Final Identity
+# 25\. Final Identity
 
 NETBREAK must not become conventional tower defense with fish-themed enemies.
 
@@ -558,3 +563,26 @@ Its identity comes from:
 The intended run-growth arc is:
 
 **Beginner Fisher → 1st Job → 2nd Job → Completed Fishing Build → Abyss Clear**
+
+
+
+\## 변경 이력
+
+
+
+\### v1.1
+
+해역 진입
+
+→ 조업 준비
+
+→ 설치형 어구 배치
+
+→ 조업 시작
+
+→ 연속 어군 유입
+
+→ 마감 조업
+
+→ 결과
+
