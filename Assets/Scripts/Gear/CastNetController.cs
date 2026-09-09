@@ -123,4 +123,22 @@ public class CastNetController : MonoBehaviour
                 1f
             );
     }
+
+    public void IncreaseCapturePower(float amount)
+    {
+        capturePower += amount;
+    }
+
+    public void IncreaseCaptureRadius(float amount)
+    {
+        captureRadius += amount;
+
+        UpdateVisualScale();
+    }
+
+    public void ReduceCooldown(float amount)
+    {
+        cooldown =
+            Mathf.Max(0.5f, cooldown - amount);
+    }
 }

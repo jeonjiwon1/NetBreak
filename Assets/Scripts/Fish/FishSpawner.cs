@@ -132,6 +132,11 @@ public class FishSpawner : MonoBehaviour
 
             fish.Initialize(selectedData);
 
+            if (RunManager.Instance != null)
+            {
+                RunManager.Instance.RegisterFishSpawned(selectedData);
+            }
+
             FishMovement movement =
                 fish.GetComponent<FishMovement>();
 

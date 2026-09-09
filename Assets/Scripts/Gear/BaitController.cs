@@ -105,4 +105,22 @@ public class BaitController : MonoBehaviour
             rangeVisual.SetActive(value);
         }
     }
+
+    public void IncreaseAttractionRadius(float amount)
+    {
+        attractionRadius += amount;
+
+        if (rangeVisual != null)
+        {
+            float diameter = attractionRadius * 2f;
+
+            rangeVisual.transform.localScale =
+                new Vector3(diameter, diameter, 1f);
+        }
+    }
+
+    public void IncreaseDuration(float amount)
+    {
+        duration += amount;
+    }
 }

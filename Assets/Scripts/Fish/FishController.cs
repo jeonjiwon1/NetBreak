@@ -5,6 +5,7 @@ public class FishController : MonoBehaviour
     [SerializeField] private FishData fishData;
 
     private float currentResistance;
+    private bool isCaptured;
 
     public FishData Data => fishData;
     public float CurrentResistance => currentResistance;
@@ -12,7 +13,9 @@ public class FishController : MonoBehaviour
     public void Initialize(FishData data)
     {
         fishData = data;
+
         currentResistance = fishData.MaxResistance;
+        isCaptured = false;
 
         gameObject.name = $"Fish_{fishData.FishName}";
     }
@@ -27,7 +30,7 @@ public class FishController : MonoBehaviour
 
     public bool TakeCaptureDamage(float amount)
     {
-        if (fishData == null)
+        if (fishData == null || isCaptured)
         {
             return false;
         }
@@ -45,6 +48,18 @@ public class FishController : MonoBehaviour
 
     private void Capture()
     {
+        if (isCaptured)
+        {
+            return;
+        }
+
+        isCaptured = true;
+
+        if (RunManager.Instance != null)
+        {
+            RunManager.Instance.RegisterFishCaptured(fishData);
+        }
+
         gameObject.SetActive(false);
     }
 }

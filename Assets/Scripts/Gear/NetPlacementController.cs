@@ -213,4 +213,9 @@ public class NetPlacementController : MonoBehaviour
                 1f
             );
     }
+
+    public void IncreaseMaxLength(float amount)
+    {
+        maxLength += amount;
+    }
 }

@@ -69,4 +69,22 @@ public class LandingNetController : MonoBehaviour
             }
         }
     }
+
+    public void IncreaseCapturePower(float amount)
+    {
+        capturePower += amount;
+    }
+
+    public void IncreaseCaptureRadius(float amount)
+    {
+        captureRadius += amount;
+
+        if (rangeVisual != null)
+        {
+            float diameter = captureRadius * 2f;
+
+            rangeVisual.localScale =
+                new Vector3(diameter, diameter, 1f);
+        }
+    }
 }

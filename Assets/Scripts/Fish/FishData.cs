@@ -12,6 +12,8 @@ public class FishData : ScriptableObject
     [Header("Capture")]
     [SerializeField] private float maxResistance = 10f;
     [SerializeField] private int catchValue = 1;
+    [SerializeField] private int goldReward = 1;
+    [SerializeField] private int expReward = 1;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 2f;
@@ -22,6 +24,8 @@ public class FishData : ScriptableObject
     public string FishName => fishName;
     public float MaxResistance => maxResistance;
     public int CatchValue => catchValue;
+    public int GoldReward => goldReward;
+    public int ExpReward => expReward;
 
     public float MoveSpeed => moveSpeed;
     public float BaitAttraction => baitAttraction;
