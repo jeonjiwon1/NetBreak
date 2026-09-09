@@ -9,19 +9,20 @@ public class FishController : MonoBehaviour
     public FishData Data => fishData;
     public float CurrentResistance => currentResistance;
 
-    private void OnEnable()
+    public void Initialize(FishData data)
     {
-        ResetFish();
+        fishData = data;
+        currentResistance = fishData.MaxResistance;
+
+        gameObject.name = $"Fish_{fishData.FishName}";
     }
 
-    private void ResetFish()
+    private void OnEnable()
     {
-        if (fishData == null)
+        if (fishData != null)
         {
-            return;
+            currentResistance = fishData.MaxResistance;
         }
-
-        currentResistance = fishData.MaxResistance;
     }
 
     public void TakeCaptureDamage(float amount)

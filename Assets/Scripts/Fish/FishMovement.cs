@@ -5,13 +5,30 @@ public class FishMovement : MonoBehaviour
 {
     [SerializeField] private float exitMargin = 0.5f;
 
+    [Header("School Movement")]
+    [SerializeField] private float schoolCorrectionSpeed = 2f;
+    [SerializeField] private float waveAmplitude = 0.4f;
+    [SerializeField] private float waveFrequency = 1.5f;
+
     private Camera mainCamera;
     private FishController fishController;
+
+    private float schoolCenterY;
+    private float personalOffsetY;
+    private float wavePhase;
 
     private void Awake()
     {
         mainCamera = Camera.main;
         fishController = GetComponent<FishController>();
+    }
+
+    public void InitializeSchoolMovement(float centerY)
+    {
+        schoolCenterY = centerY;
+
+        personalOffsetY = Random.Range(-0.8f, 0.8f);
+        wavePhase = Random.Range(0f, Mathf.PI * 2f);
     }
 
     private void Update()
@@ -21,16 +38,52 @@ public class FishMovement : MonoBehaviour
             return;
         }
 
-        transform.position +=
-            Vector3.right *
-            fishController.Data.MoveSpeed *
-            Time.deltaTime;
+        MoveFish();
+        CheckExit();
+    }
 
+    private void MoveFish()
+    {
+        float targetY =
+            schoolCenterY
+            + personalOffsetY
+            + Mathf.Sin(
+                Time.time * waveFrequency + wavePhase
+            ) * waveAmplitude;
+
+        float verticalDifference =
+            targetY - transform.position.y;
+
+        float schoolStrength =
+            fishController.Data.SchoolStrength;
+
+        float verticalMovement =
+            verticalDifference
+            * schoolCorrectionSpeed
+            * schoolStrength;
+
+        Vector2 direction = new Vector2(
+            1f,
+            verticalMovement
+        ).normalized;
+
+        transform.position +=
+            (Vector3)(
+                direction
+                * fishController.Data.MoveSpeed
+                * Time.deltaTime
+            );
+    }
+
+    private void CheckExit()
+    {
         float cameraRight =
             mainCamera.transform.position.x
-            + mainCamera.orthographicSize * mainCamera.aspect;
+            + mainCamera.orthographicSize
+            * mainCamera.aspect;
 
-        if (transform.position.x >= cameraRight + exitMargin)
+        if (transform.position.x >=
+            cameraRight + exitMargin)
         {
             gameObject.SetActive(false);
         }
