@@ -1,588 +1,595 @@
 # NETBREAK
+## Game Design Document (GDD) v1.2
 
-## Game Design Document v1.10
+**장르:** 2D 로그라이트 어업 디펜스 / 전략  
+**플랫폼:** PC  
+**엔진:** Unity 6 / C#  
+**개발 형태:** 1인 개발  
+**프로젝트명:** NETBREAK (가제)  
+**핵심 키워드:** 대규모 어군 / 낚시 / 자유 배치 / 로그라이트 / 빌드 / 전직 / 대량 포획
 
-**Genre:** 2D Roguelite Fishing Defense / Strategy  
-**Platform:** PC  
-**Engine:** Unity 6 / C#  
-**Development:** Solo  
-**Project Name:** NETBREAK (working title)  
-**Core Keywords:** Fish schools / Fishing / Free placement / Roguelite / Builds / Job progression / Mass capture
+---
 
-\---
+# 1. 게임 개요
 
-# 1\. Game Overview
+NETBREAK는 자유롭게 이동하는 대규모 어군의 습성과 이동을 관찰하고, 미끼와 설치형 어구로 흐름을 조작한 뒤 뜰채·투망·낚싯대 등으로 포획하는 2D 로그라이트 어업 디펜스 게임이다.
 
-NETBREAK is a 2D roguelite fishing-defense game in which the player manipulates freely moving fish schools with bait, nets, rods, cast nets, and direct cursor-based capture.
+전통적인 타워 디펜스처럼 적이 정해진 Lane을 따라 이동하지 않는다. 물고기는 넓은 해역 안에서 어종별 이동 성향, 군집성, 미끼 반응, 지형과 환경의 영향을 받아 움직인다.
 
-Unlike traditional tower defense, fish do not move along fixed lanes. They move through a broad water area according to species-specific behavior, school tendencies, bait response, and environmental effects.
+플레이어는 단순히 화력을 배치하는 것이 아니라 다음 과정을 반복한다.
 
-The player observes these behaviors, manipulates the flow of fish, prepares capture zones, and ultimately captures large groups at once.
+**관찰 → 유도 → 봉쇄 → 포획 → 성장**
 
-Every run begins from Area 1. During the run, the player acquires augments and advances from a Beginner Fisher into a specialized fishing profession. The Normal-mode objective is to clear all major areas in a single expedition and capture the final legendary creature.
+모든 Run은 해역 1에서 시작한다. Run 내부에서는 증강과 전직을 통해 특정 조업 방식에 집중하며, 최종적으로 한 번의 출항에서 모든 Normal 해역을 돌파하고 마지막 전설 생물을 포획하는 것이 장기 목표다.
 
-\---
+---
 
-# 2\. Core Fantasy
+# 2. 핵심 게임 판타지
 
-The player begins as an inexperienced fisher catching small coastal fish with basic gear.
+플레이어는 처음에는 기본 뜰채와 제한된 어구만 다루는 **초보 어부**다.
 
-As the run progresses, the player develops a specialized fishing method, reaches increasingly dangerous waters, and eventually captures enormous and fantastical creatures.
+Run이 진행될수록 특정 조업 방식에 전문화하며, 후반에는 수십~수백 마리의 어군을 한 번에 제어하고 포획하는 전문가가 된다.
 
-The early game should feel relatively grounded. The later game can gradually become more exaggerated and comic-fantasy in tone.
+게임 초반은 현실적인 연안·외해 어업을 기반으로 하되, 후반과 엔딩 이후에는 코믹 판타지 요소를 적극적으로 확장할 수 있다.
 
-Long-term expansion may include volcanic seas, frozen waters, ghost seas, hellish waters, void zones, and even space.
+장기 확장 예시:
 
-\---
+- 화산해역
+- 빙결해역
+- 유령해역
+- 지옥해역
+- 공허해역
+- 우주해역
 
-# 3\. Core Design Principles
+핵심 판타지:
+
+> **뜰채로 정어리를 잡던 초보 어부가 자신만의 조업 방식을 완성해 심연의 거대 생물을 포획한다.**
+
+---
+
+# 3. 핵심 디자인 원칙
 
 ## 3.1 LURE → TRAP → CATCH
 
-**LURE**  
-Use bait and species behavior to influence fish movement.
+### LURE — 유도
+미끼와 어종의 습성을 이용해 어군을 원하는 위치로 이동시키고 밀도를 높인다.
 
-**TRAP**  
-Use nets and other gear to restrict or redirect the school.
+### TRAP — 봉쇄
+그물과 기타 설치형 어구를 이용해 어군의 이동을 제한하거나 포획에 유리한 공간을 만든다.
 
-**CATCH**  
-Use direct capture tools, cast nets, rods, and other specialized equipment to complete the catch.
+### CATCH — 포획
+뜰채, 투망, 낚싯대 등으로 실제 포획을 완료한다.
 
-## 3.2 Primary Reward Moment
+## 3.2 가장 중요한 보상 순간
 
-The most important moment is not catching a single fish.
+NETBREAK의 가장 중요한 순간은 물고기 한 마리를 잡는 순간이 아니다.
 
-It is the moment when the player successfully gathers a large school into a favorable position and captures a large number of fish at once.
+> **플레이어가 미끼와 어구를 이용해 어군을 한곳에 모으고, 가장 좋은 순간에 대량 포획을 성공시키는 순간**
 
-> Preparation is the strategy. Mass capture is the reward.
+> **잡는 순간보다 몰아넣는 과정이 전략이고, 한꺼번에 잡는 순간이 보상이다.**
 
-\---
+---
 
-# 4\. Run Structure
+# 4. 해역의 기본 플레이 흐름
 
-Every run begins as a **Beginner Fisher** in Area 1.
+**해역 진입**  
+↓  
+**조업 준비**  
+↓  
+**설치형 어구 배치**  
+↓  
+**조업 시작**  
+↓  
+**연속 어군 유입**  
+↓  
+**실시간 유도·봉쇄·포획**  
+↓  
+**마지막 어군**  
+↓  
+**마감 조업**  
+↓  
+**어획률 판정**  
+↓  
+**다음 해역 또는 Run 종료**
 
-A full Normal run:
+조업 준비 단계는 해역당 기본 1회다.
 
-**Area 1 → Area 2 → Area 3 → Area 4 → Area 5 → Area 6 → Final Boss → Ending**
+어군마다 게임을 정지하고 Start를 누르게 하는 전형적인 Wave TD 구조는 지양한다. 조업 시작 이후에는 어군이 연속적으로 유입되어 실시간 흐름을 유지한다.
 
-There are no checkpoints.
+---
 
-Failure in any area ends the run. The next run begins again from Area 1.
+# 5. Run 구조
 
-Repetition is made interesting through different augments, gear priorities, and job specializations.
+모든 Run은 반드시 **해역 1**에서 시작한다.
 
-Run-specific power resets after the run ends.
+체크포인트는 기본적으로 제공하지 않는다.
 
-\---
+Normal Mode의 최종 Run:
 
-# 5\. Area Progression
+**해역 1 → 해역 2 → 해역 3 → 해역 4 → 해역 5 → 해역 6 → 최종 보스 → 엔딩**
 
-Target Normal areas:
+어느 해역에서 실패하더라도 Run은 종료되고 다음 Run은 다시 해역 1에서 시작한다.
 
-1. **Coast** — fundamentals and basic fish schools
-2. **Open Sea** — faster fish and larger targets
-3. **Coral Sea** — terrain interaction and more constrained movement
-4. **Deep Sea** — unusual fish and information restrictions
-5. **Storm Sea** — currents and environmental disruption
-6. **Abyss** — final test combining previous systems
+반복 플레이의 재미는 다음 요소로 확보한다.
 
-The exact number, order, and rules of areas may change during development.
+- 매 Run 달라지는 증강
+- 서로 다른 주력 어구
+- 1차/2차 전직
+- 어군 구성 변화
+- 해역 환경 변화
+- 위험/보상 선택
+- Gold 운영
 
-\---
+---
 
-# 6\. Fish-School System
+# 6. Run 내부 성장 철학
 
-Fish do not use fixed lanes.
+한 Run에서 모든 어구를 골고루 강화하는 것을 권장하지 않는다.
 
-Typical fish lifecycle:
+플레이어가 자연스럽게 **2~3개의 시스템에 집중**하도록 설계한다.
 
-**Enter Area → School Activity → React to Bait/Environment → Exit Warning → Leave Area**
+대표 구조:
 
-School movement should be predictable enough for planning, rather than purely random.
+**주력 + 보조 + 유틸리티**
 
-Prototype movement can use simplified versions of:
+예:
 
-* cohesion
-* alignment
-* separation
-* base movement
-* random variation
-* bait attraction
-* species-specific behavior
+- 투망 + 미끼 + 뜰채
+- 그물 + 미끼 + 낚싯대
+- 뜰채 + 투망 + 미끼
+- 낚싯대 + 그물 + 특수 미끼
 
-Game readability is more important than realistic simulation.
+집중 투자는 범용 투자보다 강해야 한다.
 
-\---
+후반에는 특정 빌드가 게임의 규칙을 어느 정도 깨뜨릴 정도로 강해지는 것을 허용한다.
 
-# 7\. Fish Data
+---
 
-Potential fish attributes:
+# 7. 전직 시스템
 
-* Resistance
-* Move Speed
-* Size
-* Weight
-* School Affinity
-* Bait Response
-* Catch Value
-* Rarity
-* Traits
+모든 Run은 **초보 어부**로 시작한다.
 
-Fish are **captured** when Resistance reaches zero.
+## 7.1 1차 전직
 
-They are not framed as being killed.
+초반~중반에 한 번 선택한다.
 
-\---
+예:
 
-# 8\. Catch Rate and Area Clear
+- 투망꾼
+- 그물잡이
+- 낚시꾼
+- 뜰채잡이
 
-Fish have different Catch Values.
+1차 전직은 해당 Run의 큰 방향을 결정하며 관련 증강 출현 가중치를 높인다.
 
-A sardine and a large tuna do not contribute equally.
+## 7.2 2차 전직
 
-Area performance is calculated using the percentage of total available Catch Value successfully captured.
+중후반에는 1차 직업이 다시 분기한다.
 
-After the final school enters, a **Final Fishing** countdown begins.
+예:
 
-When the timer ends, the area result is calculated.
+### 투망꾼
+- 특수투망부
+- 대어망 사냥꾼
 
-Possible ranks:
+### 그물잡이
+- 그물 장인
+- 어군 봉쇄꾼
 
-* C
-* B
-* A
-* S
-* PERFECT
+### 낚시꾼
+- 대어 낚시꾼
+- 주낙 전문가
 
-Normal progression should require a reasonable clear threshold rather than 100%.
+### 뜰채잡이
+- 베테랑 뜰채러
+- 연쇄 포획꾼
 
-Exact thresholds are determined by playtesting.
+1차 전직은 **방향**, 2차 전직은 **완성 형태**를 결정한다.
 
-\---
+전직은 Run 종료 시 초기화된다.
 
-# 9\. Direct Capture
+---
 
-There is no directly controlled walking character in the core design.
+# 8. 전직 선택 원칙
 
-The cursor represents the player's intervention point.
+전직은 완전 랜덤으로 결정하지 않는다.
 
-The basic capture tool is a small landing-net area around the cursor.
+현재 사용 중인 어구와 획득한 증강을 기반으로 추천할 수 있지만 최종 선택권은 플레이어에게 둔다.
 
-Early-game direct capture is important.
+영구 성장으로 새로운 전직 후보를 해금할 수는 있지만, 다음 Run은 다시 초보 어부에서 시작한다.
 
-Later, for most builds, it becomes a precision tool for:
+---
 
-* rare fish
-* escaping fish
-* high-value targets
-* cleanup
+# 9. 조업 준비
 
-A landing-net specialization can keep it viable as a primary late-game build.
+해역 시작 시 어군은 즉시 등장하지 않는다.
 
-\---
+향후 준비 단계에서 제공 가능한 정보:
 
-# 10\. Major Fishing Gear
+- 주요 어종
+- 예상 어군 규모
+- 어군 진입 지점
+- 조류/환경 정보
+- 설치 불가 지형
+- 보유 Gold
+- 현재 빌드/어구
 
-## Landing Net
+전략층은 다음처럼 구분한다.
 
-Direct cursor-based capture.
+1. **공간 전략** — 조업 준비/배치
+2. **실시간 전략** — 어군 유도/포획 타이밍
+3. **빌드 전략** — 증강/전직
 
-Possible upgrade axes:
+---
 
-* capture power
-* attack speed
-* radius
-* simultaneous targets
-* chain capture
+# 10. 설치형 어구와 실시간 도구
 
-## Bait
+## 설치형 어구
+준비 단계에서 사전 배치 가능.
 
-Manipulates fish movement.
+- 그물
+- 낚싯대
+- 통발
+- 주낙
 
-Possible upgrades:
+조업 중 재배치는 가능하게 할 수 있으나 장기적으로 회수 시간, 재설치 비용, 내구도 손실 등을 고려한다.
 
-* attraction radius
-* duration
-* species-specific attraction
-* school concentration
+## 실시간 도구
 
-## Net
+- 뜰채
+- 미끼
+- 투망
 
-Free-placement control/capture tool.
+미끼는 준비 단계에 미리 설치하는 장비가 아니라 어군을 보고 즉시 사용하는 유도 수단으로 유지한다.
 
-Recommended input:
+---
 
-**Click → Drag → Release**
+# 11. 물고기 이동과 어군
 
-The length and direction of the net are chosen freely.
+물고기는 고정 Lane을 사용하지 않는다.
 
-Nets can slow fish and reduce Resistance.
+기본 생애주기:
 
-In the full game, nets may have durability.
+**해역 진입 → 어군 활동 → 미끼/환경 반응 → 이탈 징후 → 해역 이탈**
 
-## Cast Net
+기본 군집 요소:
 
-Manual active skill aimed at the cursor.
+- Cohesion
+- Alignment
+- Separation
+- 기본 진행 방향
+- 개체별 편차
+- 미끼 유인
+- 어종별 군집성
 
-Primary mass-capture tool.
+현실적 시뮬레이션보다 가독성과 플레이 가능성을 우선한다.
 
-## Fishing Rod
+---
 
-Automatic/specialized single-target tool, especially effective against large fish.
+# 12. 어종 데이터
 
-## Future Gear
+기본 데이터 후보:
 
-* traps/pots
-* longlines
-* specialized bait
-* environment-specific gear
-* fantasy equipment
+- Resistance
+- Move Speed
+- Size
+- Weight
+- School Strength
+- Bait Attraction
+- Catch Value
+- Gold Reward
+- Rarity
+- Traits
 
-\---
+Resistance가 0이 되면 물고기는 **포획**된다.
 
-# 11\. Free Placement
+---
 
-No grid is required.
+# 13. 기본 어종 역할
 
-Fishing gear is placed freely in the water.
+## 정어리
+- 작음
+- 약함
+- 느림
+- 대규모 어군
+- 높은 군집성
+- 미끼 반응 강함
+- 대량 포획 대표 대상
 
-Some areas may contain invalid placement zones such as rocks, coral, hazards, or currents.
+## 고등어
+- 중간 크기
+- 평균 저항력
+- 평균 속도
+- 중간 규모 어군
+- 기준형 어종
 
-Minimum spacing or collision rules can prevent stacking all gear in a single optimal point.
+## 참치
+- 큼
+- 높은 저항력
+- 빠름
+- 소규모 어군
+- 낮은 군집성
+- 미끼 반응 약함
+- 높은 Catch Value / Gold 가치
 
-When moving to a new area, physical placement resets.
+장기적으로는 단순 수치 차이보다 행동 규칙 자체가 다른 어종을 추가한다.
 
-Owned gear, upgrades, augments, Gold, and the run build remain.
+---
 
-\---
+# 14. 물고기 생태 상호작용
 
-# 12\. Run Economy
+장기 확장 예:
 
-Captured fish grant Gold immediately.
+- 상어가 작은 물고기를 먹고 가치/체중/저항력이 증가
+- 리더 개체를 따라 어군 이동
+- 복어가 그물에 부담 발생
+- 오징어가 어구를 일시 방해
+- 포식자가 다른 어군을 흩뜨림
 
-Gold is spent during the current run on:
+목표는 물고기를 단순한 능력치 묶음이 아니라 작은 생태계로 만드는 것이다.
 
-* gear placement
-* gear purchase
-* upgrades
-* repairs
-* shops
-* rerolls
-* other run decisions
+---
 
-Gold resets when the run ends.
+# 15. 뜰채
 
-A small base reward between schools/areas may prevent irreversible early snowball failure.
+기본 직접 포획 수단.
 
-\---
+방향:
 
-# 13\. Augments
+- 커서 주변 작은 원형 범위
+- 픽셀 단위 클릭 요구 없음
+- 기본 상태에서는 한 번에 제한된 수의 물고기만 타격
+- 일반 빌드에서는 정밀 개입/마무리 도구
+- 뜰채 전문 빌드에서는 주력 수단으로 성장 가능
 
-Captured fish also provide Fishing EXP.
+성장 축:
 
-Level-up pauses the game and presents three random augments.
+- 포획력
+- 사용 속도
+- 범위
+- 동시 타격 수
+- 연쇄 포획
+- 자동 포획
 
-The player chooses one.
+---
 
-Possible rarity structure:
+# 16. 미끼
 
-* Common
-* Rare
-* Legendary
+미끼의 핵심 역할은 단순 방향 전환이 아니라 **어군 압축**이다.
 
-Some stat augments can stack.
+평상시에는 투망 한 번으로 전부 잡기 어려운 어군을 미끼 주변에 모아 포획 효율을 높인다.
 
-Rule-changing augments are generally unique.
+핵심 기능:
 
-Augments reset after the run.
+- 유인 범위
+- 유인 강도
+- 지속시간
+- 미끼 근처 체류/감속
+- 어종별 반응 차이
 
-\---
+미끼는 필수 버튼이 아니라 좋은 운영의 효율을 크게 높이는 전략 수단이어야 한다.
 
-# 14\. Build Philosophy
+---
 
-A player should not maximize every available gear type in a single run.
+# 17. 그물
 
-The intended build usually focuses on **2–3 systems**.
+자유 배치형 설치 어구.
 
-Typical structure:
+역할:
 
-**Primary + Secondary + Utility**
+- 물고기 감속
+- 이동 경로 제어
+- 지속 Resistance 감소
+- 포획 지점 형성
 
-Examples:
+길이에 따라 설치 비용이 증가한다.
 
-* Cast Net + Bait + Landing Net
-* Net + Bait + Fishing Rod
-* Landing Net + Cast Net + Bait
-* Fishing Rod + Net + Special Bait
+정식 버전에서는 내구도, 대형어 손상, 수리, 회수/재배치, 연결형 그물 빌드를 고려한다.
 
-Focused investment should outperform spreading upgrades evenly across all gear.
+그물은 혼자 모든 어군을 자동 처리하는 장비가 아니라 **TRAP** 역할이 중심이어야 한다.
 
-\---
+---
 
-# 15\. Job Progression
+# 18. 투망
 
-Job progression is a major run-growth system.
+마우스 위치에 사용하는 범위형 액티브 포획 도구.
 
-Every run begins as a:
+기본 조작:
 
-**Beginner Fisher**
+**E Hold → 조준**  
+**E Release → 사용**  
+**RMB / Esc → 취소**
 
-## 1st Job Advancement
+조준 중에는 투망 범위와 범위 내 물고기 수를 확인할 수 있다.
 
-Early/mid-run, the player selects a broad specialization.
+기본 상태에서는 어군 전체를 자동으로 덮을 만큼 넓지 않아야 하며, 미끼와 그물로 밀도를 높이면 효율이 크게 상승한다.
 
-Examples:
+투망 전문 빌드에서는 후반에 범위·포획력·재사용 대기시간이 크게 강화될 수 있다.
 
-* Cast-Net Fisher
-* Net Fisher
-* Angler
-* Landing-Net Fisher
+---
 
-The first job determines the direction of the build and increases access to relevant augments.
+# 19. 낚싯대
 
-## 2nd Job Advancement
+대형어·고가치 단일 목표에 특화된 어구.
 
-Later in the run, the first job branches into more specialized professions.
+기본 방향:
 
-Example structure:
+- 자동 또는 반자동 단일 목표 포획
+- 대형어에 높은 효율
+- 어군 대량 처리에는 약함
+- 향후 낚시꾼 전직의 핵심 장비
 
-**Cast-Net Fisher**
+Vertical Slice에서 첫 구현을 검토한다.
 
-* Special Cast-Net Unit
-* Big-Fish Net Hunter
+---
 
-**Net Fisher**
+# 20. Gold와 Run 경제
 
-* Net Craftsman
-* School Blockader
+물고기 포획 시 즉시 Gold를 획득한다.
 
-**Angler**
+Gold는 해당 Run에서만 사용한다.
 
-* Big-Game Angler
-* Longline Specialist
+주요 사용처:
 
-**Landing-Net Fisher**
+- 어구 설치
+- 어구 구매
+- 업그레이드
+- 수리
+- 상점
+- 리롤
 
-* Veteran Netter
-* Chain Catcher
+Prototype에서는 그물 설치 비용을 통해 경제적 선택을 검증했다.
 
-The first job chooses the build direction.
+장기적으로 여러 장비가 같은 Gold를 경쟁하도록 만들어야 한다.
 
-The second job determines the final play style.
+---
 
-All job progress resets after the run.
+# 21. 경험치와 증강
 
-\---
+물고기 포획 시 조업 경험치를 획득한다.
 
-# 16\. Job Selection Rules
+레벨업 시 게임이 일시정지되고 3개의 증강 중 하나를 선택한다.
 
-Job progression should not be purely random.
+정식 게임에서는 단순 수치 증강보다 Rule-changing 증강의 비중을 높인다.
 
-The game can recommend jobs based on current gear usage and acquired augments.
+예:
 
-However, the player should retain meaningful agency over the final choice.
+- 투망 대량 포획 시 쿨다운 반환
+- 뜰채 동시 타격 증가
+- 그물 연결 시 봉쇄 구역 생성
+- 미끼가 특정 어종을 강하게 유인
 
-Second-job branches should generally be directly selectable rather than randomly offered.
+---
 
-After specialization, the relevant augment pool receives increased weight.
+# 22. 어획률과 해역 결과
 
-\---
+**어획률 = 포획한 Catch Value / 전체 유입 Catch Value**
 
-# 17\. Late-Game Power
+물고기가 해역을 빠져나가면 즉시 실패하지 않고 **미포획**으로 계산한다.
 
-Late-game builds are allowed to become extremely powerful.
+마지막 어군 유입 후에는 마감 조업 카운트다운이 시작된다.
 
-Examples:
+가능한 결과 등급:
 
-* cast nets covering a huge portion of the screen
-* hundreds of fish captured at once
-* cooldown refunds after mass capture
-* connected nets creating large lockdown zones
-* chain landing-net captures
-* instant high-value target capture
+- C
+- B
+- A
+- S
+- PERFECT
 
-The goal is not perfect numerical uniformity.
+100%를 Normal 진행의 필수 조건으로 요구하지 않는다.
 
-Different builds should break the game in different ways.
+Prototype에서는 80%를 임시 성공선으로 사용했다.
 
-Later areas become correspondingly more extreme.
+---
 
-\---
+# 23. Normal 해역 구조
 
-# 18\. Meta Progression
+목표 해역:
 
-Meta progression should primarily unlock **options**, not raw power.
+1. 연안
+2. 외해
+3. 산호해
+4. 심해
+5. 폭풍해역
+6. 심연
 
-> Meta progression expands what can appear. Run progression creates the actual power.
+각 해역은 최소 하나 이상의 새로운 플레이 규칙을 제공한다.
 
-Potential permanent unlocks:
+최종 보스는 단순 Resistance 배수가 아니라 어군/경로 조작, 설치형 어구 활용, 대형어 대응, 액티브 타이밍을 종합적으로 시험해야 한다.
 
-* new gear
-* new augments
-* new first jobs
-* new second jobs
-* shop systems
-* additional starting choices
-* encyclopedia features
-* quality-of-life features
+---
 
-Permanent raw-stat growth should be limited.
+# 24. 영구 성장
 
-\---
+> **영구 성장은 선택지를 넓히고, Run 내부 성장이 실제 파워를 만든다.**
 
-# 19\. Persistent Currency
+영구 해금 예:
 
-Both success and failure grant persistent currency.
+- 새로운 어구
+- 새로운 증강
+- 새로운 전직
+- 상점 기능
+- 시작 선택지
+- 도감
+- 편의 기능
 
-The reward can be based on:
+순수 능력치 상승은 제한적으로 사용한다.
 
-* capture score
-* area reached
-* bosses captured
-* special objectives
-* full-run clear bonus
+---
 
-Winning should be clearly more efficient than repeatedly failing.
+# 25. Normal 엔딩과 엔딩 이후
 
-\---
+Normal Mode는 해역 1~6을 하나의 Run에서 돌파하고 최종 생물을 포획하면 명확한 엔딩을 제공한다.
 
-# 20\. Fish Ecosystem Interactions
+Normal Ending 이후에는 두 방향을 분리한다.
 
-Long-term fish species should interact with each other.
+## 위험 조업 / Hard Mode
+기존 해역에 Modifier와 위험도를 추가.
 
-Examples:
+## 미확인 항로
+새로운 판타지 해역 추가.
 
-* sharks consume small fish
-* school leaders influence movement
-* pufferfish interfere with nets
-* squid temporarily disable gear
-* predators scatter nearby schools
+Hard 난이도와 신규 콘텐츠 지역은 같은 개념으로 묶지 않는다.
 
-A predator that consumes other fish may become heavier, harder to catch, and more valuable.
+---
 
-This creates risk/reward decisions such as whether to catch it early or allow it to grow.
+# 26. 기술 방향
 
-\---
+- Unity 6
+- C#
+- ScriptableObject 기반 데이터
+- Object Pooling
+- 간단한 군집 알고리즘
+- 불필요한 Rigidbody2D 최소화
+- 필요 시 Spatial Grid/Hash
+- 실제 Profiling 결과에 따라 최적화
 
-# 21\. Normal Ending
+초기부터 ECS/DOTS를 전제로 설계하지 않는다.
 
-The Normal-mode objective is to clear Areas 1–6 in one expedition.
+---
 
-The final boss should test the player's complete fishing system rather than simply having excessive Resistance.
+# 27. 언어/코드 규칙
 
-Capturing the final creature unlocks a clear Normal Ending.
+게임 내 플레이어에게 노출되는 텍스트는 **한국어를 기본**으로 한다.
 
-\---
+코드 내부 클래스명, 변수명, 메서드명은 영어를 유지한다.
 
-# 22\. Post-Game
+정식 다국어 대응 시 문자열을 Localization Table로 분리한다.
 
-Normal completion unlocks two separate content directions.
+---
 
-## Risk Fishing / Hard Mode
+# 28. 최종 정체성
 
-Existing areas gain modifiers such as:
+NETBREAK의 정체성:
 
-* stronger currents
-* larger schools
-* increased Resistance
-* lower net durability
-* lower economy
-* night fishing
-* environmental hazards
+1. 자유롭게 움직이는 대규모 어군
+2. 미끼를 통한 어군 압축과 경로 조작
+3. 자유 배치형 어구
+4. 플레이어의 실시간 개입
+5. 준비 후 터뜨리는 대량 포획
+6. Run마다 달라지는 전문화 빌드
+7. 초보 어부 → 1차 전직 → 2차 전직의 성장 서사
 
-Hard mode may use a Risk Level system.
+최종 Run 성장 흐름:
 
-Hard-exclusive currency should primarily unlock new build possibilities rather than huge permanent power.
+**초보 어부 → 1차 전직 → 2차 전직 → 완성된 조업 빌드 → 심연 돌파**
 
-## Uncharted Routes
+---
 
-New regions are separate from difficulty scaling.
+# 변경 이력
 
-Potential expansions:
+## v1.2
+- Prototype 플레이테스트 결과를 바탕으로 핵심 시스템 역할 재정의
+- 조업 준비 단계 정식 반영
+- 설치형/실시간 도구 구분
+- 미끼 역할을 어군 압축으로 명확화
+- 그물 길이 기반 비용과 Run 경제 반영
+- 투망 Hold/Release 조준 및 취소 방식 반영
+- 어종별 역할 차이 강화
+- 플레이어 노출 텍스트 한국어 원칙 추가
+- Prototype에서 검증된 80% 어획률 기준을 임시 기준으로 기록
 
-* volcanic sea
-* frozen sea
-* ghost sea
-* hell sea
-* void sea
-* space sea
-
-Every new region must introduce at least one new gameplay rule.
-
-\---
-
-# 23\. Collection
-
-Long-term records may include:
-
-* species discovery
-* catch count
-* maximum size
-* maximum weight
-* rare variants
-* best catch score
-
-This provides goals beyond the Normal ending.
-
-\---
-
-# 24\. Technical Direction
-
-Target engine:
-
-* Unity 6
-* C#
-
-Technical priorities:
-
-* Object Pooling
-* data-driven FishData / GearData / AugmentData
-* simplified school simulation
-* minimize unnecessary Rigidbody2D usage
-* avoid expensive per-fish operations
-* introduce Spatial Grid/Hash only if profiling justifies it
-
-Do not begin with ECS/DOTS unless actual performance requirements demand it.
-
-\---
-
-# 25\. Final Identity
-
-NETBREAK must not become conventional tower defense with fish-themed enemies.
-
-Its identity comes from:
-
-1. large moving fish schools
-2. bait/path manipulation
-3. free-form fishing-gear placement
-4. active player intervention
-5. preparation followed by explosive mass capture
-6. specialized roguelite job/build progression
-
-The intended run-growth arc is:
-
-**Beginner Fisher → 1st Job → 2nd Job → Completed Fishing Build → Abyss Clear**
-
-
-
-\## 변경 이력
-
-
-
-\### v1.1
-
-해역 진입
-
-→ 조업 준비
-
-→ 설치형 어구 배치
-
-→ 조업 시작
-
-→ 연속 어군 유입
-
-→ 마감 조업
-
-→ 결과
-
+## v1.1
+- 해역 시작 전 조업 준비 단계 추가
+- 설치형 어구 사전 배치 개념 추가

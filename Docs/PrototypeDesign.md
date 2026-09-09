@@ -1,698 +1,551 @@
 # NETBREAK
+## Prototype Design Document v1.2
+
+**목적:** 핵심 게임 루프 검증  
+**엔진:** Unity 6 / C#  
+**개발 인원:** 1명  
+**상태:** Core Prototype 1차 검증 완료  
+**대상:** Vertical Slice 이전 핵심 시스템
+
+---
+
+# 1. 프로토타입 목적
+
+NETBREAK 프로토타입은 완성 게임을 구현하기 위한 단계가 아니라 다음 질문을 검증하기 위한 최소 게임이다.
+
+> **어군을 관찰하고, 미끼와 그물로 유리한 포획 상황을 만든 뒤, 적절한 순간에 대량 포획하는 과정이 실제로 재미있는가?**
+
+현재 내부 플레이테스트에서 이 핵심 루프는 1차적으로 긍정적인 결과를 보였다.
+
+3회의 기본 플레이에서 최종 어획률은 대략 **80~85%** 범위에 형성되었으며, 임시 그래픽 상태에서도 미끼 → 그물 → 투망으로 이어지는 대량 포획 과정에 의미 있는 재미가 확인되었다.
+
+이를 기준으로 Core Prototype을 1차 성공으로 판정하고 Vertical Slice 단계로 이동한다.
+
+---
+
+# 2. 최종 프로토타입 핵심 루프
+
+**해역 진입**  
+↓  
+**조업 준비**  
+↓  
+**그물 사전 배치**  
+↓  
+**조업 시작**  
+↓  
+**어군 유입**  
+↓  
+**미끼로 압축/유도**  
+↓  
+**그물로 감속/봉쇄**  
+↓  
+**뜰채 / 투망으로 포획**  
+↓  
+**Gold + EXP 획득**  
+↓  
+**3택1 증강**  
+↓  
+**다음 어군 유입**  
+↓  
+**마지막 어군**  
+↓  
+**마감 조업**  
+↓  
+**어획률 판정**  
+↓  
+**성공 / 실패**
+
+---
+
+# 3. 구현 범위
 
-## Prototype Design Document v1.10
+구현 완료 또는 검증된 핵심 기능:
 
-**Purpose:** Validate the core gameplay loop  
-**Engine:** Unity 6 / C#  
-**Team Size:** 1 developer  
-**Target Development Time:** Approximately 2–4 weeks  
-**Target Session Length:** Approximately 10–15 minutes
+- 1개 테스트 해역
+- 3어종
+- FishData ScriptableObject
+- Object Pooling
+- 간단한 어군 이동
+- 미끼 유인
+- 그물 자유 배치
+- 뜰채 직접 포획
+- 투망 조준/대량 포획
+- Gold
+- 그물 설치 비용
+- EXP / 레벨업
+- 3택1 증강
+- 유한 어군 유입
+- 조업 준비
+- 조업 시작
+- 마감 조업
+- Catch Rate
+- 성공/실패
+- 임시 HUD
+- 투망 쿨다운/조준 정보/포획 피드백
 
-\---
+---
 
-# 1\. Prototype Goal
+# 4. 현재 조작
 
-The prototype is not intended to implement the full NETBREAK design.
+| 입력 | 기능 |
+|---|---|
+| LMB | 뜰채 사용 |
+| Q | 미끼 설치 |
+| W | 그물 설치 모드 |
+| W → LMB Drag | 그물 설치 |
+| E Hold | 투망 조준 |
+| E Release | 투망 사용 |
+| RMB / Esc | 그물 또는 투망 조준 취소 |
 
-It exists to answer one primary question:
+조업 준비 단계에서는 뜰채·미끼·투망 사용을 막고 그물 배치만 허용한다.
 
-> \\\*\\\*Is it fun to manipulate fish schools, prepare a capture setup, and then catch a large number of fish at once?\\\*\\\*
+---
 
-Do not expand major content until this loop is proven.
+# 5. 조업 준비
 
-\---
+게임 시작 시 물고기는 즉시 등장하지 않는다.
 
-# 2\. Prototype Core Loop
+플레이어는 먼저 그물을 배치한다.
 
-**Fish school enters**
+준비 단계 UI:
 
-↓
+- 조업 준비
+- 조업 시작 버튼
+- 현재 Gold
+- 그물 설치 비용
 
-**Observe movement**
+`조업 시작`을 누르면 첫 어군이 즉시 등장하고 이후에는 연속 유입이 진행된다.
 
-↓
+Prototype에서는 해역당 준비 단계를 1회만 제공한다.
 
-**Place bait**
+---
 
-↓
+# 6. 테스트 맵
 
-**Gather fish**
+- 1개
+- 기본적으로 한 화면에서 전체 상황 확인 가능
+- Main Camera Orthographic Size 현재 기준 약 6.5
+- 최종 지형/아트 없음
+- 암초/조류/설치 제한 지형은 아직 구현하지 않음
 
-↓
+맵 크기와 카메라는 초기보다 확장해 어군 관찰과 대응 시간을 확보했다.
 
-**Use nets to restrict movement**
+정확한 크기는 Vertical Slice에서 재조정한다.
 
-↓
+---
 
-**Capture with landing net / cast net**
+# 7. FishData
 
-↓
+현재 최소 데이터:
 
-**Gain Gold and EXP**
+- FishName
+- MaxResistance
+- CatchValue
+- GoldReward
+- ExpReward
+- MoveSpeed
+- BaitAttraction
+- SchoolStrength
+- Lifetime
+- MinSchoolSize
+- MaxSchoolSize
+- SchoolSpawnSpreadY
+- VisualScale
 
-↓
+어종별 수치는 코드가 아니라 ScriptableObject에서 관리한다.
 
-**Choose simple augments**
+---
 
-↓
+# 8. 현재 어종
 
-**Larger fish schools enter**
+## 8.1 정어리
 
-↓
+현재 기준:
 
-**Final school**
+- Resistance: 5
+- Catch Value: 1
+- Gold: 1
+- EXP: 1
+- Move Speed: 1.5
+- Bait Attraction: 1.0
+- School Strength: 1.0
+- School Size: 25~40
+- 작은 크기
 
-↓
+역할:
 
-**Final Fishing countdown**
+> **미끼로 압축한 뒤 투망으로 대량 포획하는 대표 어종**
 
-↓
+## 8.2 고등어
 
-**Catch-rate result**
+현재 기준:
 
-↓
+- Resistance: 10
+- Catch Value: 2
+- Gold: 3
+- EXP: 1
+- Move Speed: 2.0
+- Bait Attraction: 0.8
+- School Strength: 0.7
+- School Size: 12~20
+- 중간 크기
 
-**Success / Failure**
+역할:
 
-\---
+> **프로토타입 기준형 어종**
 
-# 3\. Prototype Scope
+## 8.3 참치
 
-Implement only the systems necessary to test the core loop.
+현재 기준:
 
-Primary content:
+- Resistance: 25
+- Catch Value: 6
+- Gold: 10
+- EXP: 1
+- Move Speed: 2.8
+- Bait Attraction: 0.4
+- School Strength: 0.3
+- School Size: 4~8
+- 큰 크기
 
-* 1 map
-* 3 fish species
-* landing-net direct capture
-* bait
-* net
-* cast net
-* simple school movement
-* Gold
-* EXP
-* simple augments
-* finite fish influx
-* final countdown
-* catch-rate clear/fail
-* minimal UI
-* basic game feel
+역할:
 
-\---
+> **소수지만 놓치기 아까운 고가치·고저항 대형어**
 
-# 4\. Fish Species
+기본 투망 한 번으로 멀쩡한 참치가 포획되지 않는 것은 의도된 결과다.
 
-## Sardine
+---
 
-* low Resistance
-* small size
-* strong schooling
-* appears in large groups
+# 9. 뜰채
 
-Purpose: validate mass capture.
+현재 기본 방향:
 
-## Mackerel
+- LMB
+- 커서 중심 작은 원형 범위
+- 최대 3마리 타격
+- Capture Power 약 3
+- Radius 약 1.1
+- Cooldown 약 0.45초
 
-* average Resistance
-* average speed
-* standard school behavior
+초기에는 범위 내 물고기를 빠르게 삭제할 수 있어 지나치게 강했다.
 
-Purpose: baseline fish.
+현재는 다음 역할로 조정했다.
 
-## Tuna
+> **소수 개체 정리 / 놓칠 물고기 마무리 / 약화된 대형어 처리**
 
-* high Resistance
-* fast movement
-* high Catch Value
-* smaller schools
+향후 뜰채 전문 빌드에서 이 제한을 깨뜨린다.
 
-Purpose: validate priority-target and high-value decisions.
+---
 
-\---
+# 10. 미끼
 
-# 5\. FishData
+입력:
 
-Use ScriptableObject-based FishData.
+**Q**
 
-Minimum fields:
+현재 미끼의 핵심 역할은 방향 전환보다 **어군 압축**이다.
 
-* FishName
-* Resistance
-* MoveSpeed
-* CatchValue
-* BaitAttraction
-* SchoolStrength
-* Lifetime
+조정 내용:
 
-Do not implement complex randomized weight/size systems yet.
+- 일반 어군은 초기보다 더 넓게 분산
+- 미끼 유인 강도 강화
+- 미끼 근처에서 물고기가 더 밀집될 수 있도록 조정
 
-\---
+결과적으로 투망의 기본 범위를 작게 설정해 미끼를 사용하면 대량 포획 효율이 유의미하게 상승하도록 했다.
 
-# 6\. Fish Movement
+현재 플레이테스트에서는 이전보다 미끼를 사용할 이유가 명확해졌다.
 
-No fixed lanes.
+---
 
-Fish move freely in the water.
+# 11. 그물
 
-Minimum lifecycle:
+입력:
 
-**Enter → Active Movement → Bait Response → Exit → Despawn**
+**W → LMB Drag**
 
-School movement requires only enough logic to make group behavior readable.
+취소:
 
-Minimum components:
+**RMB / Esc**
 
-* base movement direction
-* movement toward school center
-* separation
-* bait attraction
+기능:
 
-Do not attempt realistic Boids simulation.
+- 자유 배치
+- 길이 제한
+- 물고기 감속
+- 지속 Resistance 감소
+- 최대 활성 개수 제한
+- 길이에 따른 Gold 비용
 
-\---
+현재 기준:
 
-# 7\. Fish Count
+- 최대 활성 그물: 3
+- Slow Multiplier: 약 0.5
+- Capture Damage/sec: 약 1.5
+- Base Cost: 5G
+- Cost per Unit Length: 4G
 
-Initial target:
+목표:
 
-**50 simultaneous fish**
+> **그물이 혼자 포획을 끝내는 장비가 아니라 어군을 약화·봉쇄하는 TRAP 역할을 담당한다.**
 
-Then test:
+---
 
-**50 → 100 → 200**
+# 12. 투망
 
-Do not design the prototype around thousands of fish.
+입력:
 
-Optimize only when profiling shows a real bottleneck.
+**E Hold → 조준**  
+**E Release → 사용**  
+**RMB / Esc → 취소**
 
-\---
+현재 기본 기준:
 
-# 8\. Landing Net
+- Capture Power: 약 15
+- Capture Radius: 약 1.0
+- Cooldown: 약 7초
 
-The cursor controls a small capture area.
+초기 Radius 3.0은 기본 장비로 지나치게 강했다.
 
-Input:
+현재 Radius를 약 1.0까지 축소한 결과 미끼로 어군을 압축한 뒤 사용하는 플레이가 더 의미 있게 작동했다.
 
-**LMB → Use Landing Net**
+조준 중 표시:
 
-Fish inside the radius lose Resistance.
+- 투망 범위
+- 범위 내 물고기 수
 
-When Resistance reaches zero, the fish is captured.
+사용 후 표시:
 
-Minimum parameters:
+- `+N마리 포획!`
+- 투망 쿨다운
 
-* CapturePower
-* CaptureRadius
-* AttackCooldown
+참치처럼 Resistance가 높은 어종은 범위 안에 들어와도 즉시 포획되지 않을 수 있다.
 
-Avoid pixel-perfect clicking on individual fish.
+개별 Resistance 시각화는 Vertical Slice 이후 UI/가독성 작업에서 검토한다.
 
-\---
+---
 
-# 9\. Bait
+# 13. Gold
 
-Place bait at the cursor position.
+현재 시작 Gold:
 
-Fish inside the influence radius are attracted toward it.
+**60G**
 
-Minimum parameters:
+물고기를 포획하면 즉시 Gold를 획득한다.
 
-* AttractionRadius
-* AttractionStrength
-* Duration
-* Cooldown or Cost
+현재 Gold 사용처는 그물 설치다.
 
-The system succeeds if the player can intentionally gather schools into better capture positions.
+그물 길이가 길수록 비용이 증가한다.
 
-\---
+현재 Prototype에서 Gold의 목적:
 
-# 10\. Net
+> **설치물을 무제한으로 도배하는 문제를 막고 준비 단계에 자원 배분 판단을 추가한다.**
 
-Free-placement control/capture tool.
+복잡한 상점은 구현하지 않는다.
 
-Input:
+---
 
-**Click start point → Drag → Release at end point**
+# 14. EXP와 증강
 
-A simple line net is created.
+모든 현재 어종은 기본적으로 포획 시 EXP 1을 제공한다.
 
-Fish touching the net:
+현재 최초 레벨업 요구 EXP:
 
-* slow down
-* lose Resistance over time
+**20**
 
-Do not simulate realistic rope/net physics.
+이후 요구량:
 
-Net durability is optional for the prototype and can be postponed.
+**이전 요구 EXP × 약 1.35**
 
-\---
+레벨업 시 게임이 일시정지된다.
 
-# 11\. Cast Net
+3개의 서로 다른 증강 중 하나를 선택한다.
 
-Manual active skill.
+현재 Prototype 증강 예:
 
-Input:
+- 뜰채 포획력 증가
+- 뜰채 범위 증가
+- 투망 포획력 증가
+- 투망 범위 증가
+- 투망 쿨다운 감소
+- 미끼 범위 증가
+- 미끼 지속시간 증가
+- 그물 최대 길이 증가
 
-**Q → Cast at cursor position**
+현재 증강은 대부분 수치형이다.
 
-Applies high capture power in a circular area.
+**빌드 다양성 검증은 Vertical Slice에서 Rule-changing 증강과 1차 전직으로 진행한다.**
 
-Minimum feedback:
+---
 
-* targeting area
-* cast effect
-* number of fish caught
-* cooldown display
-* basic sound/VFX feedback
+# 15. 어군 유입
 
-This is the primary mass-capture feel test.
+현재 Prototype 기준:
 
-\---
+- 총 어군 수: 약 6
+- 어군 유입 간격: 약 4초
+- 어종별 어군 크기는 FishData에서 결정
 
-# 12\. Gold
+현재 한 어군은 동일 어종으로 구성한다.
 
-Captured fish grant Gold immediately.
+정식 게임에서는 혼합 어군, 특수 개체, 희귀어 등을 확장할 수 있다.
 
-Gold usage should remain simple.
+---
 
-Possible prototype uses:
+# 16. 마감 조업
 
-* place net
-* place bait
-* basic gear upgrade
+마지막 어군이 생성되면 마감 조업을 시작한다.
 
-Do not build a large shop system.
+현재 테스트 기준:
 
-\---
+**약 12초**
 
-# 13\. EXP and Augments
+초기 20초는 현재 Prototype 규모에서 너무 여유로웠기 때문에 줄였다.
 
-Captured fish grant Fishing EXP.
+12초는 최종값이 아니다.
 
-Level-up pauses gameplay.
+---
 
-Present three random augments and choose one.
+# 17. 어획률
 
-Target approximately **8–12 augments**.
-
-Example augments:
-
-* landing-net radius +
-* landing-net capture power +
-* landing-net speed +
-* cast-net radius +
-* cast-net cooldown -
-* cast-net power +
-* bait radius +
-* bait duration +
-* net capture power +
-* net length +
-
-Add only a few rule-changing augments after the basic systems are stable.
-
-\---
-
-# 14\. Fish Influx
-
-Internally, a WaveManager-like system can control groups.
-
-The player-facing terminology should fit fishing rather than tower defense.
-
-Examples:
-
-* Small school approaching
-* Large school approaching
-* Large target detected
-
-Target approximately 8–10 school arrivals in one prototype session.
-
-\---
-
-# 15\. Final Fishing
-
-After the last school enters, begin a final countdown.
-
-Example:
-
-**Final Fishing: 60 seconds remaining**
-
-At timer end, calculate final Catch Rate.
-
-Exact duration is playtest-tuned.
-
-\---
-
-# 16\. Catch Rate
-
-Each fish contributes Catch Value.
-
-Formula:
+공식:
 
 **CatchRate = CapturedCatchValue / TotalSpawnedCatchValue**
 
-Prototype clear rule can initially be:
+현재 임시 성공 조건:
 
-**Catch Rate ≥ 80% → Success**
+**어획률 80% 이상**
 
-The threshold is not final and must be tuned through testing.
+내부 3회 플레이테스트 결과:
 
-\---
+**약 80~85%**
 
-# 17\. Prototype Map
+현재 난이도는 Core Prototype 검증용으로 과도하게 쉽거나 어렵지 않은 수준으로 판단한다.
 
-Only one map.
+다만 향후에는 좋은 플레이와 나쁜 플레이의 결과 범위가 더 넓어지는지 추가 검증한다.
 
-Prefer one-screen gameplay or only minimal camera movement.
+---
 
-Placeholder art is acceptable.
+# 18. 최소 HUD
 
-Examples:
+현재 표시:
 
-* simple fish sprites
-* colored temporary shapes
-* bait icon
-* LineRenderer net
-* circular cast-net indicator
+- 골드
+- 포획 수
+- 어획률
+- 레벨
+- 경험치
+- 어군 유입 수
+- 투망 준비/쿨다운
+- 투망 조준 범위 내 물고기 수
+- 투망 포획 결과
+- 마감 조업 시간
+- 조업 준비
+- 조업 시작
+- 성공/실패
 
-Do not spend time on final visual assets.
+현재는 Prototype용 OnGUI 방식이다.
 
-\---
+Vertical Slice에서는 Canvas + TextMeshPro 기반 실제 UI로 교체한다.
 
-# 18\. Minimum UI
+플레이어에게 보이는 텍스트는 한국어를 기본으로 한다.
 
-Implement only:
+---
 
-* Gold
-* EXP
-* current Catch Rate
-* cast-net cooldown
-* final countdown
-* augment selection
-* success/failure result
+# 19. 현재 Prototype에서 제외한 것
 
-Do not implement:
+- 6개 완성 해역
+- 1차 전직
+- 2차 전직
+- 낚싯대
+- 통발
+- 주낙
+- 보스
+- 영구 성장
+- Hard Mode
+- 도감
+- 희귀 변종
+- 무게/크기 랜덤
+- 복잡한 생태 상호작용
+- 최종 아트
+- 최종 사운드
+- Steam 연동
+- 멀티플레이
 
-* encyclopedia UI
-* meta-progression menus
-* full shop
-* complex settings UI
+---
 
-\---
+# 20. 플레이테스트 결과
 
-# 19\. Explicitly Excluded from Prototype
+## 긍정적으로 확인된 부분
 
-Do not implement yet:
+- 대규모 어군은 화면의 핵심 재미 요소로 작동
+- 미끼를 사용해 어군을 압축할 이유가 생김
+- 그물의 배치와 길이에 선택 요소가 있음
+- 투망 범위를 줄인 뒤 포획 타이밍 판단이 강화됨
+- `범위 내 N마리` 표시가 기다렸다가 던지는 판단을 도움
+- 뜰채 너프 후 뜰채만으로 모든 어군을 처리하는 문제가 완화
+- 정어리/고등어/참치 대응 차이가 생김
+- 조업 준비 단계가 설치 전략과 자연스럽게 연결
+- Gold가 그물 배치 비용과 연결되며 의미 있는 자원이 됨
+- 마감 조업과 80% 기준으로 한 판의 시작과 끝이 성립
 
-* six full areas
-* first job advancement
-* second job advancement
-* permanent skill tree
-* Hard Mode
-* Hard-exclusive currency
-* fantasy expansion regions
-* encyclopedia
-* rare variants
-* randomized size/weight
-* shark ecosystem
-* complex fish interactions
-* fishing rod
-* traps/pots
-* longlines
-* bosses
-* story
-* NPCs
-* final graphics
-* final audio
-* Steam integration
-* multiplayer
+## 아직 검증되지 않은 부분
 
-These systems are deliberately postponed until the core loop is proven.
+- 장기 반복 플레이
+- 빌드 다양성
+- Rule-changing 증강의 재미
+- 전직의 효과
+- 낚싯대 계열
+- 실제 완성 아트에서의 가독성
+- 한 해역 10분 이상 플레이 시 반복감
+- 100~200마리 이상에서 성능과 가독성
 
-\---
+---
 
-# 20\. Development Order
+# 21. Prototype 성공 판정
 
-## STEP 1
+현재 상태는 **Core Prototype 1차 성공**으로 판정한다.
 
-Create Unity project.
+핵심 루프:
 
-Configure Git/GitHub.
+**LURE → TRAP → CATCH**
 
-Create base folders and scene.
+가 기능적으로 연결되었고, 임시 그래픽 상태에서도 플레이 의사결정과 대량 포획의 기본 재미가 확인되었다.
 
-## STEP 2
+따라서 더 많은 Prototype 기능을 추가하지 않고 다음 단계인 **Vertical Slice**로 이동한다.
 
-Spawn one fish.
+---
 
-Make it enter, move, and leave the area.
+# 22. Vertical Slice로 넘기는 핵심 질문
 
-## STEP 3
+Vertical Slice의 가장 중요한 검증 질문:
 
-Create FishData ScriptableObject.
+> **같은 해역을 다시 플레이하더라도 서로 다른 조업 빌드 때문에 실제 플레이 방식이 달라지는가?**
 
-Create Sardine, Mackerel, Tuna data.
+이를 검증하기 위해 다음 단계에서는:
 
-## STEP 4
+- 낚싯대
+- Rule-changing 증강
+- 1차 전직
+- 추가 어종
+- 완성형 연안 해역
+- 실제 UI/VFX/SFX
 
-Implement landing-net direct capture.
+를 제한적으로 추가한다.
 
-Resistance reaches zero → Capture → Gold.
+2차 전직과 영구 성장 전체 시스템은 아직 구현하지 않는다.
 
-## STEP 5
+---
 
-Apply Object Pooling.
+# 변경 이력
 
-Test 50 → 100 → 200 fish.
-
-## STEP 6
-
-Implement simplified school movement.
-
-## STEP 7
-
-Implement bait attraction.
-
-## STEP 8
-
-Implement free-placement net.
-
-## STEP 9
-
-Implement cast net.
-
-## STEP 10
-
-Implement Gold and EXP.
-
-## STEP 11
-
-Implement 8–12 simple augments.
-
-## STEP 12
-
-Implement fish-school influx manager.
-
-## STEP 13
-
-Implement Final Fishing and Catch Rate.
-
-## STEP 14
-
-Implement success/failure.
-
-## STEP 15
-
-Add minimum VFX/SFX/catch feedback.
-
-## STEP 16
-
-Playtest.
-
-\---
-
-# 21\. Prototype Success Questions
-
-1. Does a large school make the screen more interesting?
-2. Can players understand school movement?
-3. Is gathering fish with bait satisfying?
-4. Does net placement create meaningful decisions?
-5. Do players wait for a good cast-net timing?
-6. Does catching many fish at once feel strongly rewarding?
-7. Is landing-net interaction repetitive?
-8. Do augments noticeably change play?
-9. Does Catch Rate create tension until the end?
-10. Can players understand why they failed?
-11. Does the game remain interesting for 10+ minutes?
-12. Do players want to immediately play another run?
-
-Most important playtest question:
-
-> \\\*\\\*What was the most fun moment of the run?\\\*\\\*
-
-Ideally, multiple players mention mass capture or the preparation that led to it.
-
-\---
-
-# 22\. Prototype Evaluation
-
-## Success
-
-The **LURE → TRAP → CATCH** loop is clearly fun.
-
-→ Move to Vertical Slice.
-
-Potential Vertical Slice additions:
-
-* fishing rod
-* more fish species
-* rule-changing augments
-* simple first-job system
-* second-job test
-* first polished area
-
-## Partial Success
-
-Mass capture feels good, but bait or nets are weak.
-
-→ Redesign the weak system.
-
-## Failure
-
-Gathering and mass-catching fish is not fun.
-
-→ Do not add content.
-
-Rework the core loop first.
-
-\---
-
-# 23\. Prototype Completion Condition
-
-The prototype is complete when the following experience exists:
-
-1. A visible school of fish enters.
-2. The player uses bait to influence and gather it.
-3. Nets are used to shape or restrict movement.
-4. The player waits for an advantageous moment.
-5. A cast net captures many fish at once.
-6. The catch produces strong enough feedback to feel rewarding.
-7. The player wants to try another run.
-
-Feature count alone does not define completion.
-
-
-
-\## 변경 이력
-
-
-
-\### v1.1
-
-\- 해역 시작 전 '조업 준비' 단계 추가
-
-\- 설치형 어구 사전 배치 가능
-
-\- 조업 시작 후 어군 유입
-
-\- 해역당 준비 단계는 1회
-
-
-
-해역 진입
-
-↓
-
-조업 준비
-
-↓
-
-설치형 어구 배치
-
-↓
-
-조업 시작
-
-↓
-
-어군 유입
-
-↓
-
-미끼로 유도
-
-↓
-
-그물로 제어
-
-↓
-
-뜰채 / 투망으로 포획
-
-↓
-
-Gold + EXP
-
-↓
-
-증강 선택
-
-↓
-
-마지막 어군
-
-↓
-
-마감 조업
-
-↓
-
-어획률 판정
-
-↓
-
-성공 / 실패
-
-
-
-조작법: 
-
-LMB
-
-뜰채
-
-
-
-Q
-
-미끼
-
-
-
-W
-
-그물 설치 모드
-
-
-
-W → LMB Drag
-
-그물 설치
-
-
-
-E Hold
-
-투망 조준
-
-
-
-E Release
-
-투망 사용
-
-
-
-RMB / Esc
-
-그물 또는 투망 조준 취소
-
+## v1.2
+- 실제 구현 상태와 수치 반영
+- 조업 준비/조업 시작 반영
+- 한국어 UI 원칙 반영
+- Gold 기반 그물 설치 비용 반영
+- 뜰채/미끼/그물/투망 밸런스 수정 반영
+- 어종별 어군 크기/크기/속도 차이 반영
+- 투망 Hold/Release 조준과 취소 반영
+- 투망 범위 내 물고기 수/포획 피드백 반영
+- 3회 플레이테스트 결과 기록
+- Core Prototype 1차 성공 판정
