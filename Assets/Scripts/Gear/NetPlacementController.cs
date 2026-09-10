@@ -78,10 +78,12 @@ public class NetPlacementController : MonoBehaviour
 
         bool inputBlocked =
             (PrototypeAugmentManager.Instance != null &&
-             PrototypeAugmentManager.Instance.IsChoosingAugment)
+            PrototypeAugmentManager.Instance.IsChoosingAugment)
             ||
             (PrototypeGameFlowManager.Instance != null &&
-             PrototypeGameFlowManager.Instance.IsGameEnded);
+            PrototypeGameFlowManager.Instance.IsGameEnded)
+            ||
+            FishingRodPlacementController.IsRodModeActive;
 
         if (inputBlocked)
         {

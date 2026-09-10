@@ -85,7 +85,9 @@ public class CastNetController : MonoBehaviour
             (PrototypeGameFlowManager.Instance != null &&
              PrototypeGameFlowManager.Instance.IsGameEnded)
             ||
-            NetPlacementController.IsNetModeActive;
+            NetPlacementController.IsNetModeActive
+            ||
+            FishingRodPlacementController.IsRodModeActive;
 
         if (inputBlocked)
         {

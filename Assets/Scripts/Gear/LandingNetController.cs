@@ -58,8 +58,9 @@ public class LandingNetController : MonoBehaviour
         }
 
         if (!NetPlacementController.IsNetModeActive &&
-             Mouse.current.leftButton.wasPressedThisFrame &&
-             Time.time >= nextAttackTime)
+            !FishingRodPlacementController.IsRodModeActive &&
+            Mouse.current.leftButton.wasPressedThisFrame &&
+            Time.time >= nextAttackTime)
         {
             UseLandingNet(mouseWorldPosition);
 

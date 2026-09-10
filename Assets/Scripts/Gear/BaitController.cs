@@ -64,6 +64,12 @@ public class BaitController : MonoBehaviour
             return;
         }
 
+        if (NetPlacementController.IsNetModeActive ||
+            FishingRodPlacementController.IsRodModeActive)
+        {
+            return;
+        }
+
         if (Keyboard.current.qKey.wasPressedThisFrame &&
             cooldownTimer <= 0f)
         {
