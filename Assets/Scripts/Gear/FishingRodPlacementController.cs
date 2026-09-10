@@ -4,7 +4,11 @@ using UnityEngine.InputSystem;
 
 public class FishingRodPlacementController : MonoBehaviour
 {
-    public static bool IsRodModeActive { get; private set; }
+    public static bool IsRodModeActive
+    {
+        get;
+        private set;
+    }
 
     [Header("References")]
     [SerializeField] private FishingRodController rodPrefab;
@@ -18,6 +22,12 @@ public class FishingRodPlacementController : MonoBehaviour
 
     private readonly List<FishingRodController>
         activeRods = new();
+
+    private float rodCapturePowerBonus;
+    private float rodRangeBonus;
+    private float rodAttackIntervalReduction;
+
+    private int rodAdditionalTargets;
 
     public int ActiveRodCount =>
         activeRods.Count;
@@ -184,6 +194,8 @@ public class FishingRodPlacementController : MonoBehaviour
                 Quaternion.identity
             );
 
+        ApplyStoredUpgrades(rod);
+
         activeRods.Add(rod);
 
         CancelPlacementMode();
@@ -203,5 +215,110 @@ public class FishingRodPlacementController : MonoBehaviour
             worldPosition.x,
             worldPosition.y
         );
+    }
+
+    private void ApplyStoredUpgrades(
+        FishingRodController rod)
+    {
+        if (rod == null)
+        {
+            return;
+        }
+
+        if (rodCapturePowerBonus > 0f)
+        {
+            rod.IncreaseCapturePower(
+                rodCapturePowerBonus
+            );
+        }
+
+        if (rodRangeBonus > 0f)
+        {
+            rod.IncreaseCaptureRange(
+                rodRangeBonus
+            );
+        }
+
+        if (rodAttackIntervalReduction > 0f)
+        {
+            rod.ReduceAttackInterval(
+                rodAttackIntervalReduction
+            );
+        }
+
+        if (rodAdditionalTargets > 0)
+        {
+            rod.AddAdditionalTarget(
+                rodAdditionalTargets
+            );
+        }
+    }
+
+    public void IncreaseRodCapturePower(
+        float amount)
+    {
+        rodCapturePowerBonus += amount;
+
+        foreach (FishingRodController rod
+                 in activeRods)
+        {
+            if (rod != null)
+            {
+                rod.IncreaseCapturePower(
+                    amount
+                );
+            }
+        }
+    }
+
+    public void IncreaseRodRange(
+        float amount)
+    {
+        rodRangeBonus += amount;
+
+        foreach (FishingRodController rod
+                 in activeRods)
+        {
+            if (rod != null)
+            {
+                rod.IncreaseCaptureRange(
+                    amount
+                );
+            }
+        }
+    }
+
+    public void ReduceRodAttackInterval(
+        float amount)
+    {
+        rodAttackIntervalReduction += amount;
+
+        foreach (FishingRodController rod
+                 in activeRods)
+        {
+            if (rod != null)
+            {
+                rod.ReduceAttackInterval(
+                    amount
+                );
+            }
+        }
+    }
+
+    public void AddRodAdditionalTarget(
+        int amount)
+    {
+        rodAdditionalTargets += amount;
+
+        foreach (FishingRodController rod
+                 in activeRods)
+        {
+            if (rod != null)
+            {
+                rod.AddAdditionalTarget(
+                    amount
+                );
+            }
+        }
     }
 }

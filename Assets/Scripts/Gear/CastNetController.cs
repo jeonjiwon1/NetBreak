@@ -9,6 +9,10 @@ public class CastNetController : MonoBehaviour
     [SerializeField] private float captureRadius = 1f;
     [SerializeField] private float cooldown = 7f;
 
+    [Header("Mass Catch Refund")]
+    [SerializeField] private int refundThreshold = 8;
+    [SerializeField] private float refundAmount = 2f;
+
     [Header("Visual")]
     [SerializeField] private Transform castVisual;
     [SerializeField] private float visualDuration = 0.2f;
@@ -24,6 +28,8 @@ public class CastNetController : MonoBehaviour
     private int lastCapturedCount;
     private Vector2 lastCastPosition;
     private float catchFeedbackTimer;
+
+    private bool massCatchRefundEnabled;
 
     public bool IsAiming => isAiming;
     public bool IsReady => cooldownTimer <= 0f;
@@ -85,9 +91,9 @@ public class CastNetController : MonoBehaviour
             (PrototypeGameFlowManager.Instance != null &&
              PrototypeGameFlowManager.Instance.IsGameEnded)
             ||
-            NetPlacementController.IsNetModeActive
+            FishingRodPlacementController.IsRodModeActive
             ||
-            FishingRodPlacementController.IsRodModeActive;
+            NetPlacementController.IsNetModeActive;
 
         if (inputBlocked)
         {
@@ -216,7 +222,9 @@ public class CastNetController : MonoBehaviour
             }
 
             bool captured =
-                fish.TakeCaptureDamage(capturePower);
+                fish.TakeCaptureDamage(
+                    capturePower
+                );
 
             if (captured)
             {
@@ -225,6 +233,16 @@ public class CastNetController : MonoBehaviour
         }
 
         cooldownTimer = cooldown;
+
+        if (massCatchRefundEnabled &&
+            capturedCount >= refundThreshold)
+        {
+            cooldownTimer =
+                Mathf.Max(
+                    0f,
+                    cooldownTimer - refundAmount
+                );
+        }
 
         lastCapturedCount = capturedCount;
         lastCastPosition = castPosition;
@@ -245,7 +263,9 @@ public class CastNetController : MonoBehaviour
         castVisual.position = position;
         castVisual.gameObject.SetActive(true);
 
-        yield return new WaitForSeconds(visualDuration);
+        yield return new WaitForSeconds(
+            visualDuration
+        );
 
         castVisual.gameObject.SetActive(false);
     }
@@ -298,5 +318,10 @@ public class CastNetController : MonoBehaviour
                 0.5f,
                 cooldown - amount
             );
+    }
+
+    public void EnableMassCatchRefund()
+    {
+        massCatchRefundEnabled = true;
     }
 }

@@ -3,16 +3,23 @@ using UnityEngine.InputSystem;
 
 public class LandingNetController : MonoBehaviour
 {
+    [Header("Landing Net")]
     [SerializeField] private float capturePower = 5f;
     [SerializeField] private float captureRadius = 1.2f;
     [SerializeField] private float attackCooldown = 0.3f;
+    [SerializeField] private int maxTargets = 3;
 
+    [Header("Visual")]
     [SerializeField] private Transform rangeVisual;
 
-    [SerializeField] private int maxTargets = 3;
+    [Header("Chain Capture")]
+    [SerializeField] private float chainRadius = 1.5f;
+    [SerializeField] private float chainDamage = 2f;
 
     private Camera mainCamera;
     private float nextAttackTime;
+
+    private bool chainCaptureEnabled;
 
     private void Awake()
     {
@@ -39,7 +46,7 @@ public class LandingNetController : MonoBehaviour
         }
 
         if (PrototypeGameFlowManager.Instance != null &&
-    PrototypeGameFlowManager.Instance.IsPreparation)
+            PrototypeGameFlowManager.Instance.IsPreparation)
         {
             return;
         }
@@ -48,13 +55,16 @@ public class LandingNetController : MonoBehaviour
             Mouse.current.position.ReadValue();
 
         Vector3 mouseWorldPosition =
-            mainCamera.ScreenToWorldPoint(mouseScreenPosition);
+            mainCamera.ScreenToWorldPoint(
+                mouseScreenPosition
+            );
 
         mouseWorldPosition.z = 0f;
 
         if (rangeVisual != null)
         {
-            rangeVisual.position = mouseWorldPosition;
+            rangeVisual.position =
+                mouseWorldPosition;
         }
 
         if (!NetPlacementController.IsNetModeActive &&
@@ -62,13 +72,17 @@ public class LandingNetController : MonoBehaviour
             Mouse.current.leftButton.wasPressedThisFrame &&
             Time.time >= nextAttackTime)
         {
-            UseLandingNet(mouseWorldPosition);
+            UseLandingNet(
+                mouseWorldPosition
+            );
 
-            nextAttackTime = Time.time + attackCooldown;
+            nextAttackTime =
+                Time.time + attackCooldown;
         }
     }
 
-    private void UseLandingNet(Vector3 mouseWorldPosition)
+    private void UseLandingNet(
+        Vector3 mouseWorldPosition)
     {
         Vector2 capturePosition =
             new Vector2(
@@ -98,7 +112,9 @@ public class LandingNetController : MonoBehaviour
                         b.transform.position
                     );
 
-                return distanceA.CompareTo(distanceB);
+                return distanceA.CompareTo(
+                    distanceB
+                );
             }
         );
 
@@ -114,7 +130,21 @@ public class LandingNetController : MonoBehaviour
                 continue;
             }
 
-            fish.TakeCaptureDamage(capturePower);
+            Vector2 fishPosition =
+                fish.transform.position;
+
+            bool captured =
+                fish.TakeCaptureDamage(
+                    capturePower
+                );
+
+            if (captured &&
+                chainCaptureEnabled)
+            {
+                ApplyChainCapture(
+                    fishPosition
+                );
+            }
 
             hitCount++;
 
@@ -122,6 +152,51 @@ public class LandingNetController : MonoBehaviour
             {
                 break;
             }
+        }
+    }
+
+    private void ApplyChainCapture(
+        Vector2 center)
+    {
+        Collider2D[] hits =
+            Physics2D.OverlapCircleAll(
+                center,
+                chainRadius
+            );
+
+        FishController nearestFish = null;
+        float nearestDistance =
+            float.MaxValue;
+
+        foreach (Collider2D hit in hits)
+        {
+            FishController fish =
+                hit.GetComponent<FishController>();
+
+            if (fish == null ||
+                !fish.gameObject.activeSelf)
+            {
+                continue;
+            }
+
+            float distance =
+                Vector2.Distance(
+                    center,
+                    fish.transform.position
+                );
+
+            if (distance < nearestDistance)
+            {
+                nearestFish = fish;
+                nearestDistance = distance;
+            }
+        }
+
+        if (nearestFish != null)
+        {
+            nearestFish.TakeCaptureDamage(
+                chainDamage
+            );
         }
     }
 
@@ -136,10 +211,20 @@ public class LandingNetController : MonoBehaviour
 
         if (rangeVisual != null)
         {
-            float diameter = captureRadius * 2f;
+            float diameter =
+                captureRadius * 2f;
 
             rangeVisual.localScale =
-                new Vector3(diameter, diameter, 1f);
+                new Vector3(
+                    diameter,
+                    diameter,
+                    1f
+                );
         }
+    }
+
+    public void EnableChainCapture()
+    {
+        chainCaptureEnabled = true;
     }
 }

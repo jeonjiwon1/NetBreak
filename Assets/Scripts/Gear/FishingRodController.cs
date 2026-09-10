@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class FishingRodController : MonoBehaviour
@@ -12,7 +13,10 @@ public class FishingRodController : MonoBehaviour
     [SerializeField] private LineRenderer targetLine;
 
     private float attackTimer;
+
     private FishController currentTarget;
+
+    private int additionalTargets;
 
     public float CapturePower => capturePower;
     public float AttackInterval => attackInterval;
@@ -52,7 +56,9 @@ public class FishingRodController : MonoBehaviour
         if (attackTimer <= 0f)
         {
             Attack();
-            attackTimer = attackInterval;
+
+            attackTimer =
+                attackInterval;
         }
 
         UpdateTargetLine();
@@ -60,27 +66,47 @@ public class FishingRodController : MonoBehaviour
 
     private void Attack()
     {
-        currentTarget = FindBestTarget();
+        int targetCount =
+            1 + additionalTargets;
 
-        if (currentTarget == null)
+        List<FishController> targets =
+            FindBestTargets(
+                targetCount
+            );
+
+        if (targets.Count == 0)
         {
+            currentTarget = null;
+
             HideTargetLine();
             return;
         }
 
-        bool captured =
-            currentTarget.TakeCaptureDamage(
+        currentTarget = targets[0];
+
+        foreach (FishController target
+                 in targets)
+        {
+            if (target == null)
+            {
+                continue;
+            }
+
+            target.TakeCaptureDamage(
                 capturePower
             );
+        }
 
-        if (captured)
+        if (currentTarget == null ||
+            !currentTarget.gameObject.activeSelf)
         {
             currentTarget = null;
             HideTargetLine();
         }
     }
 
-    private FishController FindBestTarget()
+    private List<FishController> FindBestTargets(
+        int maxTargets)
     {
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
@@ -88,10 +114,8 @@ public class FishingRodController : MonoBehaviour
                 captureRange
             );
 
-        FishController bestTarget = null;
-
-        int bestCatchValue = -1;
-        float bestDistance = float.MaxValue;
+        List<FishController> candidates =
+            new List<FishController>();
 
         foreach (Collider2D hit in hits)
         {
@@ -104,31 +128,54 @@ public class FishingRodController : MonoBehaviour
                 continue;
             }
 
-            int catchValue =
-                fish.Data.CatchValue;
-
-            float distance =
-                Vector2.Distance(
-                    transform.position,
-                    fish.transform.position
-                );
-
-            if (catchValue > bestCatchValue)
+            if (!candidates.Contains(fish))
             {
-                bestTarget = fish;
-                bestCatchValue = catchValue;
-                bestDistance = distance;
-            }
-            else if (
-                catchValue == bestCatchValue &&
-                distance < bestDistance)
-            {
-                bestTarget = fish;
-                bestDistance = distance;
+                candidates.Add(fish);
             }
         }
 
-        return bestTarget;
+        candidates.Sort(
+            (a, b) =>
+            {
+                int valueComparison =
+                    b.Data.CatchValue.CompareTo(
+                        a.Data.CatchValue
+                    );
+
+                if (valueComparison != 0)
+                {
+                    return valueComparison;
+                }
+
+                float distanceA =
+                    Vector2.Distance(
+                        transform.position,
+                        a.transform.position
+                    );
+
+                float distanceB =
+                    Vector2.Distance(
+                        transform.position,
+                        b.transform.position
+                    );
+
+                return distanceA.CompareTo(
+                    distanceB
+                );
+            }
+        );
+
+        if (candidates.Count >
+            maxTargets)
+        {
+            candidates.RemoveRange(
+                maxTargets,
+                candidates.Count -
+                maxTargets
+            );
+        }
+
+        return candidates;
     }
 
     private void UpdateTargetLine()
@@ -216,5 +263,10 @@ public class FishingRodController : MonoBehaviour
         captureRange += amount;
 
         UpdateRangeVisual();
+    }
+
+    public void AddAdditionalTarget(int amount)
+    {
+        additionalTargets += amount;
     }
 }
