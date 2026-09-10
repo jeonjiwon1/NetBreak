@@ -4,6 +4,16 @@ using UnityEngine;
 
 public class FishSpawner : MonoBehaviour
 {
+    private enum AmbientIntensity
+    {
+        Early,
+        Growth,
+        Special,
+        MiniBossSupport,
+        Rush,
+        Final
+    }
+
     [Header("Fish")]
     [SerializeField] private FishController fishPrefab;
     [SerializeField] private FishData[] fishTypes;
@@ -16,22 +26,30 @@ public class FishSpawner : MonoBehaviour
     [SerializeField] private float verticalPadding = 1f;
     [SerializeField] private float schoolSpreadX = 1.5f;
 
-    [Header("Encounter Timing")]
-    [SerializeField] private float shortInterval = 1.2f;
-    [SerializeField] private float normalInterval = 2f;
-    [SerializeField] private float largeSchoolWarningTime = 2f;
+    [Header("Phase Duration")]
+    [SerializeField] private float earlyPhaseDuration = 75f;
+    [SerializeField] private float growthPhaseDuration = 105f;
+    [SerializeField] private float specialPhaseDuration = 90f;
+    [SerializeField] private float miniBossPhaseDuration = 45f;
+    [SerializeField] private float rushPhaseDuration = 180f;
+    [SerializeField] private float finalBuildUpDuration = 70f;
 
-    private const int CoastEncounterCount = 16;
+    [Header("Warning")]
+    [SerializeField] private float largeSchoolWarningTime = 2.5f;
+    [SerializeField] private float specialFishWarningTime = 2.5f;
+    [SerializeField] private float miniBossWarningTime = 2.5f;
 
-    private readonly List<FishController>
-        fishPool = new();
+    private const int CoastStageCount = 7;
+
+    private readonly List<FishController> fishPool =
+        new();
 
     private Camera mainCamera;
 
     private bool hasStarted;
     private bool spawningFinished;
 
-    private int spawnedEncounterCount;
+    private int currentStageIndex;
 
     private string currentPhaseName =
         "조업 준비";
@@ -47,11 +65,11 @@ public class FishSpawner : MonoBehaviour
     public bool SpawningFinished =>
         spawningFinished;
 
-    public int SpawnedEncounterCount =>
-        spawnedEncounterCount;
+    public int CurrentStageIndex =>
+        currentStageIndex;
 
-    public int TotalEncounterCount =>
-        CoastEncounterCount;
+    public int TotalStageCount =>
+        CoastStageCount;
 
     public string CurrentPhaseName =>
         currentPhaseName;
@@ -66,15 +84,21 @@ public class FishSpawner : MonoBehaviour
 
     public string AnnouncementText =>
         IsShowingAnnouncement
-        ? announcementText
-        : "";
+            ? announcementText
+            : "";
 
-    // 기존 코드와의 임시 호환용.
+    // Temporary compatibility with older prototype UI/code.
+    public int SpawnedEncounterCount =>
+        currentStageIndex;
+
+    public int TotalEncounterCount =>
+        CoastStageCount;
+
     public int SpawnedSchoolCount =>
-        spawnedEncounterCount;
+        currentStageIndex;
 
     public int TotalSchoolCount =>
-        CoastEncounterCount;
+        CoastStageCount;
 
     private void Awake()
     {
@@ -104,12 +128,11 @@ public class FishSpawner : MonoBehaviour
         hasStarted = true;
 
         StartCoroutine(
-            RunCoastEncounterSequence()
+            RunCoastSequence()
         );
     }
 
-    private IEnumerator
-        RunCoastEncounterSequence()
+    private IEnumerator RunCoastSequence()
     {
         FishData lowValueFish =
             GetStandardFishByValueRank(
@@ -136,78 +159,92 @@ public class FishSpawner : MonoBehaviour
                 FishSpecialType.Squid
             );
 
-        // -------------------------
-        // PHASE 1
-        // 잔잔한 초반 조업
-        // -------------------------
+        FishData miniBoss =
+            GetFishBySpecialType(
+                FishSpecialType.MiniBoss
+            );
 
-        currentPhaseName =
-            "초반 조업";
+        yield return RunEarlyPhase(
+            lowValueFish,
+            midValueFish
+        );
 
-        BeginEncounter();
+        yield return RunFirstLargeSchoolPhase(
+            lowValueFish
+        );
+
+        yield return RunGrowthPhase(
+            lowValueFish,
+            midValueFish,
+            highValueFish,
+            pufferfish
+        );
+
+        yield return RunSpecialPhase(
+            lowValueFish,
+            midValueFish,
+            highValueFish,
+            pufferfish,
+            squid
+        );
+
+        yield return RunMiniBossPhase(
+            lowValueFish,
+            midValueFish,
+            highValueFish,
+            miniBoss
+        );
+
+        yield return RunRushPhase(
+            lowValueFish,
+            midValueFish,
+            highValueFish,
+            pufferfish,
+            squid
+        );
+
+        yield return RunFinalPhase(
+            lowValueFish,
+            midValueFish,
+            highValueFish,
+            pufferfish,
+            squid
+        );
+    }
+
+    private IEnumerator RunEarlyPhase(
+        FishData lowValueFish,
+        FishData midValueFish)
+    {
+        SetStage(
+            1,
+            "초반 조업"
+        );
 
         SpawnLooseFish(
             lowValueFish,
             2
         );
 
-        yield return new WaitForSeconds(
-            shortInterval
-        );
-
-        BeginEncounter();
-
-        SpawnLooseFish(
-            midValueFish,
-            1
-        );
-
-        yield return new WaitForSeconds(
-            shortInterval
-        );
-
-        BeginEncounter();
-
-        SpawnLooseFish(
+        yield return RunAmbientWindow(
+            earlyPhaseDuration,
+            AmbientIntensity.Early,
             lowValueFish,
-            3
-        );
-
-        yield return new WaitForSeconds(
-            shortInterval
-        );
-
-        BeginEncounter();
-
-        SpawnLooseFish(
             midValueFish,
-            2
+            null,
+            null,
+            null
         );
+    }
 
-        yield return new WaitForSeconds(
-            shortInterval
+    private IEnumerator
+        RunFirstLargeSchoolPhase(
+            FishData lowValueFish)
+    {
+        SetStage(
+            2,
+            "첫 대형 어군"
         );
-
-        BeginEncounter();
-
-        SpawnSchool(
-            lowValueFish,
-            6,
-            0.6f,
-            0.8f
-        );
-
-        yield return new WaitForSeconds(
-            normalInterval
-        );
-
-        // -------------------------
-        // PHASE 2
-        // 첫 대형 어군
-        // -------------------------
-
-        currentPhaseName =
-            "첫 대형 어군";
 
         ShowAnnouncement(
             "대규모 어군이 접근 중입니다.",
@@ -217,8 +254,6 @@ public class FishSpawner : MonoBehaviour
         yield return new WaitForSeconds(
             largeSchoolWarningTime
         );
-
-        BeginEncounter();
 
         List<FishController>
             firstLargeSchool =
@@ -261,16 +296,18 @@ public class FishSpawner : MonoBehaviour
         yield return new WaitForSeconds(
             1f
         );
+    }
 
-        // -------------------------
-        // PHASE 3
-        // 전직 이후 / 빌드 성장
-        // -------------------------
-
-        currentPhaseName =
-            "빌드 성장";
-
-        BeginEncounter();
+    private IEnumerator RunGrowthPhase(
+        FishData lowValueFish,
+        FishData midValueFish,
+        FishData highValueFish,
+        FishData pufferfish)
+    {
+        SetStage(
+            3,
+            "빌드 성장"
+        );
 
         SpawnLooseFish(
             highValueFish,
@@ -278,18 +315,17 @@ public class FishSpawner : MonoBehaviour
         );
 
         yield return new WaitForSeconds(
-            1.5f
+            4f
         );
-
-        currentPhaseName =
-            "특수어 출현";
 
         ShowAnnouncement(
             "복어 출현 - 그물 포획을 방해합니다.",
-            2.5f
+            specialFishWarningTime
         );
 
-        BeginEncounter();
+        yield return new WaitForSeconds(
+            specialFishWarningTime
+        );
 
         SpawnMixedSchool(
             midValueFish,
@@ -300,93 +336,144 @@ public class FishSpawner : MonoBehaviour
             0.9f
         );
 
-        yield return new WaitForSeconds(
-            2f
-        );
-
-        currentPhaseName =
-            "빌드 성장";
-
-        BeginEncounter();
-
-        SpawnLooseFish(
-            highValueFish,
-            2
-        );
-
-        yield return new WaitForSeconds(
-            2f
-        );
-
-        BeginEncounter();
-
-        SpawnSchool(
+        yield return RunAmbientWindow(
+            growthPhaseDuration,
+            AmbientIntensity.Growth,
+            lowValueFish,
             midValueFish,
-            12,
+            highValueFish,
+            pufferfish,
+            null
+        );
+    }
+
+    private IEnumerator RunSpecialPhase(
+        FishData lowValueFish,
+        FishData midValueFish,
+        FishData highValueFish,
+        FishData pufferfish,
+        FishData squid)
+    {
+        SetStage(
+            4,
+            "특수어 조업"
+        );
+
+        ShowAnnouncement(
+            "오징어 출현 - 주변 설치 어구를 먹물로 정지시킵니다.",
+            specialFishWarningTime
+        );
+
+        yield return new WaitForSeconds(
+            specialFishWarningTime
+        );
+
+        SpawnMixedSchool(
+            midValueFish,
+            7,
+            squid,
+            1,
             0.9f,
             1f
         );
 
-        yield return new WaitForSeconds(
-            3f
+        yield return RunAmbientWindow(
+            specialPhaseDuration,
+            AmbientIntensity.Special,
+            lowValueFish,
+            midValueFish,
+            highValueFish,
+            pufferfish,
+            squid
         );
+    }
 
-        // -------------------------
-        // PHASE 4
-        // 오징어 첫 등장
-        // 이후 미니보스 Encounter로 확장할 자리
-        // -------------------------
-
-        currentPhaseName =
-            "위협 개체 출현";
+    private IEnumerator RunMiniBossPhase(
+        FishData lowValueFish,
+        FishData midValueFish,
+        FishData highValueFish,
+        FishData miniBoss)
+    {
+        SetStage(
+            5,
+            "대형 개체 출현"
+        );
 
         ShowAnnouncement(
-            "오징어 출현 - 주변 설치 어구를 먹물로 정지시킵니다.",
-            2.5f
+            "거대 참치가 접근합니다!",
+            miniBossWarningTime
         );
 
         yield return new WaitForSeconds(
-            2.5f
+            miniBossWarningTime
         );
-
-        BeginEncounter();
 
         SpawnMixedSchool(
-            highValueFish,
-            3,
-            squid,
+            midValueFish,
+            4,
+            miniBoss,
             1,
-            0.9f,
-            1.1f
-        );
-
-        yield return new WaitForSeconds(
-            3f
-        );
-
-        // -------------------------
-        // PHASE 5
-        // 어군 러시
-        // -------------------------
-
-        currentPhaseName =
-            "어군 러시";
-
-        BeginEncounter();
-
-        SpawnSchool(
-            lowValueFish,
-            8,
-            0.7f,
+            0.8f,
             0.9f
+        );
+
+        yield return RunAmbientWindow(
+            miniBossPhaseDuration,
+            AmbientIntensity.MiniBossSupport,
+            lowValueFish,
+            midValueFish,
+            highValueFish,
+            null,
+            null
+        );
+    }
+
+    private IEnumerator RunRushPhase(
+        FishData lowValueFish,
+        FishData midValueFish,
+        FishData highValueFish,
+        FishData pufferfish,
+        FishData squid)
+    {
+        SetStage(
+            6,
+            "어군 러시"
+        );
+
+        ShowAnnouncement(
+            "대규모 어군이 연속으로 접근합니다.",
+            2f
         );
 
         yield return new WaitForSeconds(
             2f
         );
 
+        float sectionDuration =
+            rushPhaseDuration /
+            4f;
+
+        SpawnMixedSchool(
+            lowValueFish,
+            18,
+            pufferfish,
+            1,
+            1.2f,
+            1.1f
+        );
+
+        yield return RunAmbientWindow(
+            sectionDuration,
+            AmbientIntensity.Rush,
+            lowValueFish,
+            midValueFish,
+            highValueFish,
+            pufferfish,
+            squid
+        );
+
         ShowAnnouncement(
-            "대규모 어군이 연속으로 접근합니다.",
+            "두 번째 어군이 접근합니다.",
             1.5f
         );
 
@@ -394,65 +481,116 @@ public class FishSpawner : MonoBehaviour
             1.5f
         );
 
-        BeginEncounter();
+        SpawnMixedSchool(
+            midValueFish,
+            14,
+            squid,
+            1,
+            1.15f,
+            1.1f
+        );
+
+        SpawnLooseFish(
+            highValueFish,
+            1
+        );
+
+        yield return RunAmbientWindow(
+            sectionDuration,
+            AmbientIntensity.Rush,
+            lowValueFish,
+            midValueFish,
+            highValueFish,
+            pufferfish,
+            squid
+        );
 
         SpawnMixedSchool(
             lowValueFish,
-            24,
+            22,
             pufferfish,
             2,
             1.3f,
             1.2f
         );
 
-        yield return new WaitForSeconds(
-            3f
+        yield return RunAmbientWindow(
+            sectionDuration,
+            AmbientIntensity.Rush,
+            lowValueFish,
+            midValueFish,
+            highValueFish,
+            pufferfish,
+            squid
         );
 
-        BeginEncounter();
+        ShowAnnouncement(
+            "어군 밀도가 증가합니다.",
+            1.5f
+        );
+
+        yield return new WaitForSeconds(
+            1.5f
+        );
 
         SpawnMixedSchool(
             midValueFish,
             18,
             squid,
-            2,
-            1.2f,
+            1,
+            1.25f,
             1.15f
         );
-
-        yield return new WaitForSeconds(
-            2f
-        );
-
-        BeginEncounter();
 
         SpawnLooseFish(
             highValueFish,
             2
         );
 
-        yield return new WaitForSeconds(
-            2f
+        yield return RunAmbientWindow(
+            sectionDuration,
+            AmbientIntensity.Rush,
+            lowValueFish,
+            midValueFish,
+            highValueFish,
+            pufferfish,
+            squid
+        );
+    }
+
+    private IEnumerator RunFinalPhase(
+        FishData lowValueFish,
+        FishData midValueFish,
+        FishData highValueFish,
+        FishData pufferfish,
+        FishData squid)
+    {
+        SetStage(
+            7,
+            "마감 직전"
         );
 
-        // -------------------------
-        // PHASE 6
-        // 마지막 혼합 어군
-        // -------------------------
+        yield return RunAmbientWindow(
+            finalBuildUpDuration,
+            AmbientIntensity.Final,
+            lowValueFish,
+            midValueFish,
+            highValueFish,
+            pufferfish,
+            squid
+        );
 
         currentPhaseName =
             "마감 조업";
 
         ShowAnnouncement(
             "마지막 대규모 어군이 접근 중입니다.",
-            2.5f
+            largeSchoolWarningTime
         );
 
         yield return new WaitForSeconds(
-            2.5f
+            largeSchoolWarningTime
         );
-
-        BeginEncounter();
 
         SpawnMixedFinalSchool(
             lowValueFish,
@@ -471,9 +609,641 @@ public class FishSpawner : MonoBehaviour
         }
     }
 
-    private void BeginEncounter()
+    private IEnumerator RunAmbientWindow(
+        float duration,
+        AmbientIntensity intensity,
+        FishData lowValueFish,
+        FishData midValueFish,
+        FishData highValueFish,
+        FishData pufferfish,
+        FishData squid)
     {
-        spawnedEncounterCount++;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            Vector2 delayRange =
+                GetAmbientDelayRange(
+                    intensity
+                );
+
+            float delay =
+                Random.Range(
+                    delayRange.x,
+                    delayRange.y
+                );
+
+            float remaining =
+                duration - elapsed;
+
+            if (delay > remaining)
+            {
+                yield return new WaitForSeconds(
+                    remaining
+                );
+
+                yield break;
+            }
+
+            yield return new WaitForSeconds(
+                delay
+            );
+
+            elapsed += delay;
+
+            SpawnAmbientEvent(
+                intensity,
+                lowValueFish,
+                midValueFish,
+                highValueFish,
+                pufferfish,
+                squid
+            );
+        }
+    }
+
+    private Vector2 GetAmbientDelayRange(
+        AmbientIntensity intensity)
+    {
+        switch (intensity)
+        {
+            case AmbientIntensity.Early:
+                return new Vector2(
+                    6f,
+                    8f
+                );
+
+            case AmbientIntensity.Growth:
+                return new Vector2(
+                    6f,
+                    8f
+                );
+
+            case AmbientIntensity.Special:
+                return new Vector2(
+                    6f,
+                    8f
+                );
+
+            case AmbientIntensity.MiniBossSupport:
+                return new Vector2(
+                    7f,
+                    9f
+                );
+
+            case AmbientIntensity.Rush:
+                return new Vector2(
+                    6f,
+                    8f
+                );
+
+            case AmbientIntensity.Final:
+                return new Vector2(
+                    5f,
+                    7f
+                );
+
+            default:
+                return new Vector2(
+                    6f,
+                    8f
+                );
+        }
+    }
+
+    private void SpawnAmbientEvent(
+        AmbientIntensity intensity,
+        FishData lowValueFish,
+        FishData midValueFish,
+        FishData highValueFish,
+        FishData pufferfish,
+        FishData squid)
+    {
+        switch (intensity)
+        {
+            case AmbientIntensity.Early:
+
+                SpawnEarlyAmbient(
+                    lowValueFish,
+                    midValueFish
+                );
+
+                break;
+
+            case AmbientIntensity.Growth:
+
+                SpawnGrowthAmbient(
+                    lowValueFish,
+                    midValueFish,
+                    highValueFish,
+                    pufferfish
+                );
+
+                break;
+
+            case AmbientIntensity.Special:
+
+                SpawnSpecialAmbient(
+                    lowValueFish,
+                    midValueFish,
+                    highValueFish,
+                    pufferfish,
+                    squid
+                );
+
+                break;
+
+            case AmbientIntensity.MiniBossSupport:
+
+                SpawnMiniBossSupportAmbient(
+                    lowValueFish,
+                    midValueFish,
+                    highValueFish
+                );
+
+                break;
+
+            case AmbientIntensity.Rush:
+
+                SpawnRushAmbient(
+                    lowValueFish,
+                    midValueFish,
+                    highValueFish,
+                    pufferfish,
+                    squid
+                );
+
+                break;
+
+            case AmbientIntensity.Final:
+
+                SpawnFinalAmbient(
+                    lowValueFish,
+                    midValueFish,
+                    highValueFish,
+                    pufferfish,
+                    squid
+                );
+
+                break;
+        }
+    }
+
+    private void SpawnEarlyAmbient(
+        FishData lowValueFish,
+        FishData midValueFish)
+    {
+        int roll =
+            Random.Range(
+                0,
+                100
+            );
+
+        if (roll < 45)
+        {
+            SpawnLooseFish(
+                lowValueFish,
+                Random.Range(
+                    1,
+                    4
+                )
+            );
+
+            return;
+        }
+
+        if (roll < 75)
+        {
+            SpawnLooseFish(
+                midValueFish,
+                Random.Range(
+                    1,
+                    3
+                )
+            );
+
+            return;
+        }
+
+        SpawnSchool(
+            lowValueFish,
+            Random.Range(
+                4,
+                7
+            ),
+            0.6f,
+            0.8f
+        );
+    }
+
+    private void SpawnGrowthAmbient(
+        FishData lowValueFish,
+        FishData midValueFish,
+        FishData highValueFish,
+        FishData pufferfish)
+    {
+        int roll =
+            Random.Range(
+                0,
+                100
+            );
+
+        if (roll < 25)
+        {
+            SpawnLooseFish(
+                highValueFish,
+                1
+            );
+
+            return;
+        }
+
+        if (roll < 50)
+        {
+            SpawnLooseFish(
+                lowValueFish,
+                Random.Range(
+                    2,
+                    5
+                )
+            );
+
+            return;
+        }
+
+        if (roll < 70)
+        {
+            SpawnLooseFish(
+                midValueFish,
+                Random.Range(
+                    1,
+                    4
+                )
+            );
+
+            return;
+        }
+
+        if (roll < 88)
+        {
+            SpawnSchool(
+                lowValueFish,
+                Random.Range(
+                    5,
+                    9
+                ),
+                0.7f,
+                0.9f
+            );
+
+            return;
+        }
+
+        SpawnMixedSchool(
+            midValueFish,
+            4,
+            pufferfish,
+            1,
+            0.8f,
+            0.9f
+        );
+    }
+
+    private void SpawnSpecialAmbient(
+        FishData lowValueFish,
+        FishData midValueFish,
+        FishData highValueFish,
+        FishData pufferfish,
+        FishData squid)
+    {
+        int roll =
+            Random.Range(
+                0,
+                100
+            );
+
+        if (roll < 20)
+        {
+            SpawnLooseFish(
+                highValueFish,
+                1
+            );
+
+            return;
+        }
+
+        if (roll < 40)
+        {
+            SpawnLooseFish(
+                lowValueFish,
+                Random.Range(
+                    2,
+                    5
+                )
+            );
+
+            return;
+        }
+
+        if (roll < 60)
+        {
+            SpawnLooseFish(
+                midValueFish,
+                Random.Range(
+                    2,
+                    5
+                )
+            );
+
+            return;
+        }
+
+        if (roll < 78)
+        {
+            SpawnSchool(
+                lowValueFish,
+                Random.Range(
+                    6,
+                    10
+                ),
+                0.8f,
+                0.95f
+            );
+
+            return;
+        }
+
+        if (roll < 90)
+        {
+            SpawnMixedSchool(
+                midValueFish,
+                5,
+                squid,
+                1,
+                0.9f,
+                1f
+            );
+
+            return;
+        }
+
+        SpawnMixedSchool(
+            lowValueFish,
+            7,
+            pufferfish,
+            1,
+            0.9f,
+            1f
+        );
+    }
+
+    private void SpawnMiniBossSupportAmbient(
+        FishData lowValueFish,
+        FishData midValueFish,
+        FishData highValueFish)
+    {
+        int roll =
+            Random.Range(
+                0,
+                100
+            );
+
+        if (roll < 50)
+        {
+            SpawnLooseFish(
+                lowValueFish,
+                Random.Range(
+                    1,
+                    4
+                )
+            );
+
+            return;
+        }
+
+        if (roll < 80)
+        {
+            SpawnLooseFish(
+                midValueFish,
+                Random.Range(
+                    1,
+                    3
+                )
+            );
+
+            return;
+        }
+
+        if (roll < 95)
+        {
+            SpawnLooseFish(
+                highValueFish,
+                1
+            );
+
+            return;
+        }
+
+        SpawnSchool(
+            lowValueFish,
+            5,
+            0.6f,
+            0.8f
+        );
+    }
+
+    private void SpawnRushAmbient(
+        FishData lowValueFish,
+        FishData midValueFish,
+        FishData highValueFish,
+        FishData pufferfish,
+        FishData squid)
+    {
+        int roll =
+            Random.Range(
+                0,
+                100
+            );
+
+        if (roll < 20)
+        {
+            SpawnLooseFish(
+                highValueFish,
+                1
+            );
+
+            return;
+        }
+
+        if (roll < 45)
+        {
+            SpawnLooseFish(
+                lowValueFish,
+                Random.Range(
+                    3,
+                    6
+                )
+            );
+
+            return;
+        }
+
+        if (roll < 65)
+        {
+            SpawnLooseFish(
+                midValueFish,
+                Random.Range(
+                    2,
+                    5
+                )
+            );
+
+            return;
+        }
+
+        if (roll < 82)
+        {
+            SpawnSchool(
+                lowValueFish,
+                Random.Range(
+                    7,
+                    11
+                ),
+                0.9f,
+                1f
+            );
+
+            return;
+        }
+
+        if (roll < 91)
+        {
+            SpawnMixedSchool(
+                lowValueFish,
+                7,
+                pufferfish,
+                1,
+                0.9f,
+                1f
+            );
+
+            return;
+        }
+
+        SpawnMixedSchool(
+            midValueFish,
+            6,
+            squid,
+            1,
+            0.9f,
+            1f
+        );
+    }
+
+    private void SpawnFinalAmbient(
+        FishData lowValueFish,
+        FishData midValueFish,
+        FishData highValueFish,
+        FishData pufferfish,
+        FishData squid)
+    {
+        int roll =
+            Random.Range(
+                0,
+                100
+            );
+
+        if (roll < 15)
+        {
+            SpawnLooseFish(
+                highValueFish,
+                Random.Range(
+                    1,
+                    3
+                )
+            );
+
+            return;
+        }
+
+        if (roll < 35)
+        {
+            SpawnLooseFish(
+                lowValueFish,
+                Random.Range(
+                    4,
+                    7
+                )
+            );
+
+            return;
+        }
+
+        if (roll < 55)
+        {
+            SpawnLooseFish(
+                midValueFish,
+                Random.Range(
+                    3,
+                    6
+                )
+            );
+
+            return;
+        }
+
+        if (roll < 75)
+        {
+            SpawnSchool(
+                lowValueFish,
+                Random.Range(
+                    8,
+                    13
+                ),
+                1f,
+                1.05f
+            );
+
+            return;
+        }
+
+        if (roll < 87)
+        {
+            SpawnMixedSchool(
+                lowValueFish,
+                10,
+                pufferfish,
+                1,
+                1f,
+                1.05f
+            );
+
+            return;
+        }
+
+        SpawnMixedSchool(
+            midValueFish,
+            8,
+            squid,
+            1,
+            1f,
+            1.05f
+        );
+    }
+
+    private void SetStage(
+        int stageIndex,
+        string phaseName)
+    {
+        currentStageIndex =
+            Mathf.Clamp(
+                stageIndex,
+                1,
+                CoastStageCount
+            );
+
+        currentPhaseName =
+            phaseName;
     }
 
     private void ShowAnnouncement(
@@ -558,9 +1328,8 @@ public class FishSpawner : MonoBehaviour
         return validTypes[rank];
     }
 
-    private FishData
-        GetFishBySpecialType(
-            FishSpecialType specialType)
+    private FishData GetFishBySpecialType(
+        FishSpecialType specialType)
     {
         foreach (FishData data
                  in fishTypes)
@@ -582,7 +1351,7 @@ public class FishSpawner : MonoBehaviour
             int count)
     {
         List<FishController> spawned =
-            new List<FishController>();
+            new();
 
         if (data == null)
         {
@@ -649,7 +1418,7 @@ public class FishSpawner : MonoBehaviour
             float spreadYMultiplier)
     {
         List<FishController> spawned =
-            new List<FishController>();
+            new();
 
         if (data == null)
         {
@@ -684,7 +1453,7 @@ public class FishSpawner : MonoBehaviour
             float spreadYMultiplier)
     {
         List<FishController> spawned =
-            new List<FishController>();
+            new();
 
         float centerY =
             Random.Range(
@@ -753,8 +1522,8 @@ public class FishSpawner : MonoBehaviour
                     cameraLeft
                     - spawnMargin
                     + offsetX,
-                    centerY +
-                    offsetY,
+                    centerY
+                    + offsetY,
                     0f
                 );
 
@@ -787,8 +1556,8 @@ public class FishSpawner : MonoBehaviour
                 GetCameraTop()
             );
 
-        List<FishController> unusedList =
-            new List<FishController>();
+        List<FishController> spawned =
+            new();
 
         SpawnSchoolMembers(
             lowValueFish,
@@ -796,7 +1565,7 @@ public class FishSpawner : MonoBehaviour
             centerY,
             1.5f,
             1.3f,
-            unusedList
+            spawned
         );
 
         SpawnSchoolMembers(
@@ -805,7 +1574,7 @@ public class FishSpawner : MonoBehaviour
             centerY,
             1.4f,
             1.25f,
-            unusedList
+            spawned
         );
 
         SpawnSchoolMembers(
@@ -814,7 +1583,7 @@ public class FishSpawner : MonoBehaviour
             centerY,
             1.1f,
             1.1f,
-            unusedList
+            spawned
         );
 
         SpawnSchoolMembers(
@@ -823,7 +1592,7 @@ public class FishSpawner : MonoBehaviour
             centerY,
             1.2f,
             1.2f,
-            unusedList
+            spawned
         );
 
         SpawnSchoolMembers(
@@ -832,7 +1601,7 @@ public class FishSpawner : MonoBehaviour
             centerY,
             1.2f,
             1.2f,
-            unusedList
+            spawned
         );
     }
 
@@ -851,6 +1620,10 @@ public class FishSpawner : MonoBehaviour
 
         if (fish == null)
         {
+            Debug.LogWarning(
+                "FishSpawner: 비활성 Fish가 부족합니다."
+            );
+
             return null;
         }
 
@@ -898,7 +1671,8 @@ public class FishSpawner : MonoBehaviour
 
         while (timer < maxWaitTime)
         {
-            bool anyActive = false;
+            bool anyActive =
+                false;
 
             foreach (FishController fish
                      in encounterFish)
@@ -906,7 +1680,9 @@ public class FishSpawner : MonoBehaviour
                 if (fish != null &&
                     fish.gameObject.activeSelf)
                 {
-                    anyActive = true;
+                    anyActive =
+                        true;
+
                     break;
                 }
             }

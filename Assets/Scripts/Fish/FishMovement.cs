@@ -19,6 +19,7 @@ public class FishMovement : MonoBehaviour
     private float wavePhase;
 
     private float netSpeedMultiplier = 1f;
+    private float specialSpeedMultiplier = 1f;
 
     private readonly Dictionary<NetController, float>
         activeNets = new();
@@ -26,21 +27,30 @@ public class FishMovement : MonoBehaviour
     private void Awake()
     {
         mainCamera = Camera.main;
-        fishController = GetComponent<FishController>();
+
+        fishController =
+            GetComponent<FishController>();
     }
 
     private void OnDisable()
     {
         activeNets.Clear();
+
         netSpeedMultiplier = 1f;
+        specialSpeedMultiplier = 1f;
     }
 
-    public void InitializeSchoolMovement(float centerY)
+    public void InitializeSchoolMovement(
+        float centerY)
     {
-        schoolCenterY = centerY;
+        schoolCenterY =
+            centerY;
 
         personalOffsetY =
-            Random.Range(-1.6f, 1.6f);
+            Random.Range(
+                -1.6f,
+                1.6f
+            );
 
         wavePhase =
             Random.Range(
@@ -49,7 +59,9 @@ public class FishMovement : MonoBehaviour
             );
 
         activeNets.Clear();
+
         netSpeedMultiplier = 1f;
+        specialSpeedMultiplier = 1f;
     }
 
     private void Update()
@@ -69,7 +81,8 @@ public class FishMovement : MonoBehaviour
             schoolCenterY
             + personalOffsetY
             + Mathf.Sin(
-                Time.time * waveFrequency +
+                Time.time *
+                waveFrequency +
                 wavePhase
             ) * waveAmplitude;
 
@@ -78,7 +91,8 @@ public class FishMovement : MonoBehaviour
             transform.position.y;
 
         float schoolStrength =
-            fishController.Data.SchoolStrength;
+            fishController.Data
+                .SchoolStrength;
 
         Vector2 schoolDirection =
             new Vector2(
@@ -140,6 +154,7 @@ public class FishMovement : MonoBehaviour
                 finalDirection
                 * fishController.Data.MoveSpeed
                 * netSpeedMultiplier
+                * specialSpeedMultiplier
                 * Time.deltaTime
             );
     }
@@ -183,9 +198,21 @@ public class FishMovement : MonoBehaviour
             return;
         }
 
-        activeNets.Remove(net);
+        activeNets.Remove(
+            net
+        );
 
         RecalculateNetSpeed();
+    }
+
+    public void SetSpecialSpeedMultiplier(
+        float multiplier)
+    {
+        specialSpeedMultiplier =
+            Mathf.Max(
+                0f,
+                multiplier
+            );
     }
 
     private void RecalculateNetSpeed()

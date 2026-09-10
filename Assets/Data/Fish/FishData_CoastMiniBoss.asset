@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a703153b2e3f6c74ca4bac50537012ab, type: 3}
-  m_Name: FishData_Squid
+  m_Name: FishData_CoastMiniBoss
   m_EditorClassIdentifier: Assembly-CSharp::FishData
-  fishName: "\uC624\uC9D5\uC5B4"
-  specialType: 2
+  fishName: "\uAC70\uB300 \uCC38\uCE58"
+  specialType: 3
   netDisruptionMultiplier: 1
   inkRange: 2.5
   inkInterval: 5
@@ -23,16 +23,16 @@ MonoBehaviour:
   dashDuration: 0.8
   dashInterval: 5
   firstDashDelay: 2.5
-  maxResistance: 24
-  catchValue: 4
-  goldReward: 6
-  expReward: 1
-  moveSpeed: 1.8
-  baitAttraction: 0.7
-  schoolStrength: 0.25
-  lifetime: 15
+  maxResistance: 80
+  catchValue: 18
+  goldReward: 25
+  expReward: 4
+  moveSpeed: 1.5
+  baitAttraction: 0.35
+  schoolStrength: 0.1
+  lifetime: 20
   minSchoolSize: 1
-  maxSchoolSize: 3
-  schoolSpawnSpreadY: 1.7
-  visualScale: {x: 0.6, y: 0.35}
-  visualColor: {r: 0.745283, g: 0.27069238, b: 0.6959855, a: 1}
+  maxSchoolSize: 1
+  schoolSpawnSpreadY: 0.4
+  visualScale: {x: 1.25, y: 0.6}
+  visualColor: {r: 0.8584906, g: 0.56705177, b: 0.08503916, a: 1}

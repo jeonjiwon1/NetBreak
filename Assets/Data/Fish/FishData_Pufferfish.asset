@@ -15,7 +15,15 @@ MonoBehaviour:
   fishName: "\uBCF5\uC5B4"
   specialType: 1
   netDisruptionMultiplier: 0.35
-  maxResistance: 12
+  inkRange: 2.5
+  inkInterval: 5
+  inkDisableDuration: 2.5
+  firstInkDelay: 2
+  dashSpeedMultiplier: 2.5
+  dashDuration: 0.8
+  dashInterval: 5
+  firstDashDelay: 2.5
+  maxResistance: 18
   catchValue: 3
   goldReward: 5
   expReward: 1

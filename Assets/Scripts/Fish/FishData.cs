@@ -4,7 +4,8 @@ public enum FishSpecialType
 {
     None,
     Pufferfish,
-    Squid
+    Squid,
+    MiniBoss
 }
 
 [CreateAssetMenu(
@@ -33,6 +34,12 @@ public class FishData : ScriptableObject
     [SerializeField] private float inkInterval = 5f;
     [SerializeField] private float inkDisableDuration = 2.5f;
     [SerializeField] private float firstInkDelay = 2f;
+
+    [Header("Mini Boss")]
+    [SerializeField] private float dashSpeedMultiplier = 2.5f;
+    [SerializeField] private float dashDuration = 0.8f;
+    [SerializeField] private float dashInterval = 5f;
+    [SerializeField] private float firstDashDelay = 2.5f;
 
     [Header("Capture")]
     [SerializeField] private float maxResistance = 10f;
@@ -79,6 +86,18 @@ public class FishData : ScriptableObject
 
     public float FirstInkDelay =>
         firstInkDelay;
+
+    public float DashSpeedMultiplier =>
+        dashSpeedMultiplier;
+
+    public float DashDuration =>
+        dashDuration;
+
+    public float DashInterval =>
+        dashInterval;
+
+    public float FirstDashDelay =>
+        firstDashDelay;
 
     public float MaxResistance =>
         maxResistance;

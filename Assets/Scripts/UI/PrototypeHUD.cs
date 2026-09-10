@@ -104,7 +104,7 @@ public class PrototypeHUD : MonoBehaviour
         );
 
         if (fishSpawner != null &&
-            fishSpawner.HasStarted)
+    fishSpawner.HasStarted)
         {
             GUI.Label(
                 new Rect(
@@ -113,9 +113,9 @@ public class PrototypeHUD : MonoBehaviour
                     600,
                     40
                 ),
-                $"조업 진행: " +
-                $"{fishSpawner.SpawnedEncounterCount} / " +
-                $"{fishSpawner.TotalEncounterCount}",
+                $"조업 단계: " +
+                $"{fishSpawner.CurrentStageIndex} / " +
+                $"{fishSpawner.TotalStageCount}",
                 style
             );
 
