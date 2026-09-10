@@ -107,9 +107,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ccfea0abfda00c745b6fee2ee7242691, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FishingRodController
-  capturePower: 5
-  attackInterval: 0.6
-  captureRange: 4.5
+  capturePower: 4
+  attackInterval: 0.8
+  captureRange: 1.5
   rangeVisual: {fileID: 9107703342988807989}
   targetLine: {fileID: 6636558008196806176}
 --- !u!120 &6636558008196806176

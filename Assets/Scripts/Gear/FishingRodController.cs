@@ -5,7 +5,7 @@ public class FishingRodController : MonoBehaviour
 {
     [Header("Fishing Rod")]
     [SerializeField] private float capturePower = 4f;
-    [SerializeField] private float attackInterval = 0.75f;
+    [SerializeField] private float attackInterval = 0.8f;
     [SerializeField] private float captureRange = 3f;
 
     [Header("Visual")]
@@ -169,6 +169,20 @@ public class FishingRodController : MonoBehaviour
                 continue;
             }
 
+            // Collider 가장자리만 범위에 걸친 경우를 제외한다.
+            // 물고기 중심점이 실제 낚싯대 범위 안에 있어야 한다.
+            float centerDistance =
+                Vector2.Distance(
+                    transform.position,
+                    fish.transform.position
+                );
+
+            if (centerDistance >
+                captureRange)
+            {
+                continue;
+            }
+
             if (!candidates.Contains(
                 fish))
             {
@@ -283,10 +297,42 @@ public class FishingRodController : MonoBehaviour
         float diameter =
             captureRange * 2f;
 
+        Transform parent =
+            rangeVisual.parent;
+
+        if (parent == null)
+        {
+            rangeVisual.localScale =
+                new Vector3(
+                    diameter,
+                    diameter,
+                    1f
+                );
+
+            return;
+        }
+
+        Vector3 parentScale =
+            parent.lossyScale;
+
+        float scaleX =
+            Mathf.Abs(parentScale.x) >
+            0.0001f
+                ? diameter /
+                  Mathf.Abs(parentScale.x)
+                : diameter;
+
+        float scaleY =
+            Mathf.Abs(parentScale.y) >
+            0.0001f
+                ? diameter /
+                  Mathf.Abs(parentScale.y)
+                : diameter;
+
         rangeVisual.localScale =
             new Vector3(
-                diameter,
-                diameter,
+                scaleX,
+                scaleY,
                 1f
             );
     }
@@ -307,7 +353,10 @@ public class FishingRodController : MonoBehaviour
             Mathf.Max(
                 repositionBlockedUntil,
                 Time.time +
-                Mathf.Max(0f, delay)
+                Mathf.Max(
+                    0f,
+                    delay
+                )
             );
 
         RefreshOperationalState();
@@ -324,7 +373,8 @@ public class FishingRodController : MonoBehaviour
         specialDisabledUntil =
             Mathf.Max(
                 specialDisabledUntil,
-                Time.time + duration
+                Time.time +
+                duration
             );
 
         RefreshOperationalState();
@@ -335,9 +385,11 @@ public class FishingRodController : MonoBehaviour
         bool shouldOperate =
             !isBeingRepositioned
             &&
-            Time.time >= repositionBlockedUntil
+            Time.time >=
+            repositionBlockedUntil
             &&
-            Time.time >= specialDisabledUntil;
+            Time.time >=
+            specialDisabledUntil;
 
         if (shouldOperate ==
             isOperational)
@@ -389,7 +441,8 @@ public class FishingRodController : MonoBehaviour
     public void IncreaseCapturePower(
         float amount)
     {
-        capturePower += amount;
+        capturePower +=
+            amount;
     }
 
     public void ReduceAttackInterval(
@@ -406,7 +459,8 @@ public class FishingRodController : MonoBehaviour
     public void IncreaseCaptureRange(
         float amount)
     {
-        captureRange += amount;
+        captureRange +=
+            amount;
 
         UpdateRangeVisual();
     }
@@ -414,6 +468,7 @@ public class FishingRodController : MonoBehaviour
     public void AddAdditionalTarget(
         int amount)
     {
-        additionalTargets += amount;
+        additionalTargets +=
+            amount;
     }
 }

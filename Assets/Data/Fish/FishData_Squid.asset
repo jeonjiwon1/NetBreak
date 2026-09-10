@@ -12,23 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a703153b2e3f6c74ca4bac50537012ab, type: 3}
   m_Name: FishData_Squid
   m_EditorClassIdentifier: Assembly-CSharp::FishData
-  fishName: 
-  specialType: 0
+  fishName: "\uC624\uC9D5\uC5B4"
+  specialType: 2
   netDisruptionMultiplier: 1
   inkRange: 2.5
   inkInterval: 5
   inkDisableDuration: 2.5
   firstInkDelay: 2
-  maxResistance: 10
-  catchValue: 1
-  goldReward: 1
+  maxResistance: 15
+  catchValue: 4
+  goldReward: 6
   expReward: 1
-  moveSpeed: 2
-  baitAttraction: 1
-  schoolStrength: 1
+  moveSpeed: 1.8
+  baitAttraction: 0.7
+  schoolStrength: 0.25
   lifetime: 15
-  minSchoolSize: 10
-  maxSchoolSize: 20
-  schoolSpawnSpreadY: 1
-  visualScale: {x: 0.5, y: 0.25}
-  visualColor: {r: 1, g: 1, b: 1, a: 1}
+  minSchoolSize: 1
+  maxSchoolSize: 3
+  schoolSpawnSpreadY: 1.7
+  visualScale: {x: 0.6, y: 0.35}
+  visualColor: {r: 0.745283, g: 0.27069238, b: 0.6959855, a: 1}
