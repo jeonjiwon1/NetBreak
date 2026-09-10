@@ -10,21 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a703153b2e3f6c74ca4bac50537012ab, type: 3}
-  m_Name: FishData_Sardine
+  m_Name: FishData_Squid
   m_EditorClassIdentifier: Assembly-CSharp::FishData
-  fishName: "\uC815\uC5B4\uB9AC"
+  fishName: 
   specialType: 0
   netDisruptionMultiplier: 1
-  maxResistance: 5
+  inkRange: 2.5
+  inkInterval: 5
+  inkDisableDuration: 2.5
+  firstInkDelay: 2
+  maxResistance: 10
   catchValue: 1
   goldReward: 1
   expReward: 1
-  moveSpeed: 1.5
+  moveSpeed: 2
   baitAttraction: 1
   schoolStrength: 1
   lifetime: 15
-  minSchoolSize: 25
-  maxSchoolSize: 40
-  schoolSpawnSpreadY: 1.2
-  visualScale: {x: 0.35, y: 0.18}
+  minSchoolSize: 10
+  maxSchoolSize: 20
+  schoolSpawnSpreadY: 1
+  visualScale: {x: 0.5, y: 0.25}
   visualColor: {r: 1, g: 1, b: 1, a: 1}

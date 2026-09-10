@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -19,9 +18,14 @@ public class FishingRodController : MonoBehaviour
 
     private int additionalTargets;
 
+    private bool isBeingRepositioned;
+    private float repositionBlockedUntil;
+    private float specialDisabledUntil;
+
     private bool isOperational = true;
 
-    private Coroutine reactivationCoroutine;
+    private SpriteRenderer rodRenderer;
+    private Color normalRodColor;
 
     public float CapturePower =>
         capturePower;
@@ -48,10 +52,23 @@ public class FishingRodController : MonoBehaviour
 
             targetLine.enabled = false;
         }
+
+        rodRenderer =
+            GetComponentInChildren<SpriteRenderer>();
+
+        if (rodRenderer != null)
+        {
+            normalRodColor =
+                rodRenderer.color;
+        }
+
+        RefreshOperationalState();
     }
 
     private void Update()
     {
+        RefreshOperationalState();
+
         if (!isOperational)
         {
             currentTarget = null;
@@ -106,9 +123,8 @@ public class FishingRodController : MonoBehaviour
         currentTarget =
             targets[0];
 
-        foreach (
-            FishController target
-            in targets)
+        foreach (FishController target
+                 in targets)
         {
             if (target == null)
             {
@@ -156,7 +172,9 @@ public class FishingRodController : MonoBehaviour
             if (!candidates.Contains(
                 fish))
             {
-                candidates.Add(fish);
+                candidates.Add(
+                    fish
+                );
             }
         }
 
@@ -250,7 +268,8 @@ public class FishingRodController : MonoBehaviour
     {
         if (targetLine != null)
         {
-            targetLine.enabled = false;
+            targetLine.enabled =
+                false;
         }
     }
 
@@ -274,61 +293,97 @@ public class FishingRodController : MonoBehaviour
 
     public void BeginReposition()
     {
-        if (reactivationCoroutine != null)
-        {
-            StopCoroutine(
-                reactivationCoroutine
-            );
+        isBeingRepositioned = true;
 
-            reactivationCoroutine = null;
-        }
-
-        isOperational = false;
-
-        currentTarget = null;
-
-        HideTargetLine();
+        RefreshOperationalState();
     }
 
     public void EndReposition(
         float delay)
     {
-        if (reactivationCoroutine != null)
-        {
-            StopCoroutine(
-                reactivationCoroutine
-            );
-        }
+        isBeingRepositioned = false;
 
-        if (delay <= 0f)
+        repositionBlockedUntil =
+            Mathf.Max(
+                repositionBlockedUntil,
+                Time.time +
+                Mathf.Max(0f, delay)
+            );
+
+        RefreshOperationalState();
+    }
+
+    public void DisableTemporarily(
+        float duration)
+    {
+        if (duration <= 0f)
         {
-            Reactivate();
             return;
         }
 
-        reactivationCoroutine =
-            StartCoroutine(
-                ReactivateAfterDelay(delay)
+        specialDisabledUntil =
+            Mathf.Max(
+                specialDisabledUntil,
+                Time.time + duration
             );
+
+        RefreshOperationalState();
     }
 
-    private IEnumerator ReactivateAfterDelay(
-        float delay)
+    private void RefreshOperationalState()
     {
-        yield return new WaitForSeconds(
-            delay
-        );
+        bool shouldOperate =
+            !isBeingRepositioned
+            &&
+            Time.time >= repositionBlockedUntil
+            &&
+            Time.time >= specialDisabledUntil;
 
-        Reactivate();
+        if (shouldOperate ==
+            isOperational)
+        {
+            UpdateVisualState();
+            return;
+        }
 
-        reactivationCoroutine = null;
+        isOperational =
+            shouldOperate;
+
+        if (!isOperational)
+        {
+            currentTarget = null;
+
+            HideTargetLine();
+        }
+        else
+        {
+            attackTimer = 0f;
+        }
+
+        UpdateVisualState();
     }
 
-    private void Reactivate()
+    private void UpdateVisualState()
     {
-        isOperational = true;
+        if (rodRenderer == null)
+        {
+            return;
+        }
 
-        attackTimer = 0f;
+        if (!isOperational)
+        {
+            rodRenderer.color =
+                Color.Lerp(
+                    normalRodColor,
+                    Color.black,
+                    0.65f
+                );
+        }
+        else
+        {
+            rodRenderer.color =
+                normalRodColor;
+        }
     }
 
     public void IncreaseCapturePower(
@@ -343,7 +398,8 @@ public class FishingRodController : MonoBehaviour
         attackInterval =
             Mathf.Max(
                 0.1f,
-                attackInterval - amount
+                attackInterval -
+                amount
             );
     }
 

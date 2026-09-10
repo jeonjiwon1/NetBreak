@@ -7,14 +7,24 @@ public class FishController : MonoBehaviour
     private float currentResistance;
     private bool isCaptured;
 
+    private SpriteRenderer spriteRenderer;
+
     public FishData Data => fishData;
     public float CurrentResistance => currentResistance;
+
+    private void Awake()
+    {
+        spriteRenderer =
+            GetComponentInChildren<SpriteRenderer>();
+    }
 
     public void Initialize(FishData data)
     {
         fishData = data;
 
-        currentResistance = fishData.MaxResistance;
+        currentResistance =
+            fishData.MaxResistance;
+
         isCaptured = false;
 
         transform.localScale =
@@ -23,6 +33,12 @@ public class FishController : MonoBehaviour
                 fishData.VisualScale.y,
                 1f
             );
+
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color =
+                fishData.VisualColor;
+        }
 
         gameObject.name =
             $"Fish_{fishData.FishName}";
@@ -41,7 +57,8 @@ public class FishController : MonoBehaviour
 
     public bool TakeCaptureDamage(float amount)
     {
-        if (fishData == null || isCaptured)
+        if (fishData == null ||
+            isCaptured)
         {
             return false;
         }
@@ -68,9 +85,10 @@ public class FishController : MonoBehaviour
 
         if (RunManager.Instance != null)
         {
-            RunManager.Instance.RegisterFishCaptured(
-                fishData
-            );
+            RunManager.Instance
+                .RegisterFishCaptured(
+                    fishData
+                );
         }
 
         gameObject.SetActive(false);

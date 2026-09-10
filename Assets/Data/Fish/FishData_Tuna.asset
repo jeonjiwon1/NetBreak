@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a703153b2e3f6c74ca4bac50537012ab, type: 3}
   m_Name: FishData_Tuna
   m_EditorClassIdentifier: Assembly-CSharp::FishData
-  fishName: 
+  fishName: "\uCC38\uCE58"
+  specialType: 0
+  netDisruptionMultiplier: 1
   maxResistance: 25
   catchValue: 6
   goldReward: 10
@@ -25,3 +27,4 @@ MonoBehaviour:
   maxSchoolSize: 8
   schoolSpawnSpreadY: 1.2
   visualScale: {x: 0.75, y: 0.35}
+  visualColor: {r: 1, g: 1, b: 1, a: 1}

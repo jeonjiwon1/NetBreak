@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,15 +12,25 @@ public class NetController : MonoBehaviour
     private BoxCollider2D netCollider;
     private Rigidbody2D rigidBody;
 
-    private bool isOperational = true;
-
-    private Coroutine reactivationCoroutine;
-
     private readonly HashSet<FishMovement>
         contactedFish = new();
 
+    private float currentDamageMultiplier = 1f;
+
+    private bool isBeingRepositioned;
+    private float repositionBlockedUntil;
+    private float specialDisabledUntil;
+
+    private bool isOperational = true;
+
+    private SpriteRenderer netRenderer;
+    private Color normalNetColor;
+
     public bool IsOperational =>
         isOperational;
+
+    public float CurrentDamageMultiplier =>
+        currentDamageMultiplier;
 
     private void Awake()
     {
@@ -37,6 +46,22 @@ public class NetController : MonoBehaviour
             RigidbodyType2D.Kinematic;
 
         rigidBody.gravityScale = 0f;
+
+        netRenderer =
+            GetComponentInChildren<SpriteRenderer>();
+
+        if (netRenderer != null)
+        {
+            normalNetColor =
+                netRenderer.color;
+        }
+
+        RefreshOperationalState();
+    }
+
+    private void Update()
+    {
+        RefreshOperationalState();
     }
 
     public void Initialize(
@@ -86,6 +111,7 @@ public class NetController : MonoBehaviour
         }
 
         RegisterFish(other);
+        RecalculateNetDisruption();
     }
 
     private void OnTriggerStay2D(
@@ -98,6 +124,8 @@ public class NetController : MonoBehaviour
 
         RegisterFish(other);
 
+        RecalculateNetDisruption();
+
         FishController fish =
             other.GetComponent<FishController>();
 
@@ -105,6 +133,7 @@ public class NetController : MonoBehaviour
         {
             fish.TakeCaptureDamage(
                 captureDamagePerSecond
+                * currentDamageMultiplier
                 * Time.fixedDeltaTime
             );
         }
@@ -128,6 +157,8 @@ public class NetController : MonoBehaviour
         }
 
         movement.ExitNet(this);
+
+        RecalculateNetDisruption();
     }
 
     private void RegisterFish(
@@ -153,11 +184,166 @@ public class NetController : MonoBehaviour
         );
     }
 
+    private void RecalculateNetDisruption()
+    {
+        float newMultiplier = 1f;
+
+        List<FishMovement> inactiveFish =
+            null;
+
+        foreach (FishMovement movement
+                 in contactedFish)
+        {
+            if (movement == null ||
+                !movement.gameObject.activeInHierarchy)
+            {
+                inactiveFish ??=
+                    new List<FishMovement>();
+
+                inactiveFish.Add(
+                    movement
+                );
+
+                continue;
+            }
+
+            FishController fish =
+                movement.GetComponent<
+                    FishController
+                >();
+
+            if (fish == null ||
+                fish.Data == null)
+            {
+                continue;
+            }
+
+            if (fish.Data.SpecialType !=
+                FishSpecialType.Pufferfish)
+            {
+                continue;
+            }
+
+            newMultiplier =
+                Mathf.Min(
+                    newMultiplier,
+                    fish.Data
+                        .NetDisruptionMultiplier
+                );
+        }
+
+        if (inactiveFish != null)
+        {
+            foreach (FishMovement movement
+                     in inactiveFish)
+            {
+                contactedFish.Remove(
+                    movement
+                );
+            }
+        }
+
+        currentDamageMultiplier =
+            newMultiplier;
+
+        UpdateVisualState();
+    }
+
+    public void BeginReposition()
+    {
+        isBeingRepositioned = true;
+
+        RefreshOperationalState();
+    }
+
+    public void EndReposition(
+        float delay)
+    {
+        isBeingRepositioned = false;
+
+        repositionBlockedUntil =
+            Mathf.Max(
+                repositionBlockedUntil,
+                Time.time +
+                Mathf.Max(0f, delay)
+            );
+
+        RefreshOperationalState();
+    }
+
+    public void DisableTemporarily(
+        float duration)
+    {
+        if (duration <= 0f)
+        {
+            return;
+        }
+
+        specialDisabledUntil =
+            Mathf.Max(
+                specialDisabledUntil,
+                Time.time + duration
+            );
+
+        RefreshOperationalState();
+    }
+
+    private void RefreshOperationalState()
+    {
+        bool shouldOperate =
+            !isBeingRepositioned
+            &&
+            Time.time >= repositionBlockedUntil
+            &&
+            Time.time >= specialDisabledUntil;
+
+        if (shouldOperate ==
+            isOperational)
+        {
+            UpdateVisualState();
+            return;
+        }
+
+        SetOperational(
+            shouldOperate
+        );
+    }
+
+    private void SetOperational(
+        bool operational)
+    {
+        isOperational =
+            operational;
+
+        if (!isOperational)
+        {
+            ReleaseAllFish();
+
+            if (netCollider != null)
+            {
+                netCollider.enabled =
+                    false;
+            }
+
+            UpdateVisualState();
+            return;
+        }
+
+        if (netCollider != null)
+        {
+            netCollider.enabled =
+                true;
+        }
+
+        Physics2D.SyncTransforms();
+
+        UpdateVisualState();
+    }
+
     private void ReleaseAllFish()
     {
-        foreach (
-            FishMovement movement
-            in contactedFish)
+        foreach (FishMovement movement
+                 in contactedFish)
         {
             if (movement != null)
             {
@@ -166,86 +352,44 @@ public class NetController : MonoBehaviour
         }
 
         contactedFish.Clear();
+
+        currentDamageMultiplier = 1f;
     }
 
-    public void BeginReposition()
+    private void UpdateVisualState()
     {
-        if (reactivationCoroutine != null)
-        {
-            StopCoroutine(
-                reactivationCoroutine
-            );
-
-            reactivationCoroutine = null;
-        }
-
-        SetOperational(false);
-    }
-
-    public void EndReposition(
-        float delay)
-    {
-        if (reactivationCoroutine != null)
-        {
-            StopCoroutine(
-                reactivationCoroutine
-            );
-        }
-
-        if (delay <= 0f)
-        {
-            SetOperational(true);
-            return;
-        }
-
-        reactivationCoroutine =
-            StartCoroutine(
-                ReactivateAfterDelay(delay)
-            );
-    }
-
-    private IEnumerator ReactivateAfterDelay(
-        float delay)
-    {
-        yield return new WaitForSeconds(
-            delay
-        );
-
-        SetOperational(true);
-
-        reactivationCoroutine = null;
-    }
-
-    private void SetOperational(
-        bool operational)
-    {
-        if (isOperational == operational)
+        if (netRenderer == null)
         {
             return;
         }
 
-        if (!operational)
+        if (!isOperational)
         {
-            isOperational = false;
-
-            ReleaseAllFish();
-
-            if (netCollider != null)
-            {
-                netCollider.enabled = false;
-            }
+            netRenderer.color =
+                Color.Lerp(
+                    normalNetColor,
+                    Color.black,
+                    0.65f
+                );
 
             return;
         }
 
-        isOperational = true;
-
-        if (netCollider != null)
+        if (currentDamageMultiplier <
+            0.999f)
         {
-            netCollider.enabled = true;
+            netRenderer.color =
+                Color.Lerp(
+                    normalNetColor,
+                    Color.red,
+                    0.55f
+                );
+
+            return;
         }
 
-        Physics2D.SyncTransforms();
+        netRenderer.color =
+            normalNetColor;
     }
 
     public void MultiplyCaptureDamage(

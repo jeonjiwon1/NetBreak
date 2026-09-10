@@ -239,9 +239,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87e9f6f6c5b25a64692e1a0be48f2c47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrototypeJobManager
-  jobAfterSchoolCount: 3
   selectionInputDelay: 0.25
-  fishSpawner: {fileID: 1679640293}
   castNet: {fileID: 821204956}
   netPlacement: {fileID: 2057654402}
   rodPlacement: {fileID: 241344187}
@@ -1224,12 +1222,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 919498efe148628439895848d05354b8, type: 2}
   - {fileID: 11400000, guid: 54d307e52dc06e14282cab1a6119501b, type: 2}
   - {fileID: 11400000, guid: 03ba629e60d8647489ff061b8fa32685, type: 2}
-  poolSize: 150
-  totalSchoolCount: 6
-  schoolSpawnInterval: 4
+  - {fileID: 11400000, guid: f17f4c47e2d02c447bf09b3150706a62, type: 2}
+  poolSize: 200
   spawnMargin: 0.5
   verticalPadding: 1
   schoolSpreadX: 1.5
+  shortInterval: 1.2
+  normalInterval: 2
+  largeSchoolWarningTime: 2
 --- !u!4 &1679640294
 Transform:
   m_ObjectHideFlags: 0

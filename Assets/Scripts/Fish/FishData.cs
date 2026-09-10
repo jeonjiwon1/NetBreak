@@ -1,5 +1,12 @@
 using UnityEngine;
 
+public enum FishSpecialType
+{
+    None,
+    Pufferfish,
+    Squid
+}
+
 [CreateAssetMenu(
     fileName = "FishData_",
     menuName = "NetBreak/Fish Data"
@@ -8,6 +15,24 @@ public class FishData : ScriptableObject
 {
     [Header("Identity")]
     [SerializeField] private string fishName;
+
+    [Header("Special")]
+    [SerializeField]
+    private FishSpecialType specialType =
+        FishSpecialType.None;
+
+    [Header("Pufferfish")]
+    [Tooltip(
+        "복어가 그물 안에 있을 때 적용되는 그물 포획 피해 배율"
+    )]
+    [Range(0f, 1f)]
+    [SerializeField] private float netDisruptionMultiplier = 1f;
+
+    [Header("Squid")]
+    [SerializeField] private float inkRange = 2.5f;
+    [SerializeField] private float inkInterval = 5f;
+    [SerializeField] private float inkDisableDuration = 2.5f;
+    [SerializeField] private float firstInkDelay = 2f;
 
     [Header("Capture")]
     [SerializeField] private float maxResistance = 10f;
@@ -31,21 +56,66 @@ public class FishData : ScriptableObject
     private Vector2 visualScale =
         new Vector2(0.5f, 0.25f);
 
+    [SerializeField]
+    private Color visualColor =
+        Color.white;
+
     public string FishName => fishName;
 
-    public float MaxResistance => maxResistance;
-    public int CatchValue => catchValue;
-    public int GoldReward => goldReward;
-    public int ExpReward => expReward;
+    public FishSpecialType SpecialType =>
+        specialType;
 
-    public float MoveSpeed => moveSpeed;
-    public float BaitAttraction => baitAttraction;
-    public float SchoolStrength => schoolStrength;
-    public float Lifetime => lifetime;
+    public float NetDisruptionMultiplier =>
+        netDisruptionMultiplier;
 
-    public int MinSchoolSize => minSchoolSize;
-    public int MaxSchoolSize => maxSchoolSize;
-    public float SchoolSpawnSpreadY => schoolSpawnSpreadY;
+    public float InkRange =>
+        inkRange;
 
-    public Vector2 VisualScale => visualScale;
+    public float InkInterval =>
+        inkInterval;
+
+    public float InkDisableDuration =>
+        inkDisableDuration;
+
+    public float FirstInkDelay =>
+        firstInkDelay;
+
+    public float MaxResistance =>
+        maxResistance;
+
+    public int CatchValue =>
+        catchValue;
+
+    public int GoldReward =>
+        goldReward;
+
+    public int ExpReward =>
+        expReward;
+
+    public float MoveSpeed =>
+        moveSpeed;
+
+    public float BaitAttraction =>
+        baitAttraction;
+
+    public float SchoolStrength =>
+        schoolStrength;
+
+    public float Lifetime =>
+        lifetime;
+
+    public int MinSchoolSize =>
+        minSchoolSize;
+
+    public int MaxSchoolSize =>
+        maxSchoolSize;
+
+    public float SchoolSpawnSpreadY =>
+        schoolSpawnSpreadY;
+
+    public Vector2 VisualScale =>
+        visualScale;
+
+    public Color VisualColor =>
+        visualColor;
 }

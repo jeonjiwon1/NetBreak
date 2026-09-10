@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a703153b2e3f6c74ca4bac50537012ab, type: 3}
   m_Name: FishData_Mackerel
   m_EditorClassIdentifier: Assembly-CSharp::FishData
-  fishName: 
+  fishName: "\uACE0\uB4F1\uC5B4"
+  specialType: 0
+  netDisruptionMultiplier: 1
   maxResistance: 10
   catchValue: 2
   goldReward: 3
@@ -25,3 +27,4 @@ MonoBehaviour:
   maxSchoolSize: 20
   schoolSpawnSpreadY: 1.6
   visualScale: {x: 0.5, y: 0.25}
+  visualColor: {r: 1, g: 1, b: 1, a: 1}
