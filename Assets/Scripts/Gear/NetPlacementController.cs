@@ -318,4 +318,9 @@ public class NetPlacementController : MonoBehaviour
     {
         maxLength += amount;
     }
+
+    public void IncreaseMaxActiveNets(int amount)
+    {
+        maxActiveNets += amount;
+    }
 }

@@ -321,4 +321,9 @@ public class FishingRodPlacementController : MonoBehaviour
             }
         }
     }
+
+    public void IncreaseMaxActiveRods(int amount)
+    {
+        maxActiveRods += amount;
+    }
 }

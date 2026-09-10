@@ -227,4 +227,9 @@ public class LandingNetController : MonoBehaviour
     {
         chainCaptureEnabled = true;
     }
+
+    public void IncreaseMaxTargets(int amount)
+    {
+        maxTargets += amount;
+    }
 }

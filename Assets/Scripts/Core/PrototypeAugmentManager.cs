@@ -58,7 +58,9 @@ public class PrototypeAugmentManager : MonoBehaviour
     private bool showChoices;
 
     public bool IsChoosingAugment =>
-        showChoices;
+        showChoices ||
+        (PrototypeJobManager.Instance != null &&
+        PrototypeJobManager.Instance.IsChoosingJob);
 
     private AugmentOption[] currentChoices =
         new AugmentOption[3];
