@@ -18,14 +18,10 @@ public class PrototypeJobManager : MonoBehaviour
         private set;
     }
 
-    [Header("Job Advancement")]
-    [SerializeField] private int jobAfterSchoolCount = 3;
-
     [Header("Input")]
     [SerializeField] private float selectionInputDelay = 0.25f;
 
     [Header("References")]
-    [SerializeField] private FishSpawner fishSpawner;
     [SerializeField] private CastNetController castNet;
     [SerializeField] private NetPlacementController netPlacement;
     [SerializeField] private FishingRodPlacementController rodPlacement;
@@ -36,6 +32,7 @@ public class PrototypeJobManager : MonoBehaviour
 
     private bool isChoosingJob;
     private bool jobSelectionTriggered;
+    private bool jobSelectionRequested;
 
     private bool canSelect;
     private float selectionUnlockTime;
@@ -63,18 +60,8 @@ public class PrototypeJobManager : MonoBehaviour
         }
 
         if (jobSelectionTriggered ||
-            HasAdvanced)
-        {
-            return;
-        }
-
-        if (fishSpawner == null)
-        {
-            return;
-        }
-
-        if (fishSpawner.SpawnedSchoolCount <
-            jobAfterSchoolCount)
+            HasAdvanced ||
+            !jobSelectionRequested)
         {
             return;
         }
@@ -86,6 +73,17 @@ public class PrototypeJobManager : MonoBehaviour
         }
 
         ShowJobChoices();
+    }
+
+    public void RequestJobSelection()
+    {
+        if (jobSelectionTriggered ||
+            HasAdvanced)
+        {
+            return;
+        }
+
+        jobSelectionRequested = true;
     }
 
     private void UpdateSelectionLock()
@@ -112,6 +110,7 @@ public class PrototypeJobManager : MonoBehaviour
 
     private void ShowJobChoices()
     {
+        jobSelectionRequested = false;
         jobSelectionTriggered = true;
         isChoosingJob = true;
 
@@ -184,7 +183,9 @@ public class PrototypeJobManager : MonoBehaviour
 
         if (GUI.Button(
             new Rect(
-                startX + width + spacing,
+                startX +
+                width +
+                spacing,
                 y,
                 width,
                 height
@@ -249,7 +250,8 @@ public class PrototypeJobManager : MonoBehaviour
             return;
         }
 
-        currentJob = selectedJob;
+        currentJob =
+            selectedJob;
 
         ApplyJobEffect(
             selectedJob
@@ -290,7 +292,8 @@ public class PrototypeJobManager : MonoBehaviour
 
                 if (castNet != null)
                 {
-                    castNet.EnableCastNetFisherJob();
+                    castNet
+                        .EnableCastNetFisherJob();
                 }
 
                 break;
@@ -314,7 +317,8 @@ public class PrototypeJobManager : MonoBehaviour
 
                 if (netPlacement != null)
                 {
-                    netPlacement.EnableNetFisherJob();
+                    netPlacement
+                        .EnableNetFisherJob();
                 }
 
                 break;
@@ -332,7 +336,8 @@ public class PrototypeJobManager : MonoBehaviour
 
                 if (rodPlacement != null)
                 {
-                    rodPlacement.EnableAnglerJob();
+                    rodPlacement
+                        .EnableAnglerJob();
                 }
 
                 break;
@@ -356,7 +361,8 @@ public class PrototypeJobManager : MonoBehaviour
 
                 if (landingNet != null)
                 {
-                    landingNet.EnableLandingNetFisherJob();
+                    landingNet
+                        .EnableLandingNetFisherJob();
                 }
 
                 break;

@@ -9,6 +9,7 @@ public class PrototypeHUD : MonoBehaviour
     private GUIStyle style;
     private GUIStyle centerStyle;
     private GUIStyle resultStyle;
+    private GUIStyle announcementStyle;
 
     private void Awake()
     {
@@ -16,12 +17,23 @@ public class PrototypeHUD : MonoBehaviour
         style.fontSize = 24;
         style.normal.textColor = Color.white;
 
-        centerStyle = new GUIStyle(style);
-        centerStyle.alignment = TextAnchor.MiddleCenter;
+        centerStyle =
+            new GUIStyle(style);
+
+        centerStyle.alignment =
+            TextAnchor.MiddleCenter;
+
         centerStyle.fontSize = 30;
 
-        resultStyle = new GUIStyle(centerStyle);
+        resultStyle =
+            new GUIStyle(centerStyle);
+
         resultStyle.fontSize = 42;
+
+        announcementStyle =
+            new GUIStyle(centerStyle);
+
+        announcementStyle.fontSize = 34;
     }
 
     private void OnGUI()
@@ -35,103 +47,173 @@ public class PrototypeHUD : MonoBehaviour
             RunManager.Instance;
 
         GUI.Label(
-            new Rect(20, 20, 500, 40),
+            new Rect(
+                20,
+                20,
+                500,
+                40
+            ),
             $"골드: {run.CurrentGold}",
             style
         );
 
         GUI.Label(
-            new Rect(20, 55, 500, 40),
+            new Rect(
+                20,
+                55,
+                500,
+                40
+            ),
             $"포획 수: {run.CapturedFishCount}",
             style
         );
 
         GUI.Label(
-            new Rect(20, 90, 500, 40),
+            new Rect(
+                20,
+                90,
+                500,
+                40
+            ),
             $"어획률: {run.CatchRate * 100f:F1}%",
             style
         );
 
         GUI.Label(
-            new Rect(20, 125, 500, 40),
+            new Rect(
+                20,
+                125,
+                500,
+                40
+            ),
             $"레벨: {run.CurrentLevel}",
             style
         );
 
         GUI.Label(
-            new Rect(20, 160, 500, 40),
-            $"경험치: {run.CurrentExp} / {run.ExpToNextLevel}",
+            new Rect(
+                20,
+                160,
+                500,
+                40
+            ),
+            $"경험치: " +
+            $"{run.CurrentExp} / " +
+            $"{run.ExpToNextLevel}",
             style
         );
 
-        if (fishSpawner != null)
+        if (fishSpawner != null &&
+            fishSpawner.HasStarted)
         {
             GUI.Label(
-                new Rect(20, 195, 500, 40),
-                $"어군 유입: " +
-                $"{fishSpawner.SpawnedSchoolCount} / " +
-                $"{fishSpawner.TotalSchoolCount}",
+                new Rect(
+                    20,
+                    195,
+                    600,
+                    40
+                ),
+                $"조업 진행: " +
+                $"{fishSpawner.SpawnedEncounterCount} / " +
+                $"{fishSpawner.TotalEncounterCount}",
+                style
+            );
+
+            GUI.Label(
+                new Rect(
+                    20,
+                    230,
+                    600,
+                    40
+                ),
+                $"현재 구간: " +
+                $"{fishSpawner.CurrentPhaseName}",
                 style
             );
         }
 
-        if (castNet != null)
-        {
-            string castNetText;
+        DrawCastNetStatus();
+        DrawNetCost();
+        DrawCastNetInfo();
+        DrawEncounterAnnouncement();
+        DrawGameFlow();
+    }
 
-            if (castNet.MaxCharges > 1)
+    private void DrawCastNetStatus()
+    {
+        if (castNet == null)
+        {
+            return;
+        }
+
+        string castNetText;
+
+        if (castNet.MaxCharges > 1)
+        {
+            if (castNet.CurrentCharges ==
+                castNet.MaxCharges)
             {
-                if (castNet.CurrentCharges ==
-                    castNet.MaxCharges)
-                {
-                    castNetText =
-                        $"투망 [E]: " +
-                        $"{castNet.CurrentCharges}/" +
-                        $"{castNet.MaxCharges}";
-                }
-                else
-                {
-                    castNetText =
-                        $"투망 [E]: " +
-                        $"{castNet.CurrentCharges}/" +
-                        $"{castNet.MaxCharges} " +
-                        $"(충전 {castNet.CooldownTimer:F1}초)";
-                }
+                castNetText =
+                    $"투망 [E]: " +
+                    $"{castNet.CurrentCharges}/" +
+                    $"{castNet.MaxCharges}";
             }
             else
             {
-                if (castNet.IsReady)
-                {
-                    castNetText =
-                        "투망 [E]: 준비 완료";
-                }
-                else
-                {
-                    castNetText =
-                        $"투망 [E]: " +
-                        $"{castNet.CooldownTimer:F1}초";
-                }
+                castNetText =
+                    $"투망 [E]: " +
+                    $"{castNet.CurrentCharges}/" +
+                    $"{castNet.MaxCharges} " +
+                    $"(충전 " +
+                    $"{castNet.CooldownTimer:F1}초)";
             }
-
-            GUI.Label(
-                new Rect(20, 230, 500, 40),
-                castNetText,
-                style
-            );
         }
-        if (netPlacement != null &&
-    netPlacement.IsDragging)
+        else
         {
-            GUI.Label(
-                new Rect(20, 265, 500, 40),
-                $"그물 설치 비용: " +
-                $"{netPlacement.CurrentPlacementCost}G",
-                style
-            );
+            if (castNet.IsReady)
+            {
+                castNetText =
+                    "투망 [E]: 준비 완료";
+            }
+            else
+            {
+                castNetText =
+                    $"투망 [E]: " +
+                    $"{castNet.CooldownTimer:F1}초";
+            }
         }
 
-        DrawCastNetInfo();
-        DrawGameFlow();
+        GUI.Label(
+            new Rect(
+                20,
+                265,
+                600,
+                40
+            ),
+            castNetText,
+            style
+        );
+    }
+
+    private void DrawNetCost()
+    {
+        if (netPlacement == null ||
+            !netPlacement.IsDragging)
+        {
+            return;
+        }
+
+        GUI.Label(
+            new Rect(
+                20,
+                300,
+                600,
+                40
+            ),
+            $"그물 설치 비용: " +
+            $"{netPlacement.CurrentPlacementCost}G",
+            style
+        );
     }
 
     private void DrawCastNetInfo()
@@ -157,7 +239,8 @@ public class PrototypeHUD : MonoBehaviour
                 );
 
             float guiY =
-                Screen.height - screenPosition.y;
+                Screen.height -
+                screenPosition.y;
 
             GUI.Label(
                 new Rect(
@@ -180,7 +263,8 @@ public class PrototypeHUD : MonoBehaviour
                 );
 
             float guiY =
-                Screen.height - screenPosition.y;
+                Screen.height -
+                screenPosition.y;
 
             GUI.Label(
                 new Rect(
@@ -193,6 +277,36 @@ public class PrototypeHUD : MonoBehaviour
                 centerStyle
             );
         }
+    }
+
+    private void DrawEncounterAnnouncement()
+    {
+        if (fishSpawner == null ||
+            !fishSpawner.IsShowingAnnouncement)
+        {
+            return;
+        }
+
+        GUI.Box(
+            new Rect(
+                Screen.width * 0.5f - 300f,
+                100f,
+                600f,
+                70f
+            ),
+            ""
+        );
+
+        GUI.Label(
+            new Rect(
+                Screen.width * 0.5f - 290f,
+                105f,
+                580f,
+                60f
+            ),
+            fishSpawner.AnnouncementText,
+            announcementStyle
+        );
     }
 
     private void DrawGameFlow()
