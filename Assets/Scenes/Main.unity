@@ -210,6 +210,57 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &148901736
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 148901738}
+  - component: {fileID: 148901737}
+  m_Layer: 0
+  m_Name: PrototypeJobManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &148901737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148901736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87e9f6f6c5b25a64692e1a0be48f2c47, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrototypeJobManager
+  jobAfterSchoolCount: 3
+  selectionInputDelay: 0.25
+  fishSpawner: {fileID: 1679640293}
+  castNet: {fileID: 821204956}
+  netPlacement: {fileID: 2057654402}
+  rodPlacement: {fileID: 241344187}
+  landingNet: {fileID: 1325090139}
+--- !u!4 &148901738
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 148901736}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &214365346
 GameObject:
   m_ObjectHideFlags: 0
@@ -423,7 +474,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FishingRodPlacementController
   rodPrefab: {fileID: 5111392391714882311, guid: 8e1e82cabf6ec8247aee14c6d6cd9988, type: 3}
   placementPreview: {fileID: 13304390}
-  placementCost: 25
+  basePlacementCost: 25
+  costIncreasePerRod: 10
   maxActiveRods: 2
 --- !u!4 &241344188
 Transform:
@@ -784,6 +836,8 @@ MonoBehaviour:
   capturePower: 15
   captureRadius: 1
   cooldown: 7
+  refundThreshold: 8
+  refundAmount: 2
   castVisual: {fileID: 214365347}
   visualDuration: 0.2
 --- !u!4 &821204957
@@ -800,6 +854,52 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 214365347}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &844541566
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 844541568}
+  - component: {fileID: 844541567}
+  m_Layer: 0
+  m_Name: GearRepositionController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &844541567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 844541566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51dc30e86729560419ebc6f96dcd509a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GearRepositionController
+  reinstallDelay: 0.5
+  selectionRadius: 0.2
+--- !u!4 &844541568
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 844541566}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &876261348
@@ -1020,7 +1120,10 @@ MonoBehaviour:
   castNet: {fileID: 821204956}
   bait: {fileID: 1763526207}
   netPlacement: {fileID: 2057654402}
+  rodPlacement: {fileID: 241344187}
   selectionInputDelay: 0.25
+  rerollBaseCost: 20
+  rerollCostIncrease: 15
 --- !u!4 &1261418162
 Transform:
   m_ObjectHideFlags: 0
@@ -1068,8 +1171,10 @@ MonoBehaviour:
   capturePower: 3
   captureRadius: 1.1
   attackCooldown: 0.45
-  rangeVisual: {fileID: 355279320}
   maxTargets: 3
+  rangeVisual: {fileID: 355279320}
+  chainRadius: 1.5
+  chainDamage: 2
 --- !u!4 &1325090140
 Transform:
   m_ObjectHideFlags: 0
@@ -1364,6 +1469,7 @@ MonoBehaviour:
   maxActiveNets: 3
   baseCost: 5
   costPerUnitLength: 4
+  costIncreasePerNet: 0.2
 --- !u!4 &2057654403
 Transform:
   m_ObjectHideFlags: 0
@@ -1398,3 +1504,5 @@ SceneRoots:
   - {fileID: 889583751}
   - {fileID: 13304390}
   - {fileID: 241344188}
+  - {fileID: 148901738}
+  - {fileID: 844541568}

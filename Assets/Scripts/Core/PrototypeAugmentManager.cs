@@ -53,14 +53,20 @@ public class PrototypeAugmentManager : MonoBehaviour
     [Header("Input")]
     [SerializeField] private float selectionInputDelay = 0.25f;
 
+    [Header("Reroll")]
+    [SerializeField] private int rerollBaseCost = 20;
+    [SerializeField] private int rerollCostIncrease = 15;
+
     private bool canSelect;
     private float selectionUnlockTime;
     private bool showChoices;
 
+    private int rerollCount;
+
     public bool IsChoosingAugment =>
         showChoices ||
         (PrototypeJobManager.Instance != null &&
-        PrototypeJobManager.Instance.IsChoosingJob);
+         PrototypeJobManager.Instance.IsChoosingJob);
 
     private AugmentOption[] currentChoices =
         new AugmentOption[3];
@@ -77,10 +83,8 @@ public class PrototypeAugmentManager : MonoBehaviour
     {
         public AugmentType Type;
         public AugmentCategory Category;
-
         public string Name;
         public string Description;
-
         public float BaseWeight;
         public bool IsUnique;
 
@@ -94,10 +98,8 @@ public class PrototypeAugmentManager : MonoBehaviour
         {
             Type = type;
             Category = category;
-
             Name = name;
             Description = description;
-
             BaseWeight = baseWeight;
             IsUnique = isUnique;
         }
@@ -139,14 +141,16 @@ public class PrototypeAugmentManager : MonoBehaviour
             return;
         }
 
+        rerollCount = 0;
+
         GenerateChoices();
 
         showChoices = true;
         canSelect = false;
 
         selectionUnlockTime =
-            Time.realtimeSinceStartup
-            + selectionInputDelay;
+            Time.realtimeSinceStartup +
+            selectionInputDelay;
 
         Time.timeScale = 0f;
     }
@@ -167,12 +171,9 @@ public class PrototypeAugmentManager : MonoBehaviour
             }
 
             AugmentOption selected =
-                SelectWeightedAugment(
-                    pool
-                );
+                SelectWeightedAugment(pool);
 
-            currentChoices[i] =
-                selected;
+            currentChoices[i] = selected;
 
             pool.Remove(selected);
         }
@@ -208,16 +209,13 @@ public class PrototypeAugmentManager : MonoBehaviour
                     option.Category
                 );
 
-            if (randomValue <=
-                accumulatedWeight)
+            if (randomValue <= accumulatedWeight)
             {
                 return option;
             }
         }
 
-        return pool[
-            pool.Count - 1
-        ];
+        return pool[pool.Count - 1];
     }
 
     private List<AugmentOption>
@@ -226,104 +224,82 @@ public class PrototypeAugmentManager : MonoBehaviour
         List<AugmentOption> pool =
             new List<AugmentOption>();
 
-        pool.Add(
-            new AugmentOption(
-                AugmentType.LandingNetPower,
-                AugmentCategory.LandingNet,
-                "°­È­ ¶ãÃ¤",
-                "¶ãÃ¤ Æ÷È¹·Â +2"
-            )
-        );
+        pool.Add(new AugmentOption(
+            AugmentType.LandingNetPower,
+            AugmentCategory.LandingNet,
+            "°­È­ ¶ãÃ¤",
+            "¶ãÃ¤ Æ÷È¹·Â +2"
+        ));
 
-        pool.Add(
-            new AugmentOption(
-                AugmentType.LandingNetRadius,
-                AugmentCategory.LandingNet,
-                "³ÐÀº ¶ãÃ¤",
-                "¶ãÃ¤ ¹üÀ§ +0.25"
-            )
-        );
+        pool.Add(new AugmentOption(
+            AugmentType.LandingNetRadius,
+            AugmentCategory.LandingNet,
+            "³ÐÀº ¶ãÃ¤",
+            "¶ãÃ¤ ¹üÀ§ +0.25"
+        ));
 
-        pool.Add(
-            new AugmentOption(
-                AugmentType.CastNetPower,
-                AugmentCategory.CastNet,
-                "°­È­ Åõ¸Á",
-                "Åõ¸Á Æ÷È¹·Â +5"
-            )
-        );
+        pool.Add(new AugmentOption(
+            AugmentType.CastNetPower,
+            AugmentCategory.CastNet,
+            "°­È­ Åõ¸Á",
+            "Åõ¸Á Æ÷È¹·Â +5"
+        ));
 
-        pool.Add(
-            new AugmentOption(
-                AugmentType.CastNetRadius,
-                AugmentCategory.CastNet,
-                "´ëÇü Åõ¸Á",
-                "Åõ¸Á ¹üÀ§ +0.25"
-            )
-        );
+        pool.Add(new AugmentOption(
+            AugmentType.CastNetRadius,
+            AugmentCategory.CastNet,
+            "´ëÇü Åõ¸Á",
+            "Åõ¸Á ¹üÀ§ +0.25"
+        ));
 
-        pool.Add(
-            new AugmentOption(
-                AugmentType.CastNetCooldown,
-                AugmentCategory.CastNet,
-                "½Å¼Ó Åõ¸Á",
-                "Åõ¸Á Àç»ç¿ë ´ë±â½Ã°£ -0.5ÃÊ"
-            )
-        );
+        pool.Add(new AugmentOption(
+            AugmentType.CastNetCooldown,
+            AugmentCategory.CastNet,
+            "½Å¼Ó Åõ¸Á",
+            "Åõ¸Á ÃæÀü½Ã°£ -0.5ÃÊ"
+        ));
 
-        pool.Add(
-            new AugmentOption(
-                AugmentType.BaitRadius,
-                AugmentCategory.Bait,
-                "°­ÇÑ Çâ",
-                "¹Ì³¢ À¯ÀÎ ¹üÀ§ +0.75"
-            )
-        );
+        pool.Add(new AugmentOption(
+            AugmentType.BaitRadius,
+            AugmentCategory.Bait,
+            "°­ÇÑ Çâ",
+            "¹Ì³¢ À¯ÀÎ ¹üÀ§ +0.75"
+        ));
 
-        pool.Add(
-            new AugmentOption(
-                AugmentType.BaitDuration,
-                AugmentCategory.Bait,
-                "Áö¼ÓÇü ¹Ì³¢",
-                "¹Ì³¢ Áö¼Ó½Ã°£ +1ÃÊ"
-            )
-        );
+        pool.Add(new AugmentOption(
+            AugmentType.BaitDuration,
+            AugmentCategory.Bait,
+            "Áö¼ÓÇü ¹Ì³¢",
+            "¹Ì³¢ Áö¼Ó½Ã°£ +1ÃÊ"
+        ));
 
-        pool.Add(
-            new AugmentOption(
-                AugmentType.NetLength,
-                AugmentCategory.Net,
-                "±ä ±×¹°",
-                "±×¹° ÃÖ´ë ±æÀÌ +1"
-            )
-        );
+        pool.Add(new AugmentOption(
+            AugmentType.NetLength,
+            AugmentCategory.Net,
+            "±ä ±×¹°",
+            "±×¹° ÃÖ´ë ±æÀÌ +1"
+        ));
 
-        pool.Add(
-            new AugmentOption(
-                AugmentType.FishingRodPower,
-                AugmentCategory.FishingRod,
-                "°­È­ ³¬½Ë´ë",
-                "³¬½Ë´ë Æ÷È¹·Â +1"
-            )
-        );
+        pool.Add(new AugmentOption(
+            AugmentType.FishingRodPower,
+            AugmentCategory.FishingRod,
+            "°­È­ ³¬½Ë´ë",
+            "³¬½Ë´ë Æ÷È¹·Â +1"
+        ));
 
-        pool.Add(
-            new AugmentOption(
-                AugmentType.FishingRodRange,
-                AugmentCategory.FishingRod,
-                "Àå°Å¸® ³¬½Ã",
-                "³¬½Ë´ë »ç°Å¸® +0.5"
-            )
-        );
+        pool.Add(new AugmentOption(
+            AugmentType.FishingRodRange,
+            AugmentCategory.FishingRod,
+            "Àå°Å¸® ³¬½Ã",
+            "³¬½Ë´ë »ç°Å¸® +0.5"
+        ));
 
-        pool.Add(
-            new AugmentOption(
-                AugmentType.FishingRodSpeed,
-                AugmentCategory.FishingRod,
-                "ºü¸¥ ¸±¸µ",
-                "³¬½Ë´ë °ø°Ý °£°Ý -0.1ÃÊ"
-            )
-        );
+        pool.Add(new AugmentOption(
+            AugmentType.FishingRodSpeed,
+            AugmentCategory.FishingRod,
+            "ºü¸¥ ¸±¸µ",
+            "³¬½Ë´ë °ø°Ý °£°Ý -0.1ÃÊ"
+        ));
 
         AddUniqueAugments(pool);
 
@@ -336,46 +312,40 @@ public class PrototypeAugmentManager : MonoBehaviour
         if (!acquiredUniqueAugments.Contains(
             AugmentType.CastNetFullHaul))
         {
-            pool.Add(
-                new AugmentOption(
-                    AugmentType.CastNetFullHaul,
-                    AugmentCategory.CastNet,
-                    "¸¸¼±",
-                    "Åõ¸ÁÀ¸·Î ÇÑ ¹ø¿¡ 8¸¶¸® ÀÌ»ó Æ÷È¹ÇÏ¸é\nÀç»ç¿ë ´ë±â½Ã°£ 2ÃÊ ¹ÝÈ¯",
-                    0.7f,
-                    true
-                )
-            );
+            pool.Add(new AugmentOption(
+                AugmentType.CastNetFullHaul,
+                AugmentCategory.CastNet,
+                "¸¸¼±",
+                "Åõ¸ÁÀ¸·Î ÇÑ ¹ø¿¡ 8¸¶¸® ÀÌ»ó Æ÷È¹ÇÏ¸é\nÃæÀü½Ã°£ 2ÃÊ ¹ÝÈ¯",
+                0.7f,
+                true
+            ));
         }
 
         if (!acquiredUniqueAugments.Contains(
             AugmentType.FishingRodExtraHook))
         {
-            pool.Add(
-                new AugmentOption(
-                    AugmentType.FishingRodExtraHook,
-                    AugmentCategory.FishingRod,
-                    "Ãß°¡ ¹Ù´Ã",
-                    "³¬½Ë´ë°¡ µ¿½Ã¿¡ 2¸¶¸®¸¦ °ø°Ý",
-                    0.7f,
-                    true
-                )
-            );
+            pool.Add(new AugmentOption(
+                AugmentType.FishingRodExtraHook,
+                AugmentCategory.FishingRod,
+                "Ãß°¡ ¹Ù´Ã",
+                "³¬½Ë´ë°¡ µ¿½Ã¿¡ 2¸¶¸®¸¦ °ø°Ý",
+                0.7f,
+                true
+            ));
         }
 
         if (!acquiredUniqueAugments.Contains(
             AugmentType.LandingNetChainCapture))
         {
-            pool.Add(
-                new AugmentOption(
-                    AugmentType.LandingNetChainCapture,
-                    AugmentCategory.LandingNet,
-                    "¿¬¼â Æ÷È¹",
-                    "¶ãÃ¤·Î ¹°°í±â¸¦ Æ÷È¹ÇÏ¸é\nÁÖº¯ ¹°°í±â 1¸¶¸®¿¡ Ãß°¡ Æ÷È¹ ÇÇÇØ",
-                    0.7f,
-                    true
-                )
-            );
+            pool.Add(new AugmentOption(
+                AugmentType.LandingNetChainCapture,
+                AugmentCategory.LandingNet,
+                "¿¬¼â Æ÷È¹",
+                "¶ãÃ¤·Î ¹°°í±â¸¦ Æ÷È¹ÇÏ¸é\nÁÖº¯ ¹°°í±â 1¸¶¸®¿¡ Ãß°¡ Æ÷È¹ ÇÇÇØ",
+                0.7f,
+                true
+            ));
         }
     }
 
@@ -395,8 +365,7 @@ public class PrototypeAugmentManager : MonoBehaviour
             spacing * 2f;
 
         float startX =
-            (Screen.width -
-             totalWidth) *
+            (Screen.width - totalWidth) *
             0.5f;
 
         float y =
@@ -405,8 +374,7 @@ public class PrototypeAugmentManager : MonoBehaviour
 
         GUI.Box(
             new Rect(
-                Screen.width * 0.5f -
-                150f,
+                Screen.width * 0.5f - 150f,
                 y - 80f,
                 300f,
                 50f
@@ -429,15 +397,13 @@ public class PrototypeAugmentManager : MonoBehaviour
             Rect rect =
                 new Rect(
                     startX +
-                    i *
-                    (width + spacing),
+                    i * (width + spacing),
                     y,
                     width,
                     height
                 );
 
-            GUI.enabled =
-                canSelect;
+            GUI.enabled = canSelect;
 
             string buttonText =
                 $"{option.Name}\n\n" +
@@ -447,13 +413,76 @@ public class PrototypeAugmentManager : MonoBehaviour
                 rect,
                 buttonText))
             {
-                ApplyAugment(
-                    option
-                );
+                ApplyAugment(option);
             }
 
             GUI.enabled = true;
         }
+
+        DrawRerollButton(y, height);
+    }
+
+    private void DrawRerollButton(
+        float choiceY,
+        float choiceHeight)
+    {
+        int cost =
+            GetRerollCost();
+
+        Rect rerollRect =
+            new Rect(
+                Screen.width * 0.5f - 90f,
+                choiceY +
+                choiceHeight +
+                25f,
+                180f,
+                45f
+            );
+
+        bool hasEnoughGold =
+            RunManager.Instance != null &&
+            RunManager.Instance.CurrentGold >= cost;
+
+        GUI.enabled =
+            canSelect &&
+            hasEnoughGold;
+
+        if (GUI.Button(
+            rerollRect,
+            $"¸®·Ñ {cost}G"))
+        {
+            TryReroll();
+        }
+
+        GUI.enabled = true;
+    }
+
+    private int GetRerollCost()
+    {
+        return rerollBaseCost +
+            rerollCount *
+            rerollCostIncrease;
+    }
+
+    private void TryReroll()
+    {
+        if (RunManager.Instance == null)
+        {
+            return;
+        }
+
+        int cost =
+            GetRerollCost();
+
+        if (!RunManager.Instance.TrySpendGold(
+            cost))
+        {
+            return;
+        }
+
+        rerollCount++;
+
+        GenerateChoices();
     }
 
     private void ApplyAugment(
@@ -462,97 +491,59 @@ public class PrototypeAugmentManager : MonoBehaviour
         switch (option.Type)
         {
             case AugmentType.LandingNetPower:
-                landingNet
-                    .IncreaseCapturePower(
-                        2f
-                    );
+                landingNet.IncreaseCapturePower(2f);
                 break;
 
             case AugmentType.LandingNetRadius:
-                landingNet
-                    .IncreaseCaptureRadius(
-                        0.25f
-                    );
+                landingNet.IncreaseCaptureRadius(0.25f);
                 break;
 
             case AugmentType.LandingNetChainCapture:
-                landingNet
-                    .EnableChainCapture();
+                landingNet.EnableChainCapture();
                 break;
 
             case AugmentType.CastNetPower:
-                castNet
-                    .IncreaseCapturePower(
-                        5f
-                    );
+                castNet.IncreaseCapturePower(5f);
                 break;
 
             case AugmentType.CastNetRadius:
-                castNet
-                    .IncreaseCaptureRadius(
-                        0.25f
-                    );
+                castNet.IncreaseCaptureRadius(0.25f);
                 break;
 
             case AugmentType.CastNetCooldown:
-                castNet
-                    .ReduceCooldown(
-                        0.5f
-                    );
+                castNet.ReduceCooldown(0.5f);
                 break;
 
             case AugmentType.CastNetFullHaul:
-                castNet
-                    .EnableMassCatchRefund();
+                castNet.EnableMassCatchRefund();
                 break;
 
             case AugmentType.BaitRadius:
-                bait
-                    .IncreaseAttractionRadius(
-                        0.75f
-                    );
+                bait.IncreaseAttractionRadius(0.75f);
                 break;
 
             case AugmentType.BaitDuration:
-                bait
-                    .IncreaseDuration(
-                        1f
-                    );
+                bait.IncreaseDuration(1f);
                 break;
 
             case AugmentType.NetLength:
-                netPlacement
-                    .IncreaseMaxLength(
-                        1f
-                    );
+                netPlacement.IncreaseMaxLength(1f);
                 break;
 
             case AugmentType.FishingRodPower:
-                rodPlacement
-                    .IncreaseRodCapturePower(
-                        1f
-                    );
+                rodPlacement.IncreaseRodCapturePower(1f);
                 break;
 
             case AugmentType.FishingRodRange:
-                rodPlacement
-                    .IncreaseRodRange(
-                        0.5f
-                    );
+                rodPlacement.IncreaseRodRange(0.5f);
                 break;
 
             case AugmentType.FishingRodSpeed:
-                rodPlacement
-                    .ReduceRodAttackInterval(
-                        0.1f
-                    );
+                rodPlacement.ReduceRodAttackInterval(0.1f);
                 break;
 
             case AugmentType.FishingRodExtraHook:
-                rodPlacement
-                    .AddRodAdditionalTarget(
-                        1
-                    );
+                rodPlacement.AddRodAdditionalTarget(1);
                 break;
         }
 
@@ -574,8 +565,7 @@ public class PrototypeAugmentManager : MonoBehaviour
 
         if (RunManager.Instance != null)
         {
-            RunManager.Instance
-                .ResolveLevelUp();
+            RunManager.Instance.ResolveLevelUp();
         }
     }
 
@@ -584,10 +574,7 @@ public class PrototypeAugmentManager : MonoBehaviour
         float weight)
     {
         categoryWeights[category] =
-            Mathf.Max(
-                0f,
-                weight
-            );
+            Mathf.Max(0f, weight);
     }
 
     public float GetCategoryWeight(
@@ -609,18 +596,14 @@ public class PrototypeAugmentManager : MonoBehaviour
 
         Array categories =
             Enum.GetValues(
-                typeof(
-                    AugmentCategory
-                )
+                typeof(AugmentCategory)
             );
 
-        foreach (
-            AugmentCategory category
-            in categories)
+        foreach (AugmentCategory category
+                 in categories)
         {
-            categoryWeights[
-                category
-            ] = 1f;
+            categoryWeights[category] =
+                1f;
         }
     }
 

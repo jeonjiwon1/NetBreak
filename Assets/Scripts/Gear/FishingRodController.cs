@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -18,9 +19,21 @@ public class FishingRodController : MonoBehaviour
 
     private int additionalTargets;
 
-    public float CapturePower => capturePower;
-    public float AttackInterval => attackInterval;
-    public float CaptureRange => captureRange;
+    private bool isOperational = true;
+
+    private Coroutine reactivationCoroutine;
+
+    public float CapturePower =>
+        capturePower;
+
+    public float AttackInterval =>
+        attackInterval;
+
+    public float CaptureRange =>
+        captureRange;
+
+    public bool IsOperational =>
+        isOperational;
 
     private void Awake()
     {
@@ -39,6 +52,13 @@ public class FishingRodController : MonoBehaviour
 
     private void Update()
     {
+        if (!isOperational)
+        {
+            currentTarget = null;
+            HideTargetLine();
+            return;
+        }
+
         PrototypeGameFlowManager flow =
             PrototypeGameFlowManager.Instance;
 
@@ -51,7 +71,8 @@ public class FishingRodController : MonoBehaviour
             return;
         }
 
-        attackTimer -= Time.deltaTime;
+        attackTimer -=
+            Time.deltaTime;
 
         if (attackTimer <= 0f)
         {
@@ -82,10 +103,12 @@ public class FishingRodController : MonoBehaviour
             return;
         }
 
-        currentTarget = targets[0];
+        currentTarget =
+            targets[0];
 
-        foreach (FishController target
-                 in targets)
+        foreach (
+            FishController target
+            in targets)
         {
             if (target == null)
             {
@@ -101,12 +124,14 @@ public class FishingRodController : MonoBehaviour
             !currentTarget.gameObject.activeSelf)
         {
             currentTarget = null;
+
             HideTargetLine();
         }
     }
 
-    private List<FishController> FindBestTargets(
-        int maxTargets)
+    private List<FishController>
+        FindBestTargets(
+            int maxTargets)
     {
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
@@ -128,7 +153,8 @@ public class FishingRodController : MonoBehaviour
                 continue;
             }
 
-            if (!candidates.Contains(fish))
+            if (!candidates.Contains(
+                fish))
             {
                 candidates.Add(fish);
             }
@@ -138,9 +164,10 @@ public class FishingRodController : MonoBehaviour
             (a, b) =>
             {
                 int valueComparison =
-                    b.Data.CatchValue.CompareTo(
-                        a.Data.CatchValue
-                    );
+                    b.Data.CatchValue
+                        .CompareTo(
+                            a.Data.CatchValue
+                        );
 
                 if (valueComparison != 0)
                 {
@@ -201,6 +228,7 @@ public class FishingRodController : MonoBehaviour
         if (distance > captureRange)
         {
             currentTarget = null;
+
             HideTargetLine();
             return;
         }
@@ -244,12 +272,73 @@ public class FishingRodController : MonoBehaviour
             );
     }
 
-    public void IncreaseCapturePower(float amount)
+    public void BeginReposition()
+    {
+        if (reactivationCoroutine != null)
+        {
+            StopCoroutine(
+                reactivationCoroutine
+            );
+
+            reactivationCoroutine = null;
+        }
+
+        isOperational = false;
+
+        currentTarget = null;
+
+        HideTargetLine();
+    }
+
+    public void EndReposition(
+        float delay)
+    {
+        if (reactivationCoroutine != null)
+        {
+            StopCoroutine(
+                reactivationCoroutine
+            );
+        }
+
+        if (delay <= 0f)
+        {
+            Reactivate();
+            return;
+        }
+
+        reactivationCoroutine =
+            StartCoroutine(
+                ReactivateAfterDelay(delay)
+            );
+    }
+
+    private IEnumerator ReactivateAfterDelay(
+        float delay)
+    {
+        yield return new WaitForSeconds(
+            delay
+        );
+
+        Reactivate();
+
+        reactivationCoroutine = null;
+    }
+
+    private void Reactivate()
+    {
+        isOperational = true;
+
+        attackTimer = 0f;
+    }
+
+    public void IncreaseCapturePower(
+        float amount)
     {
         capturePower += amount;
     }
 
-    public void ReduceAttackInterval(float amount)
+    public void ReduceAttackInterval(
+        float amount)
     {
         attackInterval =
             Mathf.Max(
@@ -258,14 +347,16 @@ public class FishingRodController : MonoBehaviour
             );
     }
 
-    public void IncreaseCaptureRange(float amount)
+    public void IncreaseCaptureRange(
+        float amount)
     {
         captureRange += amount;
 
         UpdateRangeVisual();
     }
 
-    public void AddAdditionalTarget(int amount)
+    public void AddAdditionalTarget(
+        int amount)
     {
         additionalTargets += amount;
     }

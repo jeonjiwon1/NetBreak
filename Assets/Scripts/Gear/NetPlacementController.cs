@@ -4,7 +4,11 @@ using UnityEngine.InputSystem;
 
 public class NetPlacementController : MonoBehaviour
 {
-    public static bool IsNetModeActive { get; private set; }
+    public static bool IsNetModeActive
+    {
+        get;
+        private set;
+    }
 
     [Header("References")]
     [SerializeField] private NetController netPrefab;
@@ -21,6 +25,7 @@ public class NetPlacementController : MonoBehaviour
     [Header("Cost")]
     [SerializeField] private int baseCost = 5;
     [SerializeField] private float costPerUnitLength = 4f;
+    [SerializeField] private float costIncreasePerNet = 0.2f;
 
     private Camera mainCamera;
 
@@ -29,9 +34,14 @@ public class NetPlacementController : MonoBehaviour
     private Vector2 startPosition;
     private Vector2 currentEndPosition;
 
-    private readonly List<NetController> activeNets = new();
+    private readonly List<NetController>
+        activeNets = new();
 
-    public bool IsDragging => isDragging;
+    private float costMultiplier = 1f;
+    private float netDamageMultiplier = 1f;
+
+    public bool IsDragging =>
+        isDragging;
 
     public int ActiveNetCount =>
         activeNets.Count;
@@ -77,13 +87,15 @@ public class NetPlacementController : MonoBehaviour
         }
 
         bool inputBlocked =
-            (PrototypeAugmentManager.Instance != null &&
-            PrototypeAugmentManager.Instance.IsChoosingAugment)
-            ||
-            (PrototypeGameFlowManager.Instance != null &&
-            PrototypeGameFlowManager.Instance.IsGameEnded)
-            ||
-            FishingRodPlacementController.IsRodModeActive;
+                (PrototypeAugmentManager.Instance != null &&
+                PrototypeAugmentManager.Instance.IsChoosingAugment)
+                ||
+                (PrototypeGameFlowManager.Instance != null &&
+                PrototypeGameFlowManager.Instance.IsGameEnded)
+                ||
+                FishingRodPlacementController.IsRodModeActive
+                ||
+                GearRepositionController.IsRepositioning;
 
         if (inputBlocked)
         {
@@ -106,7 +118,8 @@ public class NetPlacementController : MonoBehaviour
     {
         if (Keyboard.current.wKey.wasPressedThisFrame)
         {
-            IsNetModeActive = !IsNetModeActive;
+            IsNetModeActive =
+                !IsNetModeActive;
 
             if (!IsNetModeActive)
             {
@@ -118,7 +131,8 @@ public class NetPlacementController : MonoBehaviour
             Keyboard.current.escapeKey.wasPressedThisFrame ||
             Mouse.current.rightButton.wasPressedThisFrame;
 
-        if (cancelPressed && IsNetModeActive)
+        if (cancelPressed &&
+            IsNetModeActive)
         {
             IsNetModeActive = false;
             CancelPlacement();
@@ -195,11 +209,13 @@ public class NetPlacementController : MonoBehaviour
         if (direction.magnitude > maxLength)
         {
             direction =
-                direction.normalized * maxLength;
+                direction.normalized *
+                maxLength;
         }
 
         currentEndPosition =
-            startPosition + direction;
+            startPosition +
+            direction;
 
         UpdateVisual(
             netPreview,
@@ -248,17 +264,38 @@ public class NetPlacementController : MonoBehaviour
             thickness
         );
 
+        if (netDamageMultiplier != 1f)
+        {
+            net.MultiplyCaptureDamage(
+                netDamageMultiplier
+            );
+        }
+
         activeNets.Add(net);
 
         IsNetModeActive = false;
     }
 
-    private int CalculateCost(float length)
+    private int CalculateCost(
+        float length)
     {
-        return baseCost +
+        int rawCost =
+            baseCost +
             Mathf.CeilToInt(
-                length * costPerUnitLength
+                length *
+                costPerUnitLength
             );
+
+        float countMultiplier =
+            1f +
+            activeNets.Count *
+            costIncreasePerNet;
+
+        return Mathf.CeilToInt(
+            rawCost *
+            countMultiplier *
+            costMultiplier
+        );
     }
 
     private void CancelPlacement()
@@ -274,8 +311,7 @@ public class NetPlacementController : MonoBehaviour
     private void UpdateVisual(
         Transform visual,
         Vector2 start,
-        Vector2 end
-    )
+        Vector2 end)
     {
         if (visual == null)
         {
@@ -314,13 +350,42 @@ public class NetPlacementController : MonoBehaviour
             );
     }
 
-    public void IncreaseMaxLength(float amount)
+    public void IncreaseMaxLength(
+        float amount)
     {
         maxLength += amount;
     }
 
-    public void IncreaseMaxActiveNets(int amount)
+    public void IncreaseMaxActiveNets(
+        int amount)
     {
         maxActiveNets += amount;
+    }
+
+    public void EnableNetFisherJob()
+    {
+        maxActiveNets =
+            Mathf.Max(
+                maxActiveNets,
+                10
+            );
+
+        costMultiplier *= 0.7f;
+
+        float newDamageMultiplier = 3f;
+
+        netDamageMultiplier *=
+            newDamageMultiplier;
+
+        foreach (NetController net
+                 in activeNets)
+        {
+            if (net != null)
+            {
+                net.MultiplyCaptureDamage(
+                    newDamageMultiplier
+                );
+            }
+        }
     }
 }

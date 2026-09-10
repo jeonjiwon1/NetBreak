@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public enum JobType
 {
@@ -18,9 +19,13 @@ public class PrototypeJobManager : MonoBehaviour
     }
 
     [Header("Job Advancement")]
-    [SerializeField] private int jobLevel = 4;
+    [SerializeField] private int jobAfterSchoolCount = 3;
+
+    [Header("Input")]
+    [SerializeField] private float selectionInputDelay = 0.25f;
 
     [Header("References")]
+    [SerializeField] private FishSpawner fishSpawner;
     [SerializeField] private CastNetController castNet;
     [SerializeField] private NetPlacementController netPlacement;
     [SerializeField] private FishingRodPlacementController rodPlacement;
@@ -31,6 +36,9 @@ public class PrototypeJobManager : MonoBehaviour
 
     private bool isChoosingJob;
     private bool jobSelectionTriggered;
+
+    private bool canSelect;
+    private float selectionUnlockTime;
 
     public JobType CurrentJob =>
         currentJob;
@@ -48,20 +56,25 @@ public class PrototypeJobManager : MonoBehaviour
 
     private void Update()
     {
+        if (isChoosingJob)
+        {
+            UpdateSelectionLock();
+            return;
+        }
+
         if (jobSelectionTriggered ||
-            HasAdvanced ||
-            isChoosingJob)
+            HasAdvanced)
         {
             return;
         }
 
-        if (RunManager.Instance == null)
+        if (fishSpawner == null)
         {
             return;
         }
 
-        if (RunManager.Instance.CurrentLevel <
-            jobLevel)
+        if (fishSpawner.SpawnedSchoolCount <
+            jobAfterSchoolCount)
         {
             return;
         }
@@ -75,10 +88,38 @@ public class PrototypeJobManager : MonoBehaviour
         ShowJobChoices();
     }
 
+    private void UpdateSelectionLock()
+    {
+        if (canSelect)
+        {
+            return;
+        }
+
+        if (Time.realtimeSinceStartup <
+            selectionUnlockTime)
+        {
+            return;
+        }
+
+        if (Mouse.current != null &&
+            Mouse.current.leftButton.isPressed)
+        {
+            return;
+        }
+
+        canSelect = true;
+    }
+
     private void ShowJobChoices()
     {
         jobSelectionTriggered = true;
         isChoosingJob = true;
+
+        canSelect = false;
+
+        selectionUnlockTime =
+            Time.realtimeSinceStartup +
+            selectionInputDelay;
 
         Time.timeScale = 0f;
     }
@@ -97,7 +138,7 @@ public class PrototypeJobManager : MonoBehaviour
     private void DrawJobSelection()
     {
         float width = 220f;
-        float height = 150f;
+        float height = 180f;
         float spacing = 15f;
 
         float totalWidth =
@@ -122,6 +163,8 @@ public class PrototypeJobManager : MonoBehaviour
             "1차 전직을 선택하세요"
         );
 
+        GUI.enabled = canSelect;
+
         if (GUI.Button(
             new Rect(
                 startX,
@@ -130,8 +173,8 @@ public class PrototypeJobManager : MonoBehaviour
                 height
             ),
             "투망꾼\n\n" +
-            "투망 증강 출현률 증가\n" +
-            "투망 기본 범위 증가"
+            "투망 최대 3스택\n" +
+            "투망 증강 출현률 증가"
         ))
         {
             SelectJob(
@@ -141,15 +184,15 @@ public class PrototypeJobManager : MonoBehaviour
 
         if (GUI.Button(
             new Rect(
-                startX +
-                (width + spacing),
+                startX + width + spacing,
                 y,
                 width,
                 height
             ),
             "그물잡이\n\n" +
-            "그물 증강 출현률 증가\n" +
-            "최대 그물 +1"
+            "최대 그물 10개\n" +
+            "그물 포획력 대폭 증가\n" +
+            "설치 비용 감소"
         ))
         {
             SelectJob(
@@ -166,8 +209,9 @@ public class PrototypeJobManager : MonoBehaviour
                 height
             ),
             "낚시꾼\n\n" +
-            "낚싯대 증강 출현률 증가\n" +
-            "최대 낚싯대 +1"
+            "최대 낚싯대 12개\n" +
+            "설치 비용 감소\n" +
+            "낚싯대 증강 출현률 증가"
         ))
         {
             SelectJob(
@@ -184,19 +228,27 @@ public class PrototypeJobManager : MonoBehaviour
                 height
             ),
             "뜰채잡이\n\n" +
-            "뜰채 증강 출현률 증가\n" +
-            "동시 타격 수 +2"
+            "뜰채 범위 2배\n" +
+            "최대 8마리 타격\n" +
+            "쿨타임마다 자동 사용"
         ))
         {
             SelectJob(
                 JobType.LandingNetFisher
             );
         }
+
+        GUI.enabled = true;
     }
 
     private void SelectJob(
         JobType selectedJob)
     {
+        if (!canSelect)
+        {
+            return;
+        }
+
         currentJob = selectedJob;
 
         ApplyJobEffect(
@@ -211,97 +263,100 @@ public class PrototypeJobManager : MonoBehaviour
     private void ApplyJobEffect(
         JobType job)
     {
-        if (PrototypeAugmentManager.Instance ==
-            null)
+        if (PrototypeAugmentManager.Instance != null)
         {
-            return;
+            PrototypeAugmentManager.Instance
+                .ResetCategoryWeights();
         }
-
-        PrototypeAugmentManager.Instance
-            .ResetCategoryWeights();
 
         switch (job)
         {
             case JobType.CastNetFisher:
 
-                PrototypeAugmentManager.Instance
-                    .SetCategoryWeight(
-                        AugmentCategory.CastNet,
-                        3f
-                    );
+                if (PrototypeAugmentManager.Instance != null)
+                {
+                    PrototypeAugmentManager.Instance
+                        .SetCategoryWeight(
+                            AugmentCategory.CastNet,
+                            3f
+                        );
 
-                PrototypeAugmentManager.Instance
-                    .SetCategoryWeight(
-                        AugmentCategory.Bait,
-                        1.4f
-                    );
+                    PrototypeAugmentManager.Instance
+                        .SetCategoryWeight(
+                            AugmentCategory.Bait,
+                            1.4f
+                        );
+                }
 
                 if (castNet != null)
                 {
-                    castNet
-                        .IncreaseCaptureRadius(
-                            0.15f
-                        );
+                    castNet.EnableCastNetFisherJob();
                 }
 
                 break;
 
             case JobType.NetFisher:
 
-                PrototypeAugmentManager.Instance
-                    .SetCategoryWeight(
-                        AugmentCategory.Net,
-                        3f
-                    );
+                if (PrototypeAugmentManager.Instance != null)
+                {
+                    PrototypeAugmentManager.Instance
+                        .SetCategoryWeight(
+                            AugmentCategory.Net,
+                            3f
+                        );
 
-                PrototypeAugmentManager.Instance
-                    .SetCategoryWeight(
-                        AugmentCategory.Bait,
-                        1.4f
-                    );
+                    PrototypeAugmentManager.Instance
+                        .SetCategoryWeight(
+                            AugmentCategory.Bait,
+                            1.4f
+                        );
+                }
 
                 if (netPlacement != null)
                 {
-                    netPlacement
-                        .IncreaseMaxActiveNets(
-                            1
-                        );
+                    netPlacement.EnableNetFisherJob();
                 }
 
                 break;
 
             case JobType.Angler:
 
-                PrototypeAugmentManager.Instance
-                    .SetCategoryWeight(
-                        AugmentCategory.FishingRod,
-                        3f
-                    );
+                if (PrototypeAugmentManager.Instance != null)
+                {
+                    PrototypeAugmentManager.Instance
+                        .SetCategoryWeight(
+                            AugmentCategory.FishingRod,
+                            3f
+                        );
+                }
 
                 if (rodPlacement != null)
                 {
-                    rodPlacement
-                        .IncreaseMaxActiveRods(
-                            1
-                        );
+                    rodPlacement.EnableAnglerJob();
                 }
 
                 break;
 
             case JobType.LandingNetFisher:
 
-                PrototypeAugmentManager.Instance
-                    .SetCategoryWeight(
-                        AugmentCategory.LandingNet,
-                        3f
-                    );
+                if (PrototypeAugmentManager.Instance != null)
+                {
+                    PrototypeAugmentManager.Instance
+                        .SetCategoryWeight(
+                            AugmentCategory.LandingNet,
+                            3f
+                        );
+
+                    PrototypeAugmentManager.Instance
+                        .SetCategoryWeight(
+                            AugmentCategory.Bait,
+                            1.25f
+                        );
+                }
 
                 if (landingNet != null)
                 {
-                    landingNet
-                        .IncreaseMaxTargets(
-                            2
-                        );
+                    landingNet.EnableLandingNetFisherJob();
                 }
 
                 break;
@@ -310,11 +365,6 @@ public class PrototypeJobManager : MonoBehaviour
 
     private void DrawCurrentJob()
     {
-        string jobName =
-            GetJobName(
-                currentJob
-            );
-
         GUI.Label(
             new Rect(
                 Screen.width - 220f,
@@ -322,7 +372,7 @@ public class PrototypeJobManager : MonoBehaviour
                 200f,
                 40f
             ),
-            $"전직: {jobName}"
+            $"전직: {GetJobName(currentJob)}"
         );
     }
 

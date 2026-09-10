@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(FishController))]
@@ -18,7 +19,9 @@ public class FishMovement : MonoBehaviour
     private float wavePhase;
 
     private float netSpeedMultiplier = 1f;
-    private int netContactCount = 0;
+
+    private readonly Dictionary<NetController, float>
+        activeNets = new();
 
     private void Awake()
     {
@@ -26,12 +29,27 @@ public class FishMovement : MonoBehaviour
         fishController = GetComponent<FishController>();
     }
 
+    private void OnDisable()
+    {
+        activeNets.Clear();
+        netSpeedMultiplier = 1f;
+    }
+
     public void InitializeSchoolMovement(float centerY)
     {
         schoolCenterY = centerY;
 
-        personalOffsetY = Random.Range(-1.6f, 1.6f);
-        wavePhase = Random.Range(0f, Mathf.PI * 2f);
+        personalOffsetY =
+            Random.Range(-1.6f, 1.6f);
+
+        wavePhase =
+            Random.Range(
+                0f,
+                Mathf.PI * 2f
+            );
+
+        activeNets.Clear();
+        netSpeedMultiplier = 1f;
     }
 
     private void Update()
@@ -51,45 +69,59 @@ public class FishMovement : MonoBehaviour
             schoolCenterY
             + personalOffsetY
             + Mathf.Sin(
-                Time.time * waveFrequency + wavePhase
+                Time.time * waveFrequency +
+                wavePhase
             ) * waveAmplitude;
 
         float verticalDifference =
-            targetY - transform.position.y;
+            targetY -
+            transform.position.y;
 
         float schoolStrength =
             fishController.Data.SchoolStrength;
 
-        Vector2 schoolDirection = new Vector2(
-            1f,
-            verticalDifference
-            * schoolCorrectionSpeed
-            * schoolStrength
-        ).normalized;
+        Vector2 schoolDirection =
+            new Vector2(
+                1f,
+                verticalDifference
+                * schoolCorrectionSpeed
+                * schoolStrength
+            ).normalized;
 
-        Vector2 finalDirection = schoolDirection;
+        Vector2 finalDirection =
+            schoolDirection;
 
-        BaitController bait = BaitController.Instance;
+        BaitController bait =
+            BaitController.Instance;
 
-        if (bait != null && bait.IsActive)
+        if (bait != null &&
+            bait.IsActive)
         {
             Vector2 toBait =
-                bait.Position
-                - (Vector2)transform.position;
+                bait.Position -
+                (Vector2)transform.position;
 
-            float distance = toBait.magnitude;
+            float distance =
+                toBait.magnitude;
 
-            if (distance <= bait.AttractionRadius)
+            if (distance <=
+                bait.AttractionRadius)
             {
                 float distanceFactor =
-                    1f - distance / bait.AttractionRadius;
+                    1f -
+                    distance /
+                    bait.AttractionRadius;
 
                 float baitStrength =
-                    fishController.Data.BaitAttraction
+                    fishController.Data
+                        .BaitAttraction
                     * distanceFactor
                     * 1.5f;
 
-                baitStrength = Mathf.Clamp01(baitStrength);
+                baitStrength =
+                    Mathf.Clamp01(
+                        baitStrength
+                    );
 
                 Vector2 baitDirection =
                     toBait.normalized;
@@ -126,22 +158,56 @@ public class FishMovement : MonoBehaviour
         }
     }
 
-    public void EnterNet(float slowMultiplier)
+    public void EnterNet(
+        NetController net,
+        float slowMultiplier)
     {
-        netContactCount++;
+        if (net == null)
+        {
+            return;
+        }
 
-        netSpeedMultiplier =
-            Mathf.Min(netSpeedMultiplier, slowMultiplier);
+        activeNets[net] =
+            Mathf.Clamp01(
+                slowMultiplier
+            );
+
+        RecalculateNetSpeed();
     }
 
-    public void ExitNet()
+    public void ExitNet(
+        NetController net)
     {
-        netContactCount =
-            Mathf.Max(0, netContactCount - 1);
-
-        if (netContactCount == 0)
+        if (net == null)
         {
-            netSpeedMultiplier = 1f;
+            return;
+        }
+
+        activeNets.Remove(net);
+
+        RecalculateNetSpeed();
+    }
+
+    private void RecalculateNetSpeed()
+    {
+        netSpeedMultiplier = 1f;
+
+        foreach (
+            KeyValuePair<
+                NetController,
+                float
+            > pair in activeNets)
+        {
+            if (pair.Key == null)
+            {
+                continue;
+            }
+
+            netSpeedMultiplier =
+                Mathf.Min(
+                    netSpeedMultiplier,
+                    pair.Value
+                );
         }
     }
 }

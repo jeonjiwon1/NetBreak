@@ -20,10 +20,13 @@ public class LandingNetController : MonoBehaviour
     private float nextAttackTime;
 
     private bool chainCaptureEnabled;
+    private bool autoUseEnabled;
 
     private void Awake()
     {
         mainCamera = Camera.main;
+
+        UpdateRangeVisual();
     }
 
     private void Update()
@@ -67,18 +70,40 @@ public class LandingNetController : MonoBehaviour
                 mouseWorldPosition;
         }
 
-        if (!NetPlacementController.IsNetModeActive &&
-            !FishingRodPlacementController.IsRodModeActive &&
-            Mouse.current.leftButton.wasPressedThisFrame &&
-            Time.time >= nextAttackTime)
+        if (NetPlacementController.IsNetModeActive ||
+            FishingRodPlacementController.IsRodModeActive ||
+            GearRepositionController.IsRepositioning ||
+            GearRepositionController.IsRepositionModifierHeld)
         {
-            UseLandingNet(
-                mouseWorldPosition
-            );
-
-            nextAttackTime =
-                Time.time + attackCooldown;
+            return;
         }
+
+        bool shouldUse;
+
+        if (autoUseEnabled)
+        {
+            shouldUse =
+                Time.time >= nextAttackTime;
+        }
+        else
+        {
+            shouldUse =
+                Mouse.current.leftButton.wasPressedThisFrame &&
+                Time.time >= nextAttackTime;
+        }
+
+        if (!shouldUse)
+        {
+            return;
+        }
+
+        UseLandingNet(
+            mouseWorldPosition
+        );
+
+        nextAttackTime =
+            Time.time +
+            attackCooldown;
     }
 
     private void UseLandingNet(
@@ -165,6 +190,7 @@ public class LandingNetController : MonoBehaviour
             );
 
         FishController nearestFish = null;
+
         float nearestDistance =
             float.MaxValue;
 
@@ -200,27 +226,42 @@ public class LandingNetController : MonoBehaviour
         }
     }
 
-    public void IncreaseCapturePower(float amount)
+    private void UpdateRangeVisual()
+    {
+        if (rangeVisual == null)
+        {
+            return;
+        }
+
+        float diameter =
+            captureRadius * 2f;
+
+        rangeVisual.localScale =
+            new Vector3(
+                diameter,
+                diameter,
+                1f
+            );
+    }
+
+    public void IncreaseCapturePower(
+        float amount)
     {
         capturePower += amount;
     }
 
-    public void IncreaseCaptureRadius(float amount)
+    public void IncreaseCaptureRadius(
+        float amount)
     {
         captureRadius += amount;
 
-        if (rangeVisual != null)
-        {
-            float diameter =
-                captureRadius * 2f;
+        UpdateRangeVisual();
+    }
 
-            rangeVisual.localScale =
-                new Vector3(
-                    diameter,
-                    diameter,
-                    1f
-                );
-        }
+    public void IncreaseMaxTargets(
+        int amount)
+    {
+        maxTargets += amount;
     }
 
     public void EnableChainCapture()
@@ -228,8 +269,21 @@ public class LandingNetController : MonoBehaviour
         chainCaptureEnabled = true;
     }
 
-    public void IncreaseMaxTargets(int amount)
+    public void EnableLandingNetFisherJob()
     {
-        maxTargets += amount;
+        captureRadius *= 2f;
+
+        maxTargets =
+            Mathf.Max(
+                maxTargets,
+                8
+            );
+
+        autoUseEnabled = true;
+
+        nextAttackTime =
+            Time.time;
+
+        UpdateRangeVisual();
     }
 }

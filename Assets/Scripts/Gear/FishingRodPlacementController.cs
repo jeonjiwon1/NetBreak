@@ -15,7 +15,8 @@ public class FishingRodPlacementController : MonoBehaviour
     [SerializeField] private Transform placementPreview;
 
     [Header("Placement")]
-    [SerializeField] private int placementCost = 25;
+    [SerializeField] private int basePlacementCost = 25;
+    [SerializeField] private int costIncreasePerRod = 10;
     [SerializeField] private int maxActiveRods = 2;
 
     private Camera mainCamera;
@@ -23,10 +24,11 @@ public class FishingRodPlacementController : MonoBehaviour
     private readonly List<FishingRodController>
         activeRods = new();
 
+    private float costMultiplier = 1f;
+
     private float rodCapturePowerBonus;
     private float rodRangeBonus;
     private float rodAttackIntervalReduction;
-
     private int rodAdditionalTargets;
 
     public int ActiveRodCount =>
@@ -36,7 +38,7 @@ public class FishingRodPlacementController : MonoBehaviour
         maxActiveRods;
 
     public int PlacementCost =>
-        placementCost;
+        CalculatePlacementCost();
 
     private void Awake()
     {
@@ -57,13 +59,15 @@ public class FishingRodPlacementController : MonoBehaviour
         }
 
         bool inputBlocked =
-            (PrototypeAugmentManager.Instance != null &&
-             PrototypeAugmentManager.Instance.IsChoosingAugment)
-            ||
-            (PrototypeGameFlowManager.Instance != null &&
-             PrototypeGameFlowManager.Instance.IsGameEnded)
-            ||
-            NetPlacementController.IsNetModeActive;
+                (PrototypeAugmentManager.Instance != null &&
+                PrototypeAugmentManager.Instance.IsChoosingAugment)
+                ||
+                (PrototypeGameFlowManager.Instance != null &&
+                PrototypeGameFlowManager.Instance.IsGameEnded)
+                ||
+                NetPlacementController.IsNetModeActive
+                ||
+                GearRepositionController.IsRepositioning;
 
         if (inputBlocked)
         {
@@ -173,12 +177,11 @@ public class FishingRodPlacementController : MonoBehaviour
             return;
         }
 
-        bool paid =
-            RunManager.Instance.TrySpendGold(
-                placementCost
-            );
+        int cost =
+            CalculatePlacementCost();
 
-        if (!paid)
+        if (!RunManager.Instance.TrySpendGold(
+            cost))
         {
             CancelPlacementMode();
             return;
@@ -199,6 +202,19 @@ public class FishingRodPlacementController : MonoBehaviour
         activeRods.Add(rod);
 
         CancelPlacementMode();
+    }
+
+    private int CalculatePlacementCost()
+    {
+        int rawCost =
+            basePlacementCost +
+            activeRods.Count *
+            costIncreasePerRod;
+
+        return Mathf.CeilToInt(
+            rawCost *
+            costMultiplier
+        );
     }
 
     private Vector2 GetMouseWorldPosition()
@@ -322,8 +338,20 @@ public class FishingRodPlacementController : MonoBehaviour
         }
     }
 
-    public void IncreaseMaxActiveRods(int amount)
+    public void IncreaseMaxActiveRods(
+        int amount)
     {
         maxActiveRods += amount;
+    }
+
+    public void EnableAnglerJob()
+    {
+        maxActiveRods =
+            Mathf.Max(
+                maxActiveRods,
+                12
+            );
+
+        costMultiplier *= 0.7f;
     }
 }

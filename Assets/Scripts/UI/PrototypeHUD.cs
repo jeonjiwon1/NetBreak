@@ -79,16 +79,38 @@ public class PrototypeHUD : MonoBehaviour
         {
             string castNetText;
 
-            if (castNet.IsReady)
+            if (castNet.MaxCharges > 1)
             {
-                castNetText =
-                    "≈ı∏¡ [E]: ¡ÿ∫Ò øœ∑·";
+                if (castNet.CurrentCharges ==
+                    castNet.MaxCharges)
+                {
+                    castNetText =
+                        $"≈ı∏¡ [E]: " +
+                        $"{castNet.CurrentCharges}/" +
+                        $"{castNet.MaxCharges}";
+                }
+                else
+                {
+                    castNetText =
+                        $"≈ı∏¡ [E]: " +
+                        $"{castNet.CurrentCharges}/" +
+                        $"{castNet.MaxCharges} " +
+                        $"(√Ê¿¸ {castNet.CooldownTimer:F1}√ )";
+                }
             }
             else
             {
-                castNetText =
-                    $"≈ı∏¡ [E]: " +
-                    $"{castNet.CooldownTimer:F1}√ ";
+                if (castNet.IsReady)
+                {
+                    castNetText =
+                        "≈ı∏¡ [E]: ¡ÿ∫Ò øœ∑·";
+                }
+                else
+                {
+                    castNetText =
+                        $"≈ı∏¡ [E]: " +
+                        $"{castNet.CooldownTimer:F1}√ ";
+                }
             }
 
             GUI.Label(

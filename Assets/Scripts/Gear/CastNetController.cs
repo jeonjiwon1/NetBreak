@@ -19,7 +19,10 @@ public class CastNetController : MonoBehaviour
 
     private Camera mainCamera;
 
-    private float cooldownTimer;
+    private int maxCharges = 1;
+    private int currentCharges = 1;
+    private float rechargeTimer;
+
     private bool isAiming;
 
     private Vector2 currentAimPosition;
@@ -32,10 +35,18 @@ public class CastNetController : MonoBehaviour
     private bool massCatchRefundEnabled;
 
     public bool IsAiming => isAiming;
-    public bool IsReady => cooldownTimer <= 0f;
+
+    public bool IsReady =>
+        currentCharges > 0;
 
     public float CooldownTimer =>
-        Mathf.Max(0f, cooldownTimer);
+        Mathf.Max(0f, rechargeTimer);
+
+    public int CurrentCharges =>
+        currentCharges;
+
+    public int MaxCharges =>
+        maxCharges;
 
     public Vector2 CurrentAimPosition =>
         currentAimPosition;
@@ -59,20 +70,19 @@ public class CastNetController : MonoBehaviour
         if (castVisual != null)
         {
             castVisual.gameObject.SetActive(false);
+
             UpdateVisualScale();
         }
     }
 
     private void Update()
     {
-        if (cooldownTimer > 0f)
-        {
-            cooldownTimer -= Time.deltaTime;
-        }
+        UpdateRecharge();
 
         if (catchFeedbackTimer > 0f)
         {
-            catchFeedbackTimer -= Time.deltaTime;
+            catchFeedbackTimer -=
+                Time.deltaTime;
         }
 
         if (Mouse.current == null ||
@@ -104,6 +114,38 @@ public class CastNetController : MonoBehaviour
         HandleCastNetInput();
     }
 
+    private void UpdateRecharge()
+    {
+        if (currentCharges >= maxCharges)
+        {
+            rechargeTimer = 0f;
+            return;
+        }
+
+        if (rechargeTimer <= 0f)
+        {
+            rechargeTimer = cooldown;
+        }
+
+        rechargeTimer -= Time.deltaTime;
+
+        if (rechargeTimer > 0f)
+        {
+            return;
+        }
+
+        currentCharges++;
+
+        if (currentCharges < maxCharges)
+        {
+            rechargeTimer = cooldown;
+        }
+        else
+        {
+            rechargeTimer = 0f;
+        }
+    }
+
     private void HandleCastNetInput()
     {
         if (!isAiming &&
@@ -132,7 +174,9 @@ public class CastNetController : MonoBehaviour
 
         if (Keyboard.current.eKey.wasReleasedThisFrame)
         {
-            UseCastNet(currentAimPosition);
+            UseCastNet(
+                currentAimPosition
+            );
 
             isAiming = false;
 
@@ -161,7 +205,9 @@ public class CastNetController : MonoBehaviour
             Mouse.current.position.ReadValue();
 
         Vector3 worldPosition =
-            mainCamera.ScreenToWorldPoint(screenPosition);
+            mainCamera.ScreenToWorldPoint(
+                screenPosition
+            );
 
         currentAimPosition =
             new Vector2(
@@ -171,7 +217,8 @@ public class CastNetController : MonoBehaviour
 
         if (castVisual != null)
         {
-            castVisual.position = currentAimPosition;
+            castVisual.position =
+                currentAimPosition;
         }
 
         UpdateTargetCount();
@@ -201,8 +248,24 @@ public class CastNetController : MonoBehaviour
         currentTargetCount = count;
     }
 
-    private void UseCastNet(Vector2 castPosition)
+    private void UseCastNet(
+        Vector2 castPosition)
     {
+        if (currentCharges <= 0)
+        {
+            return;
+        }
+
+        bool wasFull =
+            currentCharges == maxCharges;
+
+        currentCharges--;
+
+        if (wasFull)
+        {
+            rechargeTimer = cooldown;
+        }
+
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
                 castPosition,
@@ -232,35 +295,68 @@ public class CastNetController : MonoBehaviour
             }
         }
 
-        cooldownTimer = cooldown;
-
         if (massCatchRefundEnabled &&
             capturedCount >= refundThreshold)
         {
-            cooldownTimer =
-                Mathf.Max(
-                    0f,
-                    cooldownTimer - refundAmount
-                );
+            ReduceCurrentRecharge(
+                refundAmount
+            );
         }
 
-        lastCapturedCount = capturedCount;
-        lastCastPosition = castPosition;
-        catchFeedbackTimer = 1.2f;
+        lastCapturedCount =
+            capturedCount;
+
+        lastCastPosition =
+            castPosition;
+
+        catchFeedbackTimer =
+            1.2f;
 
         currentTargetCount = 0;
 
         if (castVisual != null)
         {
             StartCoroutine(
-                ShowCastEffect(castPosition)
+                ShowCastEffect(
+                    castPosition
+                )
             );
         }
     }
 
-    private IEnumerator ShowCastEffect(Vector2 position)
+    private void ReduceCurrentRecharge(
+        float amount)
     {
-        castVisual.position = position;
+        if (currentCharges >= maxCharges)
+        {
+            return;
+        }
+
+        rechargeTimer -= amount;
+
+        if (rechargeTimer > 0f)
+        {
+            return;
+        }
+
+        currentCharges++;
+
+        if (currentCharges < maxCharges)
+        {
+            rechargeTimer = cooldown;
+        }
+        else
+        {
+            rechargeTimer = 0f;
+        }
+    }
+
+    private IEnumerator ShowCastEffect(
+        Vector2 position)
+    {
+        castVisual.position =
+            position;
+
         castVisual.gameObject.SetActive(true);
 
         yield return new WaitForSeconds(
@@ -299,29 +395,49 @@ public class CastNetController : MonoBehaviour
             );
     }
 
-    public void IncreaseCapturePower(float amount)
+    public void IncreaseCapturePower(
+        float amount)
     {
         capturePower += amount;
     }
 
-    public void IncreaseCaptureRadius(float amount)
+    public void IncreaseCaptureRadius(
+        float amount)
     {
         captureRadius += amount;
 
         UpdateVisualScale();
     }
 
-    public void ReduceCooldown(float amount)
+    public void ReduceCooldown(
+        float amount)
     {
         cooldown =
             Mathf.Max(
                 0.5f,
                 cooldown - amount
             );
+
+        if (rechargeTimer > cooldown)
+        {
+            rechargeTimer = cooldown;
+        }
     }
 
     public void EnableMassCatchRefund()
     {
         massCatchRefundEnabled = true;
+    }
+
+    public void EnableCastNetFisherJob()
+    {
+        if (maxCharges >= 3)
+        {
+            return;
+        }
+
+        maxCharges = 3;
+        currentCharges = 3;
+        rechargeTimer = 0f;
     }
 }
