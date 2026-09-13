@@ -2,35 +2,25 @@ using UnityEngine;
 
 public class PrototypeHUD : MonoBehaviour
 {
-    [SerializeField] private FishSpawner fishSpawner;
     [SerializeField] private CastNetController castNet;
     [SerializeField] private NetPlacementController netPlacement;
 
-    private GUIStyle style;
     private GUIStyle centerStyle;
     private GUIStyle resultStyle;
-    private GUIStyle announcementStyle;
     private GUIStyle resultInfoStyle;
     private GUIStyle rankStyle;
 
     private void Awake()
     {
-        style =
+        centerStyle =
             new GUIStyle();
 
-        style.fontSize = 24;
-        style.normal.textColor =
-            Color.white;
-
-        centerStyle =
-            new GUIStyle(
-                style
-            );
-
+        centerStyle.fontSize = 30;
         centerStyle.alignment =
             TextAnchor.MiddleCenter;
 
-        centerStyle.fontSize = 30;
+        centerStyle.normal.textColor =
+            Color.white;
 
         resultStyle =
             new GUIStyle(
@@ -40,13 +30,6 @@ public class PrototypeHUD : MonoBehaviour
         resultStyle.fontSize = 42;
         resultStyle.fontStyle =
             FontStyle.Bold;
-
-        announcementStyle =
-            new GUIStyle(
-                centerStyle
-            );
-
-        announcementStyle.fontSize = 34;
 
         resultInfoStyle =
             new GUIStyle(
@@ -72,173 +55,39 @@ public class PrototypeHUD : MonoBehaviour
             return;
         }
 
-        RunManager run =
-            RunManager.Instance;
-
-        // 결과 화면 중에는 기존 HUD 정보를
-        // 뒤에 겹쳐 표시하지 않는다.
         PrototypeGameFlowManager flow =
             PrototypeGameFlowManager.Instance;
 
         if (flow != null &&
             flow.IsGameEnded)
         {
-            DrawGameFlow();
+            DrawResultScreen(
+                flow
+            );
+
             return;
         }
 
-        GUI.Label(
-            new Rect(
-                20,
-                20,
-                500,
-                40
-            ),
-            $"골드: {run.CurrentGold}",
-            style
-        );
+        // 기본 HUD:
+        // PrototypeHUDCanvas 담당.
+        //
+        // 조업 준비:
+        // PrototypeHUDCanvas 담당.
+        //
+        // Encounter Announcement:
+        // PrototypeHUDCanvas 담당.
 
-        GUI.Label(
-            new Rect(
-                20,
-                55,
-                500,
-                40
-            ),
-            $"포획 수: {run.CapturedFishCount}",
-            style
-        );
-
-        GUI.Label(
-            new Rect(
-                20,
-                90,
-                500,
-                40
-            ),
-            $"어획률: {run.CatchRate * 100f:F1}%",
-            style
-        );
-
-        GUI.Label(
-            new Rect(
-                20,
-                125,
-                500,
-                40
-            ),
-            $"레벨: {run.CurrentLevel}",
-            style
-        );
-
-        GUI.Label(
-            new Rect(
-                20,
-                160,
-                500,
-                40
-            ),
-            $"경험치: " +
-            $"{run.CurrentExp} / " +
-            $"{run.ExpToNextLevel}",
-            style
-        );
-
-        if (fishSpawner != null &&
-            fishSpawner.HasStarted)
-        {
-            GUI.Label(
-                new Rect(
-                    20,
-                    195,
-                    600,
-                    40
-                ),
-                $"조업 단계: " +
-                $"{fishSpawner.CurrentStageIndex} / " +
-                $"{fishSpawner.TotalStageCount}",
-                style
-            );
-
-            GUI.Label(
-                new Rect(
-                    20,
-                    230,
-                    600,
-                    40
-                ),
-                $"현재 구간: " +
-                $"{fishSpawner.CurrentPhaseName}",
-                style
-            );
-        }
-
-        DrawCastNetStatus();
         DrawNetCost();
         DrawCastNetInfo();
-        DrawEncounterAnnouncement();
-        DrawGameFlow();
+
+        // Legacy Final Fishing이 아직 호출되는 경우만
+        // 임시 표시를 유지한다.
+        DrawLegacyFinalFishing();
     }
 
     // =========================================================
-    // CAST NET
+    // NET COST
     // =========================================================
-
-    private void DrawCastNetStatus()
-    {
-        if (castNet == null)
-        {
-            return;
-        }
-
-        string castNetText;
-
-        if (castNet.MaxCharges > 1)
-        {
-            if (castNet.CurrentCharges ==
-                castNet.MaxCharges)
-            {
-                castNetText =
-                    $"투망 [E]: " +
-                    $"{castNet.CurrentCharges}/" +
-                    $"{castNet.MaxCharges}";
-            }
-            else
-            {
-                castNetText =
-                    $"투망 [E]: " +
-                    $"{castNet.CurrentCharges}/" +
-                    $"{castNet.MaxCharges} " +
-                    $"(충전 " +
-                    $"{castNet.CooldownTimer:F1}초)";
-            }
-        }
-        else
-        {
-            if (castNet.IsReady)
-            {
-                castNetText =
-                    "투망 [E]: 준비 완료";
-            }
-            else
-            {
-                castNetText =
-                    $"투망 [E]: " +
-                    $"{castNet.CooldownTimer:F1}초";
-            }
-        }
-
-        GUI.Label(
-            new Rect(
-                20,
-                265,
-                600,
-                40
-            ),
-            castNetText,
-            style
-        );
-    }
 
     private void DrawNetCost()
     {
@@ -256,10 +105,13 @@ public class PrototypeHUD : MonoBehaviour
                 40
             ),
             $"그물 설치 비용: " +
-            $"{netPlacement.CurrentPlacementCost}G",
-            style
+            $"{netPlacement.CurrentPlacementCost}G"
         );
     }
+
+    // =========================================================
+    // CAST NET WORLD FEEDBACK
+    // =========================================================
 
     private void DrawCastNetInfo()
     {
@@ -325,116 +177,30 @@ public class PrototypeHUD : MonoBehaviour
     }
 
     // =========================================================
-    // ANNOUNCEMENT
+    // LEGACY FINAL FISHING
     // =========================================================
 
-    private void DrawEncounterAnnouncement()
-    {
-        if (fishSpawner == null ||
-            !fishSpawner.IsShowingAnnouncement)
-        {
-            return;
-        }
-
-        GUI.Box(
-            new Rect(
-                Screen.width * 0.5f - 300f,
-                100f,
-                600f,
-                70f
-            ),
-            ""
-        );
-
-        GUI.Label(
-            new Rect(
-                Screen.width * 0.5f - 290f,
-                105f,
-                580f,
-                60f
-            ),
-            fishSpawner.AnnouncementText,
-            announcementStyle
-        );
-    }
-
-    // =========================================================
-    // GAME FLOW
-    // =========================================================
-
-    private void DrawGameFlow()
+    private void DrawLegacyFinalFishing()
     {
         PrototypeGameFlowManager flow =
             PrototypeGameFlowManager.Instance;
 
-        if (flow == null)
+        if (flow == null ||
+            !flow.IsFinalFishing)
         {
             return;
         }
 
-        if (flow.IsPreparation)
-        {
-            GUI.Box(
-                new Rect(
-                    Screen.width * 0.5f - 180f,
-                    30f,
-                    360f,
-                    120f
-                ),
-                ""
-            );
-
-            GUI.Label(
-                new Rect(
-                    Screen.width * 0.5f - 160f,
-                    40f,
-                    320f,
-                    45f
-                ),
-                "조업 준비",
-                centerStyle
-            );
-
-            if (GUI.Button(
-                new Rect(
-                    Screen.width * 0.5f - 100f,
-                    90f,
-                    200f,
-                    45f
-                ),
-                "조업 시작"
-            ))
-            {
-                flow.StartFishing();
-            }
-
-            return;
-        }
-
-        // 이전 Final Fishing 방식과의
-        // 임시 호환 표시.
-        if (flow.IsFinalFishing)
-        {
-            GUI.Label(
-                new Rect(
-                    Screen.width * 0.5f - 250f,
-                    30f,
-                    500f,
-                    60f
-                ),
-                $"마감 조업: " +
-                $"{flow.FinalFishingTimer:F1}초",
-                centerStyle
-            );
-        }
-
-        if (!flow.IsGameEnded)
-        {
-            return;
-        }
-
-        DrawResultScreen(
-            flow
+        GUI.Label(
+            new Rect(
+                Screen.width * 0.5f - 250f,
+                30f,
+                500f,
+                60f
+            ),
+            $"마감 조업: " +
+            $"{flow.FinalFishingTimer:F1}초",
+            centerStyle
         );
     }
 
@@ -569,12 +335,14 @@ public class PrototypeHUD : MonoBehaviour
             if (flow.IsSuccess)
             {
                 bossResult =
-                    $"보스 포획: {boss.CurrentPass}차 회유";
+                    $"보스 포획: " +
+                    $"{boss.CurrentPass}차 회유";
             }
             else
             {
                 bossResult =
-                    $"보스 도주: {boss.CurrentPass}차 회유";
+                    $"보스 도주: " +
+                    $"{boss.CurrentPass}차 회유";
             }
 
             GUI.Label(

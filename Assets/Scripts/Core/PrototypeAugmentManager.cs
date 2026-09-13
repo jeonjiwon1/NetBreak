@@ -63,11 +63,6 @@ public class PrototypeAugmentManager : MonoBehaviour
 
     private int rerollCount;
 
-    public bool IsChoosingAugment =>
-        showChoices ||
-        (PrototypeJobManager.Instance != null &&
-         PrototypeJobManager.Instance.IsChoosingJob);
-
     private AugmentOption[] currentChoices =
         new AugmentOption[3];
 
@@ -78,6 +73,38 @@ public class PrototypeAugmentManager : MonoBehaviour
 
     private readonly HashSet<AugmentType>
         acquiredUniqueAugments = new();
+
+    public bool IsChoosingAugment =>
+        showChoices ||
+        (
+            PrototypeJobManager.Instance != null &&
+            PrototypeJobManager.Instance.IsChoosingJob
+        );
+
+    public bool IsShowingChoices =>
+        showChoices;
+
+    public bool CanSelect =>
+        canSelect;
+
+    public int ChoiceCount =>
+        currentChoices.Length;
+
+    public int CurrentRerollCost =>
+        GetRerollCost();
+
+    public bool CanReroll
+    {
+        get
+        {
+            return
+                showChoices &&
+                canSelect &&
+                RunManager.Instance != null &&
+                RunManager.Instance.CurrentGold >=
+                GetRerollCost();
+        }
+    }
 
     private class AugmentOption
     {
@@ -114,7 +141,8 @@ public class PrototypeAugmentManager : MonoBehaviour
 
     private void Update()
     {
-        if (!showChoices || canSelect)
+        if (!showChoices ||
+            canSelect)
         {
             return;
         }
@@ -134,6 +162,10 @@ public class PrototypeAugmentManager : MonoBehaviour
         canSelect = true;
     }
 
+    // =========================================================
+    // OPEN
+    // =========================================================
+
     public void ShowChoices()
     {
         if (showChoices)
@@ -146,14 +178,104 @@ public class PrototypeAugmentManager : MonoBehaviour
         GenerateChoices();
 
         showChoices = true;
+
+        LockSelectionInput();
+
+        Time.timeScale = 0f;
+    }
+
+    private void LockSelectionInput()
+    {
         canSelect = false;
 
         selectionUnlockTime =
             Time.realtimeSinceStartup +
             selectionInputDelay;
-
-        Time.timeScale = 0f;
     }
+
+    // =========================================================
+    // CANVAS DATA
+    // =========================================================
+
+    public string GetChoiceName(
+        int index)
+    {
+        AugmentOption option =
+            GetChoice(
+                index
+            );
+
+        return option != null
+            ? option.Name
+            : "";
+    }
+
+    public string GetChoiceDescription(
+        int index)
+    {
+        AugmentOption option =
+            GetChoice(
+                index
+            );
+
+        return option != null
+            ? option.Description
+            : "";
+    }
+
+    private AugmentOption GetChoice(
+        int index)
+    {
+        if (index < 0 ||
+            index >= currentChoices.Length)
+        {
+            return null;
+        }
+
+        return currentChoices[index];
+    }
+
+    // =========================================================
+    // CANVAS INPUT
+    // =========================================================
+
+    public void SelectChoiceFromUI(
+        int index)
+    {
+        if (!showChoices ||
+            !canSelect)
+        {
+            return;
+        }
+
+        AugmentOption option =
+            GetChoice(
+                index
+            );
+
+        if (option == null)
+        {
+            return;
+        }
+
+        ApplyAugment(
+            option
+        );
+    }
+
+    public void TryRerollFromUI()
+    {
+        if (!CanReroll)
+        {
+            return;
+        }
+
+        TryReroll();
+    }
+
+    // =========================================================
+    // CHOICE GENERATION
+    // =========================================================
 
     private void GenerateChoices()
     {
@@ -171,11 +293,16 @@ public class PrototypeAugmentManager : MonoBehaviour
             }
 
             AugmentOption selected =
-                SelectWeightedAugment(pool);
+                SelectWeightedAugment(
+                    pool
+                );
 
-            currentChoices[i] = selected;
+            currentChoices[i] =
+                selected;
 
-            pool.Remove(selected);
+            pool.Remove(
+                selected
+            );
         }
     }
 
@@ -209,14 +336,21 @@ public class PrototypeAugmentManager : MonoBehaviour
                     option.Category
                 );
 
-            if (randomValue <= accumulatedWeight)
+            if (randomValue <=
+                accumulatedWeight)
             {
                 return option;
             }
         }
 
-        return pool[pool.Count - 1];
+        return pool[
+            pool.Count - 1
+        ];
     }
+
+    // =========================================================
+    // AUGMENT POOL
+    // =========================================================
 
     private List<AugmentOption>
         CreateAugmentPool()
@@ -301,7 +435,9 @@ public class PrototypeAugmentManager : MonoBehaviour
             "낚싯대 공격 간격 -0.1초"
         ));
 
-        AddUniqueAugments(pool);
+        AddUniqueAugments(
+            pool
+        );
 
         return pool;
     }
@@ -316,7 +452,8 @@ public class PrototypeAugmentManager : MonoBehaviour
                 AugmentType.CastNetFullHaul,
                 AugmentCategory.CastNet,
                 "만선",
-                "투망으로 한 번에 8마리 이상 포획하면\n충전시간 2초 반환",
+                "투망으로 한 번에 8마리 이상 포획하면\n" +
+                "충전시간 2초 반환",
                 0.7f,
                 true
             ));
@@ -342,124 +479,22 @@ public class PrototypeAugmentManager : MonoBehaviour
                 AugmentType.LandingNetChainCapture,
                 AugmentCategory.LandingNet,
                 "연쇄 포획",
-                "뜰채로 물고기를 포획하면\n주변 물고기 1마리에 추가 포획 피해",
+                "뜰채로 물고기를 포획하면\n" +
+                "주변 물고기 1마리에 추가 포획 피해",
                 0.7f,
                 true
             ));
         }
     }
 
-    private void OnGUI()
-    {
-        if (!showChoices)
-        {
-            return;
-        }
-
-        float width = 240f;
-        float height = 120f;
-        float spacing = 20f;
-
-        float totalWidth =
-            width * 3f +
-            spacing * 2f;
-
-        float startX =
-            (Screen.width - totalWidth) *
-            0.5f;
-
-        float y =
-            Screen.height * 0.5f -
-            height * 0.5f;
-
-        GUI.Box(
-            new Rect(
-                Screen.width * 0.5f - 150f,
-                y - 80f,
-                300f,
-                50f
-            ),
-            "레벨 업! 증강을 선택하세요"
-        );
-
-        for (int i = 0;
-             i < currentChoices.Length;
-             i++)
-        {
-            AugmentOption option =
-                currentChoices[i];
-
-            if (option == null)
-            {
-                continue;
-            }
-
-            Rect rect =
-                new Rect(
-                    startX +
-                    i * (width + spacing),
-                    y,
-                    width,
-                    height
-                );
-
-            GUI.enabled = canSelect;
-
-            string buttonText =
-                $"{option.Name}\n\n" +
-                option.Description;
-
-            if (GUI.Button(
-                rect,
-                buttonText))
-            {
-                ApplyAugment(option);
-            }
-
-            GUI.enabled = true;
-        }
-
-        DrawRerollButton(y, height);
-    }
-
-    private void DrawRerollButton(
-        float choiceY,
-        float choiceHeight)
-    {
-        int cost =
-            GetRerollCost();
-
-        Rect rerollRect =
-            new Rect(
-                Screen.width * 0.5f - 90f,
-                choiceY +
-                choiceHeight +
-                25f,
-                180f,
-                45f
-            );
-
-        bool hasEnoughGold =
-            RunManager.Instance != null &&
-            RunManager.Instance.CurrentGold >= cost;
-
-        GUI.enabled =
-            canSelect &&
-            hasEnoughGold;
-
-        if (GUI.Button(
-            rerollRect,
-            $"리롤 {cost}G"))
-        {
-            TryReroll();
-        }
-
-        GUI.enabled = true;
-    }
+    // =========================================================
+    // REROLL
+    // =========================================================
 
     private int GetRerollCost()
     {
-        return rerollBaseCost +
+        return
+            rerollBaseCost +
             rerollCount *
             rerollCostIncrease;
     }
@@ -474,8 +509,10 @@ public class PrototypeAugmentManager : MonoBehaviour
         int cost =
             GetRerollCost();
 
-        if (!RunManager.Instance.TrySpendGold(
-            cost))
+        if (!RunManager.Instance
+            .TrySpendGold(
+                cost
+            ))
         {
             return;
         }
@@ -483,7 +520,15 @@ public class PrototypeAugmentManager : MonoBehaviour
         rerollCount++;
 
         GenerateChoices();
+
+        // 한 번의 클릭이 새 후보까지 바로 눌러버리는
+        // 것을 방지한다.
+        LockSelectionInput();
     }
+
+    // =========================================================
+    // APPLY
+    // =========================================================
 
     private void ApplyAugment(
         AugmentOption option)
@@ -491,59 +536,167 @@ public class PrototypeAugmentManager : MonoBehaviour
         switch (option.Type)
         {
             case AugmentType.LandingNetPower:
-                landingNet.IncreaseCapturePower(2f);
+
+                if (landingNet != null)
+                {
+                    landingNet
+                        .IncreaseCapturePower(
+                            2f
+                        );
+                }
+
                 break;
 
             case AugmentType.LandingNetRadius:
-                landingNet.IncreaseCaptureRadius(0.25f);
+
+                if (landingNet != null)
+                {
+                    landingNet
+                        .IncreaseCaptureRadius(
+                            0.25f
+                        );
+                }
+
                 break;
 
             case AugmentType.LandingNetChainCapture:
-                landingNet.EnableChainCapture();
+
+                if (landingNet != null)
+                {
+                    landingNet
+                        .EnableChainCapture();
+                }
+
                 break;
 
             case AugmentType.CastNetPower:
-                castNet.IncreaseCapturePower(5f);
+
+                if (castNet != null)
+                {
+                    castNet
+                        .IncreaseCapturePower(
+                            5f
+                        );
+                }
+
                 break;
 
             case AugmentType.CastNetRadius:
-                castNet.IncreaseCaptureRadius(0.25f);
+
+                if (castNet != null)
+                {
+                    castNet
+                        .IncreaseCaptureRadius(
+                            0.25f
+                        );
+                }
+
                 break;
 
             case AugmentType.CastNetCooldown:
-                castNet.ReduceCooldown(0.5f);
+
+                if (castNet != null)
+                {
+                    castNet
+                        .ReduceCooldown(
+                            0.5f
+                        );
+                }
+
                 break;
 
             case AugmentType.CastNetFullHaul:
-                castNet.EnableMassCatchRefund();
+
+                if (castNet != null)
+                {
+                    castNet
+                        .EnableMassCatchRefund();
+                }
+
                 break;
 
             case AugmentType.BaitRadius:
-                bait.IncreaseAttractionRadius(0.75f);
+
+                if (bait != null)
+                {
+                    bait
+                        .IncreaseAttractionRadius(
+                            0.75f
+                        );
+                }
+
                 break;
 
             case AugmentType.BaitDuration:
-                bait.IncreaseDuration(1f);
+
+                if (bait != null)
+                {
+                    bait
+                        .IncreaseDuration(
+                            1f
+                        );
+                }
+
                 break;
 
             case AugmentType.NetLength:
-                netPlacement.IncreaseMaxLength(1f);
+
+                if (netPlacement != null)
+                {
+                    netPlacement
+                        .IncreaseMaxLength(
+                            1f
+                        );
+                }
+
                 break;
 
             case AugmentType.FishingRodPower:
-                rodPlacement.IncreaseRodCapturePower(1f);
+
+                if (rodPlacement != null)
+                {
+                    rodPlacement
+                        .IncreaseRodCapturePower(
+                            1f
+                        );
+                }
+
                 break;
 
             case AugmentType.FishingRodRange:
-                rodPlacement.IncreaseRodRange(0.5f);
+
+                if (rodPlacement != null)
+                {
+                    rodPlacement
+                        .IncreaseRodRange(
+                            0.5f
+                        );
+                }
+
                 break;
 
             case AugmentType.FishingRodSpeed:
-                rodPlacement.ReduceRodAttackInterval(0.1f);
+
+                if (rodPlacement != null)
+                {
+                    rodPlacement
+                        .ReduceRodAttackInterval(
+                            0.1f
+                        );
+                }
+
                 break;
 
             case AugmentType.FishingRodExtraHook:
-                rodPlacement.AddRodAdditionalTarget(1);
+
+                if (rodPlacement != null)
+                {
+                    rodPlacement
+                        .AddRodAdditionalTarget(
+                            1
+                        );
+                }
+
                 break;
         }
 
@@ -560,21 +713,30 @@ public class PrototypeAugmentManager : MonoBehaviour
     private void FinishSelection()
     {
         showChoices = false;
+        canSelect = false;
 
         Time.timeScale = 1f;
 
         if (RunManager.Instance != null)
         {
-            RunManager.Instance.ResolveLevelUp();
+            RunManager.Instance
+                .ResolveLevelUp();
         }
     }
+
+    // =========================================================
+    // CATEGORY WEIGHT
+    // =========================================================
 
     public void SetCategoryWeight(
         AugmentCategory category,
         float weight)
     {
         categoryWeights[category] =
-            Mathf.Max(0f, weight);
+            Mathf.Max(
+                0f,
+                weight
+            );
     }
 
     public float GetCategoryWeight(
@@ -599,8 +761,9 @@ public class PrototypeAugmentManager : MonoBehaviour
                 typeof(AugmentCategory)
             );
 
-        foreach (AugmentCategory category
-                 in categories)
+        foreach (
+            AugmentCategory category
+            in categories)
         {
             categoryWeights[category] =
                 1f;
@@ -612,6 +775,11 @@ public class PrototypeAugmentManager : MonoBehaviour
         if (showChoices)
         {
             Time.timeScale = 1f;
+        }
+
+        if (Instance == this)
+        {
+            Instance = null;
         }
     }
 }

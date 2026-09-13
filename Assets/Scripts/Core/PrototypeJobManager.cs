@@ -48,6 +48,9 @@ public class PrototypeJobManager : MonoBehaviour
     public bool IsChoosingJob =>
         isChoosingJob;
 
+    public bool CanSelect =>
+        canSelect;
+
     public bool HasAdvanced =>
         currentJob != JobType.Beginner;
 
@@ -81,7 +84,7 @@ public class PrototypeJobManager : MonoBehaviour
     }
 
     // =========================================================
-    // JOB REQUEST
+    // REQUEST
     // =========================================================
 
     public void RequestJobSelection()
@@ -93,6 +96,31 @@ public class PrototypeJobManager : MonoBehaviour
         }
 
         jobSelectionRequested = true;
+    }
+
+    private void ShowJobChoices()
+    {
+        jobSelectionRequested = false;
+        jobSelectionTriggered = true;
+
+        isChoosingJob = true;
+
+        LockSelectionInput();
+
+        Time.timeScale = 0f;
+    }
+
+    // =========================================================
+    // INPUT LOCK
+    // =========================================================
+
+    private void LockSelectionInput()
+    {
+        canSelect = false;
+
+        selectionUnlockTime =
+            Time.realtimeSinceStartup +
+            selectionInputDelay;
     }
 
     private void UpdateSelectionLock()
@@ -117,154 +145,21 @@ public class PrototypeJobManager : MonoBehaviour
         canSelect = true;
     }
 
-    private void ShowJobChoices()
-    {
-        jobSelectionRequested = false;
-        jobSelectionTriggered = true;
-        isChoosingJob = true;
-
-        canSelect = false;
-
-        selectionUnlockTime =
-            Time.realtimeSinceStartup +
-            selectionInputDelay;
-
-        Time.timeScale = 0f;
-    }
-
     // =========================================================
-    // GUI
+    // CANVAS INPUT
     // =========================================================
 
-    private void OnGUI()
+    public void SelectJobFromUI(
+        JobType selectedJob)
     {
-        if (isChoosingJob)
+        if (!isChoosingJob ||
+            !canSelect)
         {
-            DrawJobSelection();
             return;
         }
 
-        DrawCurrentJob();
-    }
-
-    private void DrawJobSelection()
-    {
-        float width = 220f;
-        float height = 180f;
-        float spacing = 15f;
-
-        float totalWidth =
-            width * 4f +
-            spacing * 3f;
-
-        float startX =
-            (Screen.width - totalWidth) *
-            0.5f;
-
-        float y =
-            Screen.height * 0.5f -
-            height * 0.5f;
-
-        GUI.Box(
-            new Rect(
-                Screen.width * 0.5f - 180f,
-                y - 80f,
-                360f,
-                50f
-            ),
-            "1차 전직을 선택하세요"
-        );
-
-        GUI.enabled =
-            canSelect;
-
-        if (GUI.Button(
-            new Rect(
-                startX,
-                y,
-                width,
-                height
-            ),
-            "투망꾼\n\n" +
-            "투망 최대 3스택\n" +
-            "투망 증강 출현율 증가"
-        ))
-        {
-            SelectJob(
-                JobType.CastNetFisher
-            );
-        }
-
-        if (GUI.Button(
-            new Rect(
-                startX +
-                width +
-                spacing,
-                y,
-                width,
-                height
-            ),
-            "그물잡이\n\n" +
-            "최대 그물 10개\n" +
-            "그물 포획력 대폭 증가\n" +
-            "설치 비용 감소"
-        ))
-        {
-            SelectJob(
-                JobType.NetFisher
-            );
-        }
-
-        if (GUI.Button(
-            new Rect(
-                startX +
-                (width + spacing) * 2f,
-                y,
-                width,
-                height
-            ),
-            "낚시꾼\n\n" +
-            "최대 낚싯대 12개\n" +
-            "설치 비용 감소\n" +
-            "낚싯대 증강 출현율 증가"
-        ))
-        {
-            SelectJob(
-                JobType.Angler
-            );
-        }
-
-        if (GUI.Button(
-            new Rect(
-                startX +
-                (width + spacing) * 3f,
-                y,
-                width,
-                height
-            ),
-            "뜰채잡이\n\n" +
-            "뜰채 범위 2배\n" +
-            "최대 8마리 타격\n" +
-            "쿨타임마다 자동 사용"
-        ))
-        {
-            SelectJob(
-                JobType.LandingNetFisher
-            );
-        }
-
-        GUI.enabled =
-            true;
-    }
-
-    // =========================================================
-    // SELECT
-    // =========================================================
-
-    private void SelectJob(
-        JobType selectedJob)
-    {
-        if (!canSelect)
+        if (selectedJob ==
+            JobType.Beginner)
         {
             return;
         }
@@ -277,9 +172,14 @@ public class PrototypeJobManager : MonoBehaviour
         );
 
         isChoosingJob = false;
+        canSelect = false;
 
         Time.timeScale = 1f;
     }
+
+    // =========================================================
+    // EFFECT
+    // =========================================================
 
     private void ApplyJobEffect(
         JobType job)
@@ -386,23 +286,6 @@ public class PrototypeJobManager : MonoBehaviour
 
                 break;
         }
-    }
-
-    // =========================================================
-    // CURRENT JOB
-    // =========================================================
-
-    private void DrawCurrentJob()
-    {
-        GUI.Label(
-            new Rect(
-                Screen.width - 220f,
-                20f,
-                200f,
-                40f
-            ),
-            $"전직: {CurrentJobName}"
-        );
     }
 
     private string GetJobName(
