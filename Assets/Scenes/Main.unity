@@ -1160,6 +1160,7 @@ GameObject:
   m_Component:
   - component: {fileID: 876261350}
   - component: {fileID: 876261349}
+  - component: {fileID: 876261351}
   m_Layer: 0
   m_Name: PrototypeHUD
   m_TagString: Untagged
@@ -1197,6 +1198,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &876261351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 876261348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0973b59f80984a439834844cb690e86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MiniBossHUD
+  panelWidth: 520
+  panelHeight: 85
+  topMargin: 20
+  rewardMessageDuration: 2.5
 --- !u!1 &889583749
 GameObject:
   m_ObjectHideFlags: 0

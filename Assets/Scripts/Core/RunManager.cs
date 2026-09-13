@@ -81,6 +81,23 @@ public class RunManager : MonoBehaviour
         CheckLevelUp();
     }
 
+    public void GrantBonusReward(
+        int gold,
+        int exp)
+    {
+        if (gold > 0)
+        {
+            currentGold += gold;
+        }
+
+        if (exp > 0)
+        {
+            currentExp += exp;
+
+            CheckLevelUp();
+        }
+    }
+
     public bool TrySpendGold(int amount)
     {
         if (amount <= 0)

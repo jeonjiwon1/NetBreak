@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class FishController : MonoBehaviour
@@ -11,6 +12,26 @@ public class FishController : MonoBehaviour
 
     public FishData Data => fishData;
     public float CurrentResistance => currentResistance;
+    public bool IsCaptured => isCaptured;
+
+    public float ResistanceRatio
+    {
+        get
+        {
+            if (fishData == null ||
+                fishData.MaxResistance <= 0f)
+            {
+                return 0f;
+            }
+
+            return Mathf.Clamp01(
+                currentResistance /
+                fishData.MaxResistance
+            );
+        }
+    }
+
+    public event Action<FishController> Captured;
 
     private void Awake()
     {
@@ -26,6 +47,7 @@ public class FishController : MonoBehaviour
             fishData.MaxResistance;
 
         isCaptured = false;
+        Captured = null;
 
         transform.localScale =
             new Vector3(
@@ -67,7 +89,10 @@ public class FishController : MonoBehaviour
 
         if (currentResistance <= 0f)
         {
+            currentResistance = 0f;
+
             Capture();
+
             return true;
         }
 
@@ -85,11 +110,12 @@ public class FishController : MonoBehaviour
 
         if (RunManager.Instance != null)
         {
-            RunManager.Instance
-                .RegisterFishCaptured(
-                    fishData
-                );
+            RunManager.Instance.RegisterFishCaptured(
+                fishData
+            );
         }
+
+        Captured?.Invoke(this);
 
         gameObject.SetActive(false);
     }
