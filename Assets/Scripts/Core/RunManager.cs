@@ -2,7 +2,11 @@ using UnityEngine;
 
 public class RunManager : MonoBehaviour
 {
-    public static RunManager Instance { get; private set; }
+    public static RunManager Instance
+    {
+        get;
+        private set;
+    }
 
     [Header("Starting Resources")]
     [SerializeField] private int startingGold = 60;
@@ -19,15 +23,26 @@ public class RunManager : MonoBehaviour
 
     private bool levelUpPending;
 
-    public int CurrentGold => currentGold;
-    public int CapturedFishCount => capturedFishCount;
+    public int CurrentGold =>
+        currentGold;
 
-    public int CapturedCatchValue => capturedCatchValue;
-    public int TotalCatchValue => totalCatchValue;
+    public int CapturedFishCount =>
+        capturedFishCount;
 
-    public int CurrentLevel => currentLevel;
-    public int CurrentExp => currentExp;
-    public int ExpToNextLevel => expToNextLevel;
+    public int CapturedCatchValue =>
+        capturedCatchValue;
+
+    public int TotalCatchValue =>
+        totalCatchValue;
+
+    public int CurrentLevel =>
+        currentLevel;
+
+    public int CurrentExp =>
+        currentExp;
+
+    public int ExpToNextLevel =>
+        expToNextLevel;
 
     public float CatchRate
     {
@@ -38,13 +53,16 @@ public class RunManager : MonoBehaviour
                 return 0f;
             }
 
-            return (float)capturedCatchValue / totalCatchValue;
+            return
+                (float)capturedCatchValue /
+                totalCatchValue;
         }
     }
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (Instance != null &&
+            Instance != this)
         {
             Destroy(gameObject);
             return;
@@ -52,20 +70,28 @@ public class RunManager : MonoBehaviour
 
         Instance = this;
 
-        currentGold = startingGold;
+        currentGold =
+            startingGold;
     }
 
-    public void RegisterFishSpawned(FishData fishData)
+    // =========================================================
+    // FISH RESULT
+    // =========================================================
+
+    public void RegisterFishSpawned(
+        FishData fishData)
     {
         if (fishData == null)
         {
             return;
         }
 
-        totalCatchValue += fishData.CatchValue;
+        totalCatchValue +=
+            fishData.CatchValue;
     }
 
-    public void RegisterFishCaptured(FishData fishData)
+    public void RegisterFishCaptured(
+        FishData fishData)
     {
         if (fishData == null)
         {
@@ -74,12 +100,46 @@ public class RunManager : MonoBehaviour
 
         capturedFishCount++;
 
-        capturedCatchValue += fishData.CatchValue;
-        currentGold += fishData.GoldReward;
-        currentExp += fishData.ExpReward;
+        capturedCatchValue +=
+            fishData.CatchValue;
+
+        currentGold +=
+            fishData.GoldReward;
+
+        currentExp +=
+            fishData.ExpReward;
 
         CheckLevelUp();
     }
+
+    // 게임 종료 순간 아직 맵에 남아 있어
+    // 포획/도주 결과가 확정되지 않은 물고기를
+    // 최종 어획률 계산에서 제외한다.
+    public void ExcludeUnresolvedFish(
+        FishData fishData)
+    {
+        if (fishData == null)
+        {
+            return;
+        }
+
+        int catchValueToRemove =
+            Mathf.Max(
+                0,
+                fishData.CatchValue
+            );
+
+        totalCatchValue =
+            Mathf.Max(
+                capturedCatchValue,
+                totalCatchValue -
+                catchValueToRemove
+            );
+    }
+
+    // =========================================================
+    // BONUS
+    // =========================================================
 
     public void GrantBonusReward(
         int gold,
@@ -87,18 +147,25 @@ public class RunManager : MonoBehaviour
     {
         if (gold > 0)
         {
-            currentGold += gold;
+            currentGold +=
+                gold;
         }
 
         if (exp > 0)
         {
-            currentExp += exp;
+            currentExp +=
+                exp;
 
             CheckLevelUp();
         }
     }
 
-    public bool TrySpendGold(int amount)
+    // =========================================================
+    // GOLD
+    // =========================================================
+
+    public bool TrySpendGold(
+        int amount)
     {
         if (amount <= 0)
         {
@@ -110,10 +177,15 @@ public class RunManager : MonoBehaviour
             return false;
         }
 
-        currentGold -= amount;
+        currentGold -=
+            amount;
 
         return true;
     }
+
+    // =========================================================
+    // LEVEL
+    // =========================================================
 
     private void CheckLevelUp()
     {
@@ -122,32 +194,46 @@ public class RunManager : MonoBehaviour
             return;
         }
 
-        if (currentExp < expToNextLevel)
+        if (currentExp <
+            expToNextLevel)
         {
             return;
         }
 
-        currentExp -= expToNextLevel;
+        currentExp -=
+            expToNextLevel;
 
         currentLevel++;
 
         expToNextLevel =
             Mathf.RoundToInt(
-                expToNextLevel * 1.35f
+                expToNextLevel *
+                1.35f
             );
 
-        levelUpPending = true;
+        levelUpPending =
+            true;
 
         if (PrototypeAugmentManager.Instance != null)
         {
-            PrototypeAugmentManager.Instance.ShowChoices();
+            PrototypeAugmentManager.Instance
+                .ShowChoices();
         }
     }
 
     public void ResolveLevelUp()
     {
-        levelUpPending = false;
+        levelUpPending =
+            false;
 
         CheckLevelUp();
+    }
+
+    private void OnDisable()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 }

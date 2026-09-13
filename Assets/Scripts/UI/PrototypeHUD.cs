@@ -10,15 +10,22 @@ public class PrototypeHUD : MonoBehaviour
     private GUIStyle centerStyle;
     private GUIStyle resultStyle;
     private GUIStyle announcementStyle;
+    private GUIStyle resultInfoStyle;
+    private GUIStyle rankStyle;
 
     private void Awake()
     {
-        style = new GUIStyle();
+        style =
+            new GUIStyle();
+
         style.fontSize = 24;
-        style.normal.textColor = Color.white;
+        style.normal.textColor =
+            Color.white;
 
         centerStyle =
-            new GUIStyle(style);
+            new GUIStyle(
+                style
+            );
 
         centerStyle.alignment =
             TextAnchor.MiddleCenter;
@@ -26,14 +33,36 @@ public class PrototypeHUD : MonoBehaviour
         centerStyle.fontSize = 30;
 
         resultStyle =
-            new GUIStyle(centerStyle);
+            new GUIStyle(
+                centerStyle
+            );
 
         resultStyle.fontSize = 42;
+        resultStyle.fontStyle =
+            FontStyle.Bold;
 
         announcementStyle =
-            new GUIStyle(centerStyle);
+            new GUIStyle(
+                centerStyle
+            );
 
         announcementStyle.fontSize = 34;
+
+        resultInfoStyle =
+            new GUIStyle(
+                centerStyle
+            );
+
+        resultInfoStyle.fontSize = 22;
+
+        rankStyle =
+            new GUIStyle(
+                centerStyle
+            );
+
+        rankStyle.fontSize = 36;
+        rankStyle.fontStyle =
+            FontStyle.Bold;
     }
 
     private void OnGUI()
@@ -45,6 +74,18 @@ public class PrototypeHUD : MonoBehaviour
 
         RunManager run =
             RunManager.Instance;
+
+        // 결과 화면 중에는 기존 HUD 정보를
+        // 뒤에 겹쳐 표시하지 않는다.
+        PrototypeGameFlowManager flow =
+            PrototypeGameFlowManager.Instance;
+
+        if (flow != null &&
+            flow.IsGameEnded)
+        {
+            DrawGameFlow();
+            return;
+        }
 
         GUI.Label(
             new Rect(
@@ -104,7 +145,7 @@ public class PrototypeHUD : MonoBehaviour
         );
 
         if (fishSpawner != null &&
-    fishSpawner.HasStarted)
+            fishSpawner.HasStarted)
         {
             GUI.Label(
                 new Rect(
@@ -138,6 +179,10 @@ public class PrototypeHUD : MonoBehaviour
         DrawEncounterAnnouncement();
         DrawGameFlow();
     }
+
+    // =========================================================
+    // CAST NET
+    // =========================================================
 
     private void DrawCastNetStatus()
     {
@@ -279,6 +324,10 @@ public class PrototypeHUD : MonoBehaviour
         }
     }
 
+    // =========================================================
+    // ANNOUNCEMENT
+    // =========================================================
+
     private void DrawEncounterAnnouncement()
     {
         if (fishSpawner == null ||
@@ -308,6 +357,10 @@ public class PrototypeHUD : MonoBehaviour
             announcementStyle
         );
     }
+
+    // =========================================================
+    // GAME FLOW
+    // =========================================================
 
     private void DrawGameFlow()
     {
@@ -358,6 +411,8 @@ public class PrototypeHUD : MonoBehaviour
             return;
         }
 
+        // 이전 Final Fishing 방식과의
+        // 임시 호환 표시.
         if (flow.IsFinalFishing)
         {
             GUI.Label(
@@ -378,54 +433,173 @@ public class PrototypeHUD : MonoBehaviour
             return;
         }
 
-        string resultText =
-            flow.IsSuccess
-            ? "조업 성공!"
-            : "조업 실패";
+        DrawResultScreen(
+            flow
+        );
+    }
+
+    // =========================================================
+    // RESULT
+    // =========================================================
+
+    private void DrawResultScreen(
+        PrototypeGameFlowManager flow)
+    {
+        RunManager run =
+            RunManager.Instance;
+
+        float panelWidth = 620f;
+        float panelHeight = 500f;
+
+        float x =
+            Screen.width * 0.5f -
+            panelWidth * 0.5f;
+
+        float y =
+            Screen.height * 0.5f -
+            panelHeight * 0.5f;
 
         GUI.Box(
             new Rect(
-                Screen.width * 0.5f - 250f,
-                Screen.height * 0.5f - 130f,
-                500f,
-                260f
+                x,
+                y,
+                panelWidth,
+                panelHeight
             ),
             ""
         );
 
         GUI.Label(
             new Rect(
-                Screen.width * 0.5f - 230f,
-                Screen.height * 0.5f - 100f,
-                460f,
-                70f
+                x + 20f,
+                y + 25f,
+                panelWidth - 40f,
+                60f
             ),
-            resultText,
+            flow.ResultTitle,
             resultStyle
         );
 
         GUI.Label(
             new Rect(
-                Screen.width * 0.5f - 230f,
-                Screen.height * 0.5f - 20f,
-                460f,
-                50f
+                x + 20f,
+                y + 85f,
+                panelWidth - 40f,
+                40f
             ),
-            $"최종 어획률: " +
-            $"{RunManager.Instance.CatchRate * 100f:F1}%",
-            centerStyle
+            flow.ResultDescription,
+            resultInfoStyle
         );
 
         GUI.Label(
             new Rect(
-                Screen.width * 0.5f - 230f,
-                Screen.height * 0.5f + 35f,
-                460f,
+                x + 20f,
+                y + 135f,
+                panelWidth - 40f,
+                55f
+            ),
+            $"어획 등급  {flow.CatchRank}",
+            rankStyle
+        );
+
+        GUI.Label(
+            new Rect(
+                x + 50f,
+                y + 200f,
+                panelWidth - 100f,
+                35f
+            ),
+            $"최종 어획률: " +
+            $"{run.CatchRate * 100f:F1}%",
+            resultInfoStyle
+        );
+
+        GUI.Label(
+            new Rect(
+                x + 50f,
+                y + 240f,
+                panelWidth - 100f,
+                35f
+            ),
+            $"포획 수: " +
+            $"{run.CapturedFishCount}마리",
+            resultInfoStyle
+        );
+
+        GUI.Label(
+            new Rect(
+                x + 50f,
+                y + 280f,
+                panelWidth - 100f,
+                35f
+            ),
+            $"보유 골드: " +
+            $"{run.CurrentGold}G",
+            resultInfoStyle
+        );
+
+        string jobName =
+            "초보 어부";
+
+        if (PrototypeJobManager.Instance != null)
+        {
+            jobName =
+                PrototypeJobManager.Instance
+                    .CurrentJobName;
+        }
+
+        GUI.Label(
+            new Rect(
+                x + 50f,
+                y + 320f,
+                panelWidth - 100f,
+                35f
+            ),
+            $"전직: {jobName}",
+            resultInfoStyle
+        );
+
+        BossEncounterController boss =
+            BossEncounterController.Instance;
+
+        if (boss != null)
+        {
+            string bossResult;
+
+            if (flow.IsSuccess)
+            {
+                bossResult =
+                    $"보스 포획: {boss.CurrentPass}차 회유";
+            }
+            else
+            {
+                bossResult =
+                    $"보스 도주: {boss.CurrentPass}차 회유";
+            }
+
+            GUI.Label(
+                new Rect(
+                    x + 50f,
+                    y + 360f,
+                    panelWidth - 100f,
+                    35f
+                ),
+                bossResult,
+                resultInfoStyle
+            );
+        }
+
+        if (GUI.Button(
+            new Rect(
+                x + panelWidth * 0.5f - 100f,
+                y + 420f,
+                200f,
                 50f
             ),
-            $"기준 어획률: " +
-            $"{flow.ClearCatchRate * 100f:F0}%",
-            centerStyle
-        );
+            "다시 조업하기"
+        ))
+        {
+            flow.RestartPrototype();
+        }
     }
 }

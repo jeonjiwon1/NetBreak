@@ -40,6 +40,11 @@ public class PrototypeJobManager : MonoBehaviour
     public JobType CurrentJob =>
         currentJob;
 
+    public string CurrentJobName =>
+        GetJobName(
+            currentJob
+        );
+
     public bool IsChoosingJob =>
         isChoosingJob;
 
@@ -74,6 +79,10 @@ public class PrototypeJobManager : MonoBehaviour
 
         ShowJobChoices();
     }
+
+    // =========================================================
+    // JOB REQUEST
+    // =========================================================
 
     public void RequestJobSelection()
     {
@@ -123,6 +132,10 @@ public class PrototypeJobManager : MonoBehaviour
         Time.timeScale = 0f;
     }
 
+    // =========================================================
+    // GUI
+    // =========================================================
+
     private void OnGUI()
     {
         if (isChoosingJob)
@@ -162,7 +175,8 @@ public class PrototypeJobManager : MonoBehaviour
             "1차 전직을 선택하세요"
         );
 
-        GUI.enabled = canSelect;
+        GUI.enabled =
+            canSelect;
 
         if (GUI.Button(
             new Rect(
@@ -173,7 +187,7 @@ public class PrototypeJobManager : MonoBehaviour
             ),
             "투망꾼\n\n" +
             "투망 최대 3스택\n" +
-            "투망 증강 출현률 증가"
+            "투망 증강 출현율 증가"
         ))
         {
             SelectJob(
@@ -212,7 +226,7 @@ public class PrototypeJobManager : MonoBehaviour
             "낚시꾼\n\n" +
             "최대 낚싯대 12개\n" +
             "설치 비용 감소\n" +
-            "낚싯대 증강 출현률 증가"
+            "낚싯대 증강 출현율 증가"
         ))
         {
             SelectJob(
@@ -239,8 +253,13 @@ public class PrototypeJobManager : MonoBehaviour
             );
         }
 
-        GUI.enabled = true;
+        GUI.enabled =
+            true;
     }
+
+    // =========================================================
+    // SELECT
+    // =========================================================
 
     private void SelectJob(
         JobType selectedJob)
@@ -369,6 +388,10 @@ public class PrototypeJobManager : MonoBehaviour
         }
     }
 
+    // =========================================================
+    // CURRENT JOB
+    // =========================================================
+
     private void DrawCurrentJob()
     {
         GUI.Label(
@@ -378,7 +401,7 @@ public class PrototypeJobManager : MonoBehaviour
                 200f,
                 40f
             ),
-            $"전직: {GetJobName(currentJob)}"
+            $"전직: {CurrentJobName}"
         );
     }
 
@@ -409,6 +432,11 @@ public class PrototypeJobManager : MonoBehaviour
         if (isChoosingJob)
         {
             Time.timeScale = 1f;
+        }
+
+        if (Instance == this)
+        {
+            Instance = null;
         }
     }
 }
