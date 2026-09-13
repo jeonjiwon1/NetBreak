@@ -18,6 +18,9 @@ public class FishSpawner : MonoBehaviour
     [SerializeField] private FishController fishPrefab;
     [SerializeField] private FishData[] fishTypes;
 
+    [Header("Route")]
+    [SerializeField] private FishRoute activeRoute;
+
     [Header("Pool")]
     [SerializeField] private int poolSize = 200;
 
@@ -1606,9 +1609,9 @@ public class FishSpawner : MonoBehaviour
     }
 
     private FishController SpawnFish(
-        FishData data,
-        Vector3 position,
-        float movementCenterY)
+    FishData data,
+    Vector3 position,
+    float movementCenterY)
     {
         if (data == null)
         {
@@ -1625,6 +1628,32 @@ public class FishSpawner : MonoBehaviour
             );
 
             return null;
+        }
+
+        float routeLaneOffset = 0f;
+
+        if (activeRoute != null)
+        {
+            float speciesSpreadMultiplier =
+                Mathf.Clamp(
+                    data.SchoolSpawnSpreadY /
+                    1.5f,
+                    0.65f,
+                    1.4f
+                );
+
+            routeLaneOffset =
+                Random.Range(
+                    -1f,
+                    1f
+                )
+                *
+                speciesSpreadMultiplier;
+
+            position =
+                activeRoute.GetSpawnPosition(
+                    routeLaneOffset
+                );
         }
 
         fish.transform.position =
@@ -1649,10 +1678,21 @@ public class FishSpawner : MonoBehaviour
 
         if (movement != null)
         {
-            movement
-                .InitializeSchoolMovement(
-                    movementCenterY
-                );
+            if (activeRoute != null)
+            {
+                movement
+                    .InitializeRouteMovement(
+                        activeRoute,
+                        routeLaneOffset
+                    );
+            }
+            else
+            {
+                movement
+                    .InitializeSchoolMovement(
+                        movementCenterY
+                    );
+            }
         }
 
         fish.gameObject.SetActive(
