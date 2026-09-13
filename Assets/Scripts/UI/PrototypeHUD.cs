@@ -1,14 +1,31 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PrototypeHUD : MonoBehaviour
 {
+    [Header("World Feedback")]
     [SerializeField] private CastNetController castNet;
     [SerializeField] private NetPlacementController netPlacement;
 
+    [Header("Result Panel")]
+    [SerializeField] private GameObject resultPanel;
+
+    [SerializeField] private TMP_Text resultTitleText;
+    [SerializeField] private TMP_Text resultDescriptionText;
+    [SerializeField] private TMP_Text resultRankText;
+
+    [SerializeField] private TMP_Text resultCatchRateText;
+    [SerializeField] private TMP_Text resultCaptureCountText;
+    [SerializeField] private TMP_Text resultGoldText;
+    [SerializeField] private TMP_Text resultJobText;
+    [SerializeField] private TMP_Text resultBossText;
+
+    [SerializeField] private Button restartButton;
+
     private GUIStyle centerStyle;
-    private GUIStyle resultStyle;
-    private GUIStyle resultInfoStyle;
-    private GUIStyle rankStyle;
+
+    private bool resultShown;
 
     private void Awake()
     {
@@ -16,36 +33,32 @@ public class PrototypeHUD : MonoBehaviour
             new GUIStyle();
 
         centerStyle.fontSize = 30;
+
         centerStyle.alignment =
             TextAnchor.MiddleCenter;
 
         centerStyle.normal.textColor =
             Color.white;
 
-        resultStyle =
-            new GUIStyle(
-                centerStyle
+        if (restartButton != null)
+        {
+            restartButton.onClick.AddListener(
+                HandleRestartClicked
             );
+        }
+    }
 
-        resultStyle.fontSize = 42;
-        resultStyle.fontStyle =
-            FontStyle.Bold;
+    private void Start()
+    {
+        if (resultPanel != null)
+        {
+            resultPanel.SetActive(false);
+        }
+    }
 
-        resultInfoStyle =
-            new GUIStyle(
-                centerStyle
-            );
-
-        resultInfoStyle.fontSize = 22;
-
-        rankStyle =
-            new GUIStyle(
-                centerStyle
-            );
-
-        rankStyle.fontSize = 36;
-        rankStyle.fontStyle =
-            FontStyle.Bold;
+    private void Update()
+    {
+        UpdateResultPanel();
     }
 
     private void OnGUI()
@@ -58,31 +71,183 @@ public class PrototypeHUD : MonoBehaviour
         PrototypeGameFlowManager flow =
             PrototypeGameFlowManager.Instance;
 
+        // 결과 화면은 Canvas가 담당한다.
         if (flow != null &&
             flow.IsGameEnded)
         {
-            DrawResultScreen(
-                flow
-            );
-
             return;
         }
 
-        // 기본 HUD:
-        // PrototypeHUDCanvas 담당.
-        //
-        // 조업 준비:
-        // PrototypeHUDCanvas 담당.
-        //
-        // Encounter Announcement:
-        // PrototypeHUDCanvas 담당.
-
         DrawNetCost();
         DrawCastNetInfo();
-
-        // Legacy Final Fishing이 아직 호출되는 경우만
-        // 임시 표시를 유지한다.
         DrawLegacyFinalFishing();
+    }
+
+    // =========================================================
+    // RESULT CANVAS
+    // =========================================================
+
+    private void UpdateResultPanel()
+    {
+        PrototypeGameFlowManager flow =
+            PrototypeGameFlowManager.Instance;
+
+        bool shouldShow =
+            flow != null &&
+            flow.IsGameEnded;
+
+        if (resultPanel != null &&
+            resultPanel.activeSelf != shouldShow)
+        {
+            resultPanel.SetActive(
+                shouldShow
+            );
+        }
+
+        if (!shouldShow ||
+            flow == null)
+        {
+            resultShown = false;
+            return;
+        }
+
+        if (resultShown)
+        {
+            return;
+        }
+
+        RefreshResultText(
+            flow
+        );
+
+        resultShown = true;
+    }
+
+    private void RefreshResultText(
+        PrototypeGameFlowManager flow)
+    {
+        RunManager run =
+            RunManager.Instance;
+
+        if (run == null)
+        {
+            return;
+        }
+
+        // -----------------------------------------------------
+        // TITLE / DESCRIPTION
+        // -----------------------------------------------------
+
+        if (resultTitleText != null)
+        {
+            resultTitleText.text =
+                flow.ResultTitle;
+        }
+
+        if (resultDescriptionText != null)
+        {
+            resultDescriptionText.text =
+                flow.ResultDescription;
+        }
+
+        // -----------------------------------------------------
+        // RANK
+        // -----------------------------------------------------
+
+        if (resultRankText != null)
+        {
+            resultRankText.text =
+                $"어획 등급  {flow.CatchRank}";
+        }
+
+        // -----------------------------------------------------
+        // RUN RESULT
+        // -----------------------------------------------------
+
+        if (resultCatchRateText != null)
+        {
+            resultCatchRateText.text =
+                $"최종 어획률: " +
+                $"{run.CatchRate * 100f:F1}%";
+        }
+
+        if (resultCaptureCountText != null)
+        {
+            resultCaptureCountText.text =
+                $"포획 수: " +
+                $"{run.CapturedFishCount}마리";
+        }
+
+        if (resultGoldText != null)
+        {
+            resultGoldText.text =
+                $"보유 골드: " +
+                $"{run.CurrentGold}G";
+        }
+
+        // -----------------------------------------------------
+        // JOB
+        // -----------------------------------------------------
+
+        string jobName =
+            "초보 어부";
+
+        if (PrototypeJobManager.Instance != null)
+        {
+            jobName =
+                PrototypeJobManager.Instance
+                    .CurrentJobName;
+        }
+
+        if (resultJobText != null)
+        {
+            resultJobText.text =
+                $"전직: {jobName}";
+        }
+
+        // -----------------------------------------------------
+        // BOSS RESULT
+        // -----------------------------------------------------
+
+        if (resultBossText != null)
+        {
+            BossEncounterController boss =
+                BossEncounterController.Instance;
+
+            if (boss == null)
+            {
+                resultBossText.text = "";
+            }
+            else if (flow.IsSuccess)
+            {
+                resultBossText.text =
+                    $"보스 포획: " +
+                    $"{boss.CurrentPass}차 회유";
+            }
+            else
+            {
+                resultBossText.text =
+                    $"보스 도주: " +
+                    $"{boss.CurrentPass}차 회유";
+            }
+        }
+    }
+
+    // =========================================================
+    // RESTART
+    // =========================================================
+
+    private void HandleRestartClicked()
+    {
+        PrototypeGameFlowManager flow =
+            PrototypeGameFlowManager.Instance;
+
+        if (flow == null)
+        {
+            return;
+        }
+
+        flow.RestartPrototype();
     }
 
     // =========================================================
@@ -204,170 +369,13 @@ public class PrototypeHUD : MonoBehaviour
         );
     }
 
-    // =========================================================
-    // RESULT
-    // =========================================================
-
-    private void DrawResultScreen(
-        PrototypeGameFlowManager flow)
+    private void OnDestroy()
     {
-        RunManager run =
-            RunManager.Instance;
-
-        float panelWidth = 620f;
-        float panelHeight = 500f;
-
-        float x =
-            Screen.width * 0.5f -
-            panelWidth * 0.5f;
-
-        float y =
-            Screen.height * 0.5f -
-            panelHeight * 0.5f;
-
-        GUI.Box(
-            new Rect(
-                x,
-                y,
-                panelWidth,
-                panelHeight
-            ),
-            ""
-        );
-
-        GUI.Label(
-            new Rect(
-                x + 20f,
-                y + 25f,
-                panelWidth - 40f,
-                60f
-            ),
-            flow.ResultTitle,
-            resultStyle
-        );
-
-        GUI.Label(
-            new Rect(
-                x + 20f,
-                y + 85f,
-                panelWidth - 40f,
-                40f
-            ),
-            flow.ResultDescription,
-            resultInfoStyle
-        );
-
-        GUI.Label(
-            new Rect(
-                x + 20f,
-                y + 135f,
-                panelWidth - 40f,
-                55f
-            ),
-            $"어획 등급  {flow.CatchRank}",
-            rankStyle
-        );
-
-        GUI.Label(
-            new Rect(
-                x + 50f,
-                y + 200f,
-                panelWidth - 100f,
-                35f
-            ),
-            $"최종 어획률: " +
-            $"{run.CatchRate * 100f:F1}%",
-            resultInfoStyle
-        );
-
-        GUI.Label(
-            new Rect(
-                x + 50f,
-                y + 240f,
-                panelWidth - 100f,
-                35f
-            ),
-            $"포획 수: " +
-            $"{run.CapturedFishCount}마리",
-            resultInfoStyle
-        );
-
-        GUI.Label(
-            new Rect(
-                x + 50f,
-                y + 280f,
-                panelWidth - 100f,
-                35f
-            ),
-            $"보유 골드: " +
-            $"{run.CurrentGold}G",
-            resultInfoStyle
-        );
-
-        string jobName =
-            "초보 어부";
-
-        if (PrototypeJobManager.Instance != null)
+        if (restartButton != null)
         {
-            jobName =
-                PrototypeJobManager.Instance
-                    .CurrentJobName;
-        }
-
-        GUI.Label(
-            new Rect(
-                x + 50f,
-                y + 320f,
-                panelWidth - 100f,
-                35f
-            ),
-            $"전직: {jobName}",
-            resultInfoStyle
-        );
-
-        BossEncounterController boss =
-            BossEncounterController.Instance;
-
-        if (boss != null)
-        {
-            string bossResult;
-
-            if (flow.IsSuccess)
-            {
-                bossResult =
-                    $"보스 포획: " +
-                    $"{boss.CurrentPass}차 회유";
-            }
-            else
-            {
-                bossResult =
-                    $"보스 도주: " +
-                    $"{boss.CurrentPass}차 회유";
-            }
-
-            GUI.Label(
-                new Rect(
-                    x + 50f,
-                    y + 360f,
-                    panelWidth - 100f,
-                    35f
-                ),
-                bossResult,
-                resultInfoStyle
+            restartButton.onClick.RemoveListener(
+                HandleRestartClicked
             );
-        }
-
-        if (GUI.Button(
-            new Rect(
-                x + panelWidth * 0.5f - 100f,
-                y + 420f,
-                200f,
-                50f
-            ),
-            "다시 조업하기"
-        ))
-        {
-            flow.RestartPrototype();
         }
     }
 }

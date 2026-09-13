@@ -1,417 +1,303 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BossHUD : MonoBehaviour
 {
-    [Header("Layout")]
-    [SerializeField] private float panelWidth = 600f;
-    [SerializeField] private float panelHeight = 145f;
-    [SerializeField] private float topMargin = 20f;
+    [Header("Boss Panel")]
+    [SerializeField] private GameObject bossPanel;
 
-    [Header("Between Pass Feedback")]
-    [SerializeField] private float escapePanelWidth = 520f;
-    [SerializeField] private float escapePanelHeight = 90f;
+    [SerializeField] private TMP_Text bossNameText;
 
-    private GUIStyle bossNameStyle;
-    private GUIStyle resistanceTextStyle;
-    private GUIStyle infoStyle;
-    private GUIStyle warningStyle;
-    private GUIStyle escapeTitleStyle;
-    private GUIStyle escapeTextStyle;
+    [SerializeField] private Image resistanceFill;
 
-    private void OnGUI()
+    [SerializeField] private TMP_Text resistanceText;
+
+    [SerializeField] private TMP_Text phaseText;
+    [SerializeField] private TMP_Text passText;
+    [SerializeField] private TMP_Text stateText;
+
+    [Header("Escape Panel")]
+    [SerializeField] private GameObject escapePanel;
+
+    [SerializeField] private TMP_Text escapeTitleText;
+    [SerializeField] private TMP_Text escapeRecoveryText;
+    [SerializeField] private TMP_Text escapeNextText;
+
+    private void Start()
     {
-        EnsureStyles();
+        if (bossPanel != null)
+        {
+            bossPanel.SetActive(false);
+        }
 
+        if (escapePanel != null)
+        {
+            escapePanel.SetActive(false);
+        }
+    }
+
+    private void Update()
+    {
         BossEncounterController boss =
             BossEncounterController.Instance;
 
-        if (boss == null ||
-            !boss.IsRunning)
+        bool shouldShowBoss =
+            boss != null &&
+            boss.IsRunning;
+
+        UpdateBossPanelVisibility(
+            shouldShowBoss
+        );
+
+        if (!shouldShowBoss ||
+            boss == null)
         {
+            HideEscapePanel();
             return;
         }
 
-        DrawBossPanel(
+        UpdateBossPanel(
             boss
         );
 
-        if (boss.IsBetweenPasses)
-        {
-            DrawEscapePanel(
-                boss
-            );
-        }
+        UpdateEscapePanel(
+            boss
+        );
     }
 
     // =========================================================
-    // STYLE
+    // BOSS PANEL VISIBILITY
     // =========================================================
 
-    private void EnsureStyles()
+    private void UpdateBossPanelVisibility(
+        bool shouldShow)
     {
-        if (bossNameStyle != null)
+        if (bossPanel == null)
         {
             return;
         }
 
-        bossNameStyle =
-            new GUIStyle(
-                GUI.skin.label
-            );
+        if (bossPanel.activeSelf ==
+            shouldShow)
+        {
+            return;
+        }
 
-        bossNameStyle.alignment =
-            TextAnchor.MiddleCenter;
-
-        bossNameStyle.fontSize = 22;
-
-        bossNameStyle.fontStyle =
-            FontStyle.Bold;
-
-        bossNameStyle.normal.textColor =
-            Color.white;
-
-        resistanceTextStyle =
-            new GUIStyle(
-                GUI.skin.label
-            );
-
-        resistanceTextStyle.alignment =
-            TextAnchor.MiddleCenter;
-
-        resistanceTextStyle.fontSize = 15;
-
-        resistanceTextStyle.fontStyle =
-            FontStyle.Bold;
-
-        resistanceTextStyle.normal.textColor =
-            Color.white;
-
-        infoStyle =
-            new GUIStyle(
-                GUI.skin.label
-            );
-
-        infoStyle.alignment =
-            TextAnchor.MiddleCenter;
-
-        infoStyle.fontSize = 16;
-
-        infoStyle.fontStyle =
-            FontStyle.Bold;
-
-        infoStyle.normal.textColor =
-            Color.white;
-
-        warningStyle =
-            new GUIStyle(
-                infoStyle
-            );
-
-        warningStyle.fontSize = 18;
-
-        escapeTitleStyle =
-            new GUIStyle(
-                GUI.skin.label
-            );
-
-        escapeTitleStyle.alignment =
-            TextAnchor.MiddleCenter;
-
-        escapeTitleStyle.fontSize = 20;
-
-        escapeTitleStyle.fontStyle =
-            FontStyle.Bold;
-
-        escapeTitleStyle.normal.textColor =
-            Color.white;
-
-        escapeTextStyle =
-            new GUIStyle(
-                GUI.skin.label
-            );
-
-        escapeTextStyle.alignment =
-            TextAnchor.MiddleCenter;
-
-        escapeTextStyle.fontSize = 16;
-
-        escapeTextStyle.normal.textColor =
-            Color.white;
+        bossPanel.SetActive(
+            shouldShow
+        );
     }
 
     // =========================================================
-    // MAIN PANEL
+    // BOSS PANEL
     // =========================================================
 
-    private void DrawBossPanel(
+    private void UpdateBossPanel(
         BossEncounterController boss)
     {
-        float x =
-            Screen.width * 0.5f -
-            panelWidth * 0.5f;
-
-        float y =
-            topMargin;
-
-        GUI.Box(
-            new Rect(
-                x,
-                y,
-                panelWidth,
-                panelHeight
-            ),
-            ""
+        UpdateBossName(
+            boss
         );
 
-        GUI.Label(
-            new Rect(
-                x + 10f,
-                y + 5f,
-                panelWidth - 20f,
-                30f
-            ),
-            boss.BossName,
-            bossNameStyle
+        UpdateResistance(
+            boss
         );
 
-        DrawResistanceBar(
-            boss,
-            x,
-            y
+        UpdatePhaseAndPass(
+            boss
         );
 
-        DrawPhaseAndPass(
-            boss,
-            x,
-            y
-        );
-
-        DrawActionState(
-            boss,
-            x,
-            y
+        UpdateState(
+            boss
         );
     }
 
-    private void DrawResistanceBar(
-        BossEncounterController boss,
-        float x,
-        float y)
+    private void UpdateBossName(
+        BossEncounterController boss)
     {
-        Rect backgroundRect =
-            new Rect(
-                x + 40f,
-                y + 42f,
-                panelWidth - 80f,
-                28f
-            );
+        if (bossNameText == null)
+        {
+            return;
+        }
 
-        GUI.Box(
-            backgroundRect,
-            ""
-        );
-
-        float ratio =
-            Mathf.Clamp01(
-                boss.ResistanceRatio
-            );
-
-        Rect fillRect =
-            new Rect(
-                backgroundRect.x + 2f,
-                backgroundRect.y + 2f,
-                (backgroundRect.width - 4f) *
-                ratio,
-                backgroundRect.height - 4f
-            );
-
-        Color previousColor =
-            GUI.color;
-
-        GUI.color =
-            new Color(
-                0.75f,
-                0.15f,
-                0.15f,
-                1f
-            );
-
-        GUI.Box(
-            fillRect,
-            ""
-        );
-
-        GUI.color =
-            previousColor;
-
-        GUI.Label(
-            backgroundRect,
-            $"Resistance  " +
-            $"{boss.CurrentResistance:F0} / " +
-            $"{boss.MaxResistance:F0}",
-            resistanceTextStyle
-        );
+        bossNameText.text =
+            boss.BossName;
     }
 
-    private void DrawPhaseAndPass(
-        BossEncounterController boss,
-        float x,
-        float y)
+    private void UpdateResistance(
+        BossEncounterController boss)
     {
-        string passText =
-            boss.IsFinalPass
-                ? $"마지막 회유 ({boss.CurrentPass} / {boss.MaxPasses})"
-                : $"회유 {boss.CurrentPass} / {boss.MaxPasses}";
+        if (resistanceFill != null)
+        {
+            resistanceFill.fillAmount =
+                Mathf.Clamp01(
+                    boss.ResistanceRatio
+                );
+        }
 
-        string phaseText =
-            $"Phase {boss.CurrentPhase} / {boss.MaxPhases}";
-
-        GUI.Label(
-            new Rect(
-                x + 20f,
-                y + 78f,
-                panelWidth * 0.5f - 20f,
-                28f
-            ),
-            phaseText,
-            infoStyle
-        );
-
-        GUI.Label(
-            new Rect(
-                x + panelWidth * 0.5f,
-                y + 78f,
-                panelWidth * 0.5f - 20f,
-                28f
-            ),
-            passText,
-            boss.IsFinalPass
-                ? warningStyle
-                : infoStyle
-        );
+        if (resistanceText != null)
+        {
+            resistanceText.text =
+                $"저항력 " +
+                $"{boss.CurrentResistance:F0} / " +
+                $"{boss.MaxResistance:F0}";
+        }
     }
 
-    private void DrawActionState(
-        BossEncounterController boss,
-        float x,
-        float y)
+    private void UpdatePhaseAndPass(
+        BossEncounterController boss)
     {
-        string stateText = "";
+        if (phaseText != null)
+        {
+            phaseText.text =
+                $"Phase {boss.CurrentPhase} / " +
+                $"{boss.MaxPhases}";
+        }
+
+        if (passText != null)
+        {
+            if (boss.IsFinalPass)
+            {
+                passText.text =
+                    $"마지막 회유 " +
+                    $"({boss.CurrentPass} / " +
+                    $"{boss.MaxPasses})";
+            }
+            else
+            {
+                passText.text =
+                    $"회유 " +
+                    $"{boss.CurrentPass} / " +
+                    $"{boss.MaxPasses}";
+            }
+        }
+    }
+
+    private void UpdateState(
+        BossEncounterController boss)
+    {
+        if (stateText == null)
+        {
+            return;
+        }
+
+        stateText.text =
+            GetBossStateText(
+                boss
+            );
+    }
+
+    private string GetBossStateText(
+        BossEncounterController boss)
+    {
+        if (boss.IsBetweenPasses)
+        {
+            return "";
+        }
 
         BossBehaviorController behavior =
             boss.ActiveBossBehavior;
 
-        if (!boss.IsBetweenPasses &&
-            behavior != null)
+        if (behavior == null)
         {
-            if (behavior.IsTelegraphing)
-            {
-                stateText =
-                    boss.CurrentPhase >= 3
-                        ? "회피 기동 - 돌진 준비!"
-                        : "돌진 준비!";
-            }
-            else if (behavior.IsRushing)
-            {
-                stateText =
-                    "돌진!";
-            }
-            else if (behavior.IsRecovering)
-            {
-                stateText =
-                    "돌진 후 빈틈";
-            }
-            else if (boss.CurrentPhase == 1)
-            {
-                stateText =
-                    "기본 회유";
-            }
-            else if (boss.CurrentPhase == 2)
-            {
-                stateText =
-                    "격한 회유";
-            }
-            else
-            {
-                stateText =
-                    "난폭 회유";
-            }
+            return "";
         }
 
-        GUI.Label(
-            new Rect(
-                x + 10f,
-                y + 108f,
-                panelWidth - 20f,
-                28f
-            ),
-            stateText,
-            warningStyle
-        );
+        if (behavior.IsTelegraphing)
+        {
+            if (boss.CurrentPhase >= 3)
+            {
+                return "회피 기동 - 돌진 준비!";
+            }
+
+            return "돌진 준비!";
+        }
+
+        if (behavior.IsRushing)
+        {
+            return "돌진!";
+        }
+
+        if (behavior.IsRecovering)
+        {
+            return "돌진 후 빈틈";
+        }
+
+        switch (boss.CurrentPhase)
+        {
+            case 1:
+                return "기본 회유";
+
+            case 2:
+                return "격한 회유";
+
+            case 3:
+                return "난폭 회유";
+
+            default:
+                return "";
+        }
     }
 
     // =========================================================
     // ESCAPE PANEL
     // =========================================================
 
-    private void DrawEscapePanel(
+    private void UpdateEscapePanel(
         BossEncounterController boss)
     {
-        float x =
-            Screen.width * 0.5f -
-            escapePanelWidth * 0.5f;
+        bool shouldShow =
+            boss.IsBetweenPasses;
 
-        float y =
-            topMargin +
-            panelHeight +
-            15f;
+        if (escapePanel != null &&
+            escapePanel.activeSelf !=
+            shouldShow)
+        {
+            escapePanel.SetActive(
+                shouldShow
+            );
+        }
 
-        GUI.Box(
-            new Rect(
-                x,
-                y,
-                escapePanelWidth,
-                escapePanelHeight
-            ),
-            ""
-        );
+        if (!shouldShow)
+        {
+            return;
+        }
 
-        GUI.Label(
-            new Rect(
-                x + 10f,
-                y + 5f,
-                escapePanelWidth - 20f,
-                30f
-            ),
-            "보스가 도주했습니다.",
-            escapeTitleStyle
-        );
+        if (escapeTitleText != null)
+        {
+            escapeTitleText.text =
+                "보스가 도주했습니다.";
+        }
 
-        GUI.Label(
-            new Rect(
-                x + 10f,
-                y + 35f,
-                escapePanelWidth - 20f,
-                28f
-            ),
-            $"Resistance  " +
-            $"{boss.LastResistanceBeforeRecovery:F0} → " +
-            $"{boss.LastResistanceAfterRecovery:F0}  " +
-            $"(+{boss.LastRecoveryAmount:F0})",
-            escapeTextStyle
-        );
+        if (escapeRecoveryText != null)
+        {
+            escapeRecoveryText.text =
+                $"저항력 " +
+                $"{boss.LastResistanceBeforeRecovery:F0}" +
+                " → " +
+                $"{boss.LastResistanceAfterRecovery:F0}" +
+                $" (+{boss.LastRecoveryAmount:F0})";
+        }
 
-        GUI.Label(
-            new Rect(
-                x + 10f,
-                y + 60f,
-                escapePanelWidth - 20f,
-                24f
-            ),
-            $"다음 회유까지 " +
-            $"{boss.BetweenPassRemaining:F1}초  |  " +
-            $"Phase {boss.CurrentPhase} 유지",
-            escapeTextStyle
-        );
+        if (escapeNextText != null)
+        {
+            escapeNextText.text =
+                $"다음 회유까지 " +
+                $"{boss.BetweenPassRemaining:F1}초" +
+                " | " +
+                $"Phase {boss.CurrentPhase} 유지";
+        }
+    }
+
+    private void HideEscapePanel()
+    {
+        if (escapePanel != null &&
+            escapePanel.activeSelf)
+        {
+            escapePanel.SetActive(
+                false
+            );
+        }
     }
 }

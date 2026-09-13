@@ -27,6 +27,8 @@ public class FishSpawner : MonoBehaviour
 
     [SerializeField]
     private bool bossTestMode = false;
+    [SerializeField]
+    private bool miniBossTestMode = false;
 
     [Header("Pool")]
     [SerializeField] private int poolSize = 200;
@@ -149,6 +151,15 @@ public class FishSpawner : MonoBehaviour
         {
             StartCoroutine(
                 RunBossTestSequence()
+            );
+
+            return;
+        }
+
+        if (miniBossTestMode)
+        {
+            StartCoroutine(
+                RunMiniBossTestSequence()
             );
 
             return;
@@ -282,6 +293,44 @@ public class FishSpawner : MonoBehaviour
 
         StartBossEncounter(
             boss
+        );
+    }
+
+    private IEnumerator RunMiniBossTestSequence()
+    {
+        FishData miniBoss =
+            GetFishBySpecialType(
+                FishSpecialType.MiniBoss
+            );
+
+        if (miniBoss == null)
+        {
+            Debug.LogError(
+                "FishSpawner: MiniBoss 타입 FishData가 Fish Types에 없습니다."
+            );
+
+            yield break;
+        }
+
+        SetStage(
+            5,
+            "미니보스 테스트"
+        );
+
+        ShowAnnouncement(
+            "거대 참치 테스트를 시작합니다.",
+            1.5f
+        );
+
+        yield return new WaitForSeconds(
+            1.5f
+        );
+
+        SpawnSchool(
+            miniBoss,
+            1,
+            0.8f,
+            0.9f
         );
     }
 
