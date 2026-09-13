@@ -13,6 +13,18 @@ public class BossEncounterController : MonoBehaviour
     [SerializeField] private int maxPasses = 3;
     [SerializeField] private float betweenPassDelay = 3f;
 
+    [Header("Pass Routes")]
+    [SerializeField] private FishRoute firstPassRoute;
+    [SerializeField] private FishRoute secondPassRoute;
+    [SerializeField] private FishRoute thirdPassRoute;
+
+    [Header("Boss Phases")]
+    [Range(0f, 1f)]
+    [SerializeField] private float phase2StartRatio = 0.65f;
+
+    [Range(0f, 1f)]
+    [SerializeField] private float phase3StartRatio = 0.30f;
+
     [Header("Resistance Recovery")]
     [Range(0f, 1f)]
     [SerializeField] private float firstEscapeRecoveryRate = 0.25f;
@@ -20,19 +32,35 @@ public class BossEncounterController : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float secondEscapeRecoveryRate = 0.20f;
 
+    [Header("Support Fish")]
+    [SerializeField] private bool spawnSupportFish = true;
+    [SerializeField] private float supportFirstDelay = 3f;
+    [SerializeField] private float phase1SupportInterval = 8f;
+    [SerializeField] private float phase2SupportInterval = 6.5f;
+    [SerializeField] private float phase3SupportInterval = 5f;
+
     [Header("Debug")]
     [SerializeField] private bool showDebugLogs = true;
 
     private FishSpawner fishSpawner;
     private FishData bossData;
-    private FishRoute bossRoute;
+
+    // 일반 Coast Route.
+    // 전용 Boss Route가 비어 있을 때 fallback으로만 사용.
+    private FishRoute fallbackRoute;
+
+    private FishRoute currentPassRoute;
 
     private FishController activeBoss;
     private FishMovement activeBossMovement;
+    private BossBehaviorController activeBossBehavior;
 
     private Coroutine encounterCoroutine;
+    private Coroutine supportCoroutine;
 
     private int currentPass;
+    private int currentPhase;
+
     private float savedResistance;
 
     private bool isRunning;
@@ -41,12 +69,10 @@ public class BossEncounterController : MonoBehaviour
     private bool passResolved;
     private bool bossCapturedThisPass;
 
-    // 마지막 도주/회복 정보를 HUD에 보여주기 위한 값.
     private float lastResistanceBeforeRecovery;
     private float lastResistanceAfterRecovery;
     private float lastRecoveryAmount;
 
-    // 회유 사이 메시지를 표시할 실제 시간.
     private float betweenPassStartTime;
 
     public bool IsRunning =>
@@ -61,8 +87,36 @@ public class BossEncounterController : MonoBehaviour
     public int MaxPasses =>
         maxPasses;
 
+    public int CurrentPhase =>
+        currentPhase;
+
+    public int MaxPhases =>
+        3;
+
     public FishController ActiveBoss =>
         activeBoss;
+
+    public BossBehaviorController ActiveBossBehavior =>
+        activeBossBehavior;
+
+    public FishRoute CurrentPassRoute =>
+        currentPassRoute;
+
+    public FishRoute NextPassRoute
+    {
+        get
+        {
+            if (!isRunning ||
+                currentPass >= maxPasses)
+            {
+                return null;
+            }
+
+            return GetRouteForPass(
+                currentPass + 1
+            );
+        }
+    }
 
     public float BetweenPassDelay =>
         betweenPassDelay;
@@ -181,8 +235,28 @@ public class BossEncounterController : MonoBehaviour
         Instance = this;
     }
 
+    private void Start()
+    {
+        // 정상 플레이 중에는 Boss Route 3개를 숨긴다.
+        HideAllDedicatedBossRoutes();
+    }
+
+    private void Update()
+    {
+        if (!isRunning ||
+            isBetweenPasses ||
+            passResolved ||
+            activeBoss == null ||
+            !activeBoss.gameObject.activeInHierarchy)
+        {
+            return;
+        }
+
+        UpdateBossPhase();
+    }
+
     // =========================================================
-    // ENCOUNTER START
+    // START
     // =========================================================
 
     public void BeginEncounter(
@@ -223,23 +297,31 @@ public class BossEncounterController : MonoBehaviour
             return;
         }
 
-        if (route == null)
+        fishSpawner =
+            spawner;
+
+        bossData =
+            data;
+
+        fallbackRoute =
+            route;
+
+        if (GetRouteForPass(1) == null)
         {
             Debug.LogError(
-                "BossEncounterController: Boss Route가 없습니다."
+                "BossEncounterController: 1차 회유에 사용할 Route가 없습니다."
             );
 
             return;
         }
 
-        fishSpawner = spawner;
-        bossData = data;
-        bossRoute = route;
-
         savedResistance =
             bossData.MaxResistance;
 
         currentPass = 1;
+        currentPhase = 1;
+
+        currentPassRoute = null;
 
         isRunning = true;
         isBetweenPasses = false;
@@ -256,6 +338,10 @@ public class BossEncounterController : MonoBehaviour
         lastRecoveryAmount = 0f;
 
         betweenPassStartTime = 0f;
+
+        ShowOnlyDedicatedBossRoute(
+            GetRouteForPass(1)
+        );
 
         if (encounterCoroutine != null)
         {
@@ -289,13 +375,37 @@ public class BossEncounterController : MonoBehaviour
             passResolved = false;
             bossCapturedThisPass = false;
 
+            currentPassRoute =
+                GetRouteForPass(
+                    currentPass
+                );
+
+            if (currentPassRoute == null)
+            {
+                Debug.LogError(
+                    $"BossEncounterController: " +
+                    $"{currentPass}차 회유 Route가 없습니다."
+                );
+
+                FinishEncounter(
+                    false
+                );
+
+                yield break;
+            }
+
+            // 회유 시작 시 현재 경로만 표시.
+            ShowOnlyDedicatedBossRoute(
+                currentPassRoute
+            );
+
             bool registerSpawn =
                 currentPass == 1;
 
             activeBoss =
                 fishSpawner.SpawnBossPass(
                     bossData,
-                    bossRoute,
+                    currentPassRoute,
                     savedResistance,
                     registerSpawn
                 );
@@ -318,6 +428,18 @@ public class BossEncounterController : MonoBehaviour
                     FishMovement
                 >();
 
+            activeBossBehavior =
+                activeBoss.GetComponent<
+                    BossBehaviorController
+                >();
+
+            if (activeBossBehavior != null)
+            {
+                activeBossBehavior.SetPhase(
+                    currentPhase
+                );
+            }
+
             activeBoss.Captured +=
                 HandleBossCaptured;
 
@@ -328,10 +450,14 @@ public class BossEncounterController : MonoBehaviour
                     HandleBossDestinationReached;
             }
 
+            StartSupportFishLoop();
+
             if (showDebugLogs)
             {
                 Debug.Log(
                     $"[BOSS] {currentPass}/{maxPasses} 회유 시작 | " +
+                    $"Route: {currentPassRoute.name} | " +
+                    $"Phase {currentPhase} | " +
                     $"Resistance: {savedResistance:F0} / " +
                     $"{bossData.MaxResistance:F0}"
                 );
@@ -341,11 +467,17 @@ public class BossEncounterController : MonoBehaviour
                 () => passResolved
             );
 
+            StopSupportFishLoop();
+
             DetachBossEvents();
 
-            // -------------------------
-            // 포획 성공
-            // -------------------------
+            activeBoss = null;
+            activeBossMovement = null;
+            activeBossBehavior = null;
+
+            // =========================================
+            // CAPTURE
+            // =========================================
 
             if (bossCapturedThisPass)
             {
@@ -363,9 +495,9 @@ public class BossEncounterController : MonoBehaviour
                 yield break;
             }
 
-            // -------------------------
-            // 마지막 회유 실패
-            // -------------------------
+            // =========================================
+            // FINAL PASS FAILURE
+            // =========================================
 
             if (currentPass >= maxPasses)
             {
@@ -383,9 +515,9 @@ public class BossEncounterController : MonoBehaviour
                 yield break;
             }
 
-            // -------------------------
-            // Resistance 회복
-            // -------------------------
+            // =========================================
+            // RESISTANCE RECOVERY
+            // =========================================
 
             float recoveryRate =
                 GetRecoveryRate(
@@ -416,12 +548,32 @@ public class BossEncounterController : MonoBehaviour
                 Debug.Log(
                     $"[BOSS] {currentPass}차 회유 종료 | " +
                     $"{lastResistanceBeforeRecovery:F0} → " +
-                    $"{lastResistanceAfterRecovery:F0} 회복"
+                    $"{lastResistanceAfterRecovery:F0} 회복 | " +
+                    $"Phase {currentPhase} 유지"
                 );
             }
 
-            // 다음 회유 번호로 먼저 증가시킨다.
             currentPass++;
+
+            FishRoute nextRoute =
+                GetRouteForPass(
+                    currentPass
+                );
+
+            // 도주 직후에는 현재 Route를 없애고
+            // 다음 Route만 보여준다.
+            ShowOnlyDedicatedBossRoute(
+                nextRoute
+            );
+
+            if (showDebugLogs &&
+                nextRoute != null)
+            {
+                Debug.Log(
+                    $"[BOSS] 다음 회유 경로 예고: " +
+                    $"{nextRoute.name}"
+                );
+            }
 
             isBetweenPasses = true;
 
@@ -433,6 +585,250 @@ public class BossEncounterController : MonoBehaviour
             );
 
             isBetweenPasses = false;
+        }
+    }
+
+    // =========================================================
+    // SUPPORT FISH
+    // =========================================================
+
+    private void StartSupportFishLoop()
+    {
+        StopSupportFishLoop();
+
+        if (!spawnSupportFish ||
+            fishSpawner == null ||
+            currentPassRoute == null)
+        {
+            return;
+        }
+
+        supportCoroutine =
+            StartCoroutine(
+                RunSupportFishLoop()
+            );
+    }
+
+    private void StopSupportFishLoop()
+    {
+        if (supportCoroutine == null)
+        {
+            return;
+        }
+
+        StopCoroutine(
+            supportCoroutine
+        );
+
+        supportCoroutine = null;
+    }
+
+    private IEnumerator RunSupportFishLoop()
+    {
+        yield return new WaitForSeconds(
+            supportFirstDelay
+        );
+
+        while (
+            isRunning &&
+            !isBetweenPasses &&
+            !passResolved &&
+            activeBoss != null &&
+            activeBoss.gameObject.activeInHierarchy)
+        {
+            fishSpawner
+                .SpawnBossSupportEvent(
+                    currentPassRoute,
+                    currentPhase
+                );
+
+            float interval =
+                GetCurrentSupportInterval();
+
+            yield return new WaitForSeconds(
+                interval
+            );
+        }
+
+        supportCoroutine = null;
+    }
+
+    private float GetCurrentSupportInterval()
+    {
+        if (currentPhase >= 3)
+        {
+            return phase3SupportInterval;
+        }
+
+        if (currentPhase == 2)
+        {
+            return phase2SupportInterval;
+        }
+
+        return phase1SupportInterval;
+    }
+
+    // =========================================================
+    // ROUTE PREVIEW
+    // =========================================================
+
+    private void ShowOnlyDedicatedBossRoute(
+        FishRoute routeToShow)
+    {
+        HideAllDedicatedBossRoutes();
+
+        if (!IsDedicatedBossRoute(
+            routeToShow
+        ))
+        {
+            return;
+        }
+
+        routeToShow.gameObject.SetActive(
+            true
+        );
+    }
+
+    private void HideAllDedicatedBossRoutes()
+    {
+        SetDedicatedBossRouteActive(
+            firstPassRoute,
+            false
+        );
+
+        SetDedicatedBossRouteActive(
+            secondPassRoute,
+            false
+        );
+
+        SetDedicatedBossRouteActive(
+            thirdPassRoute,
+            false
+        );
+    }
+
+    private void SetDedicatedBossRouteActive(
+        FishRoute route,
+        bool active)
+    {
+        if (route == null)
+        {
+            return;
+        }
+
+        route.gameObject.SetActive(
+            active
+        );
+    }
+
+    private bool IsDedicatedBossRoute(
+        FishRoute route)
+    {
+        if (route == null)
+        {
+            return false;
+        }
+
+        return
+            route == firstPassRoute ||
+            route == secondPassRoute ||
+            route == thirdPassRoute;
+    }
+
+    // =========================================================
+    // ROUTE SELECTION
+    // =========================================================
+
+    private FishRoute GetRouteForPass(
+        int pass)
+    {
+        switch (pass)
+        {
+            case 1:
+                if (firstPassRoute != null)
+                {
+                    return firstPassRoute;
+                }
+
+                return fallbackRoute;
+
+            case 2:
+                if (secondPassRoute != null)
+                {
+                    return secondPassRoute;
+                }
+
+                if (firstPassRoute != null)
+                {
+                    return firstPassRoute;
+                }
+
+                return fallbackRoute;
+
+            case 3:
+                if (thirdPassRoute != null)
+                {
+                    return thirdPassRoute;
+                }
+
+                if (secondPassRoute != null)
+                {
+                    return secondPassRoute;
+                }
+
+                if (firstPassRoute != null)
+                {
+                    return firstPassRoute;
+                }
+
+                return fallbackRoute;
+
+            default:
+                return fallbackRoute;
+        }
+    }
+
+    // =========================================================
+    // PHASE
+    // =========================================================
+
+    private void UpdateBossPhase()
+    {
+        float ratio =
+            activeBoss.ResistanceRatio;
+
+        int targetPhase = 1;
+
+        if (ratio <= phase3StartRatio)
+        {
+            targetPhase = 3;
+        }
+        else if (ratio <= phase2StartRatio)
+        {
+            targetPhase = 2;
+        }
+
+        // 한 번 진입한 Phase는 역행하지 않는다.
+        if (targetPhase <= currentPhase)
+        {
+            return;
+        }
+
+        currentPhase =
+            targetPhase;
+
+        if (activeBossBehavior != null)
+        {
+            activeBossBehavior.SetPhase(
+                currentPhase
+            );
+        }
+
+        if (showDebugLogs)
+        {
+            Debug.Log(
+                $"[BOSS] Phase {currentPhase} 진입!"
+            );
         }
     }
 
@@ -534,10 +930,17 @@ public class BossEncounterController : MonoBehaviour
     private void FinishEncounter(
         bool success)
     {
+        StopSupportFishLoop();
+
         DetachBossEvents();
+
+        HideAllDedicatedBossRoutes();
 
         activeBoss = null;
         activeBossMovement = null;
+        activeBossBehavior = null;
+
+        currentPassRoute = null;
 
         isRunning = false;
         isBetweenPasses = false;
@@ -571,11 +974,54 @@ public class BossEncounterController : MonoBehaviour
 
     private void OnDisable()
     {
+        StopSupportFishLoop();
+
         DetachBossEvents();
 
         if (Instance == this)
         {
             Instance = null;
         }
+    }
+
+    private void OnValidate()
+    {
+        maxPasses =
+            Mathf.Clamp(
+                maxPasses,
+                1,
+                3
+            );
+
+        if (phase3StartRatio >
+            phase2StartRatio)
+        {
+            phase3StartRatio =
+                phase2StartRatio;
+        }
+
+        supportFirstDelay =
+            Mathf.Max(
+                0f,
+                supportFirstDelay
+            );
+
+        phase1SupportInterval =
+            Mathf.Max(
+                1f,
+                phase1SupportInterval
+            );
+
+        phase2SupportInterval =
+            Mathf.Max(
+                1f,
+                phase2SupportInterval
+            );
+
+        phase3SupportInterval =
+            Mathf.Max(
+                1f,
+                phase3SupportInterval
+            );
     }
 }

@@ -37,7 +37,6 @@ public class FishMovement : MonoBehaviour
 
     private FishRoute activeRoute;
     private int routeTargetIndex;
-
     private float routeLaneOffset;
 
     private bool wasAttractedByBait;
@@ -66,6 +65,9 @@ public class FishMovement : MonoBehaviour
 
     public int RouteTargetIndex =>
         routeTargetIndex;
+
+    public float RouteLaneOffset =>
+        routeLaneOffset;
 
     public event System.Action<FishMovement>
         DestinationReached;
@@ -105,8 +107,6 @@ public class FishMovement : MonoBehaviour
         ResetMovementModifiers();
     }
 
-    // 기존 코드와의 호환을 위해
-    // Legacy 이동도 당분간 유지한다.
     public void InitializeSchoolMovement(
         float centerY)
     {
@@ -130,6 +130,17 @@ public class FishMovement : MonoBehaviour
         wasAttractedByBait = false;
 
         ResetMovementModifiers();
+    }
+
+    public void SetRouteLaneOffset(
+        float laneOffset)
+    {
+        routeLaneOffset =
+            Mathf.Clamp(
+                laneOffset,
+                -1.25f,
+                1.25f
+            );
     }
 
     private void ResetMovementModifiers()
@@ -266,13 +277,10 @@ public class FishMovement : MonoBehaviour
 
     private void ReachDestination()
     {
-        // 보스 시스템에서 회유 종료를 감지할 수 있도록
-        // 비활성화 전에 먼저 이벤트를 발생시킨다.
         DestinationReached?.Invoke(
             this
         );
 
-        // 포획되지 않은 채 Destination에 도착한 물고기는 Miss.
         gameObject.SetActive(
             false
         );
@@ -504,8 +512,6 @@ public class FishMovement : MonoBehaviour
         RecalculateNetSpeed();
     }
 
-    // 이전 NetController 버전과의
-    // 컴파일 호환을 위해 유지한다.
     public void EnterNet(
         float slowMultiplier)
     {
@@ -590,6 +596,7 @@ public class FishMovement : MonoBehaviour
 
         activeRoute = null;
         routeTargetIndex = 0;
+        routeLaneOffset = 0f;
 
         wasAttractedByBait = false;
 

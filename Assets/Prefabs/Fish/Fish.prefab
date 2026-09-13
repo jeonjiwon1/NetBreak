@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 5347288222689144851}
   - component: {fileID: 4499000200353935560}
   - component: {fileID: 2932876402763767601}
+  - component: {fileID: -5829761355632074031}
   m_Layer: 0
   m_Name: Fish
   m_TagString: Untagged
@@ -112,6 +113,7 @@ MonoBehaviour:
   schoolCorrectionSpeed: 2
   waveAmplitude: 0.4
   waveFrequency: 1.5
+  routeWaveStrength: 0.35
 --- !u!114 &3358647989479690229
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -185,3 +187,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9886064b9d75dc43a4873ca8985526d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MiniBossController
+  bonusGold: 25
+  bonusExp: 4
+  windupDuration: 0.65
+  windupSpeedMultiplier: 0.6
+  flashInterval: 0.12
+  recoveryDuration: 0.4
+  recoverySpeedMultiplier: 0.65
+--- !u!114 &-5829761355632074031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6997248440028204982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b66fc0ebb328bd40ad4043d843ff28a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossBehaviorController
+  phase2RushInterval: 5
+  phase2WindupDuration: 0.7
+  phase2WindupSpeedMultiplier: 0.65
+  phase2RushSpeedMultiplier: 1.9
+  phase2RushDuration: 0.9
+  phase3RushInterval: 3.2
+  phase3WindupDuration: 0.45
+  phase3WindupSpeedMultiplier: 0.55
+  phase3RushSpeedMultiplier: 2.25
+  phase3RushDuration: 1
+  phase3LaneOffset: 0.9
+  recoveryDuration: 0.45
+  recoverySpeedMultiplier: 0.7
+  flashInterval: 0.12

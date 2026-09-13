@@ -23,7 +23,7 @@ MonoBehaviour:
   dashDuration: 0.8
   dashInterval: 5
   firstDashDelay: 2.5
-  maxResistance: 300
+  maxResistance: 700
   catchValue: 30
   goldReward: 50
   expReward: 8

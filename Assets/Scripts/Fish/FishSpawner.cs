@@ -1845,6 +1845,220 @@ public class FishSpawner : MonoBehaviour
     }
 
     // =========================================================
+    // BOSS SUPPORT FISH
+    // =========================================================
+
+    public void SpawnBossSupportEvent(
+        FishRoute route,
+        int bossPhase)
+    {
+        if (route == null)
+        {
+            return;
+        }
+
+        FishData lowValueFish =
+            GetStandardFishByValueRank(
+                0
+            );
+
+        FishData midValueFish =
+            GetStandardFishByValueRank(
+                1
+            );
+
+        FishData pufferfish =
+            GetFishBySpecialType(
+                FishSpecialType.Pufferfish
+            );
+
+        FishData squid =
+            GetFishBySpecialType(
+                FishSpecialType.Squid
+            );
+
+        int phase =
+            Mathf.Clamp(
+                bossPhase,
+                1,
+                3
+            );
+
+        // Phase 1
+        // 작은 물고기만 소량 유입.
+        if (phase == 1)
+        {
+            SpawnBossSupportGroup(
+                lowValueFish,
+                2,
+                route,
+                0.8f
+            );
+
+            return;
+        }
+
+        // Phase 2
+        // 어군 밀도가 조금 증가.
+        if (phase == 2)
+        {
+            SpawnBossSupportGroup(
+                lowValueFish,
+                2,
+                route,
+                0.9f
+            );
+
+            SpawnBossSupportGroup(
+                midValueFish,
+                1,
+                route,
+                0.8f
+            );
+
+            return;
+        }
+
+        // Phase 3
+        // 일반 어군 + 낮은 확률로 특수어 1마리.
+        SpawnBossSupportGroup(
+            lowValueFish,
+            3,
+            route,
+            1f
+        );
+
+        SpawnBossSupportGroup(
+            midValueFish,
+            2,
+            route,
+            0.9f
+        );
+
+        if (Random.value <= 0.35f)
+        {
+            FishData specialFish =
+                Random.value < 0.5f
+                    ? pufferfish
+                    : squid;
+
+            if (specialFish != null)
+            {
+                SpawnBossSupportGroup(
+                    specialFish,
+                    1,
+                    route,
+                    0.7f
+                );
+            }
+        }
+    }
+
+    private void SpawnBossSupportGroup(
+        FishData data,
+        int count,
+        FishRoute route,
+        float spreadMultiplier)
+    {
+        if (data == null ||
+            route == null ||
+            count <= 0)
+        {
+            return;
+        }
+
+        float speciesSpreadMultiplier =
+            Mathf.Clamp(
+                data.SchoolSpawnSpreadY /
+                1.5f,
+                0.65f,
+                1.4f
+            );
+
+        for (int i = 0;
+             i < count;
+             i++)
+        {
+            float routeLaneOffset =
+                Random.Range(
+                    -1f,
+                    1f
+                )
+                *
+                speciesSpreadMultiplier
+                *
+                spreadMultiplier;
+
+            SpawnFishOnSpecificRoute(
+                data,
+                route,
+                routeLaneOffset
+            );
+        }
+    }
+
+    private FishController SpawnFishOnSpecificRoute(
+        FishData data,
+        FishRoute route,
+        float laneOffset)
+    {
+        if (data == null ||
+            route == null)
+        {
+            return null;
+        }
+
+        FishController fish =
+            GetInactiveFish();
+
+        if (fish == null)
+        {
+            Debug.LogWarning(
+                "FishSpawner: 보스 지원 어군을 생성할 비활성 Fish가 없습니다."
+            );
+
+            return null;
+        }
+
+        fish.transform.position =
+            route.GetSpawnPosition(
+                laneOffset
+            );
+
+        fish.Initialize(
+            data
+        );
+
+        FishMovement movement =
+            fish.GetComponent<
+                FishMovement
+            >();
+
+        if (movement != null)
+        {
+            movement
+                .InitializeRouteMovement(
+                    route,
+                    laneOffset
+                );
+        }
+
+        fish.gameObject.SetActive(
+            true
+        );
+
+        if (RunManager.Instance != null)
+        {
+            RunManager.Instance
+                .RegisterFishSpawned(
+                    data
+                );
+        }
+
+        return fish;
+    }
+
+    // =========================================================
     // ENCOUNTER WAIT
     // =========================================================
 

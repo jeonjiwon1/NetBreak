@@ -4,7 +4,7 @@ public class BossHUD : MonoBehaviour
 {
     [Header("Layout")]
     [SerializeField] private float panelWidth = 600f;
-    [SerializeField] private float panelHeight = 115f;
+    [SerializeField] private float panelHeight = 145f;
     [SerializeField] private float topMargin = 20f;
 
     [Header("Between Pass Feedback")]
@@ -13,8 +13,8 @@ public class BossHUD : MonoBehaviour
 
     private GUIStyle bossNameStyle;
     private GUIStyle resistanceTextStyle;
-    private GUIStyle passStyle;
-    private GUIStyle finalPassStyle;
+    private GUIStyle infoStyle;
+    private GUIStyle warningStyle;
     private GUIStyle escapeTitleStyle;
     private GUIStyle escapeTextStyle;
 
@@ -86,28 +86,28 @@ public class BossHUD : MonoBehaviour
         resistanceTextStyle.normal.textColor =
             Color.white;
 
-        passStyle =
+        infoStyle =
             new GUIStyle(
                 GUI.skin.label
             );
 
-        passStyle.alignment =
+        infoStyle.alignment =
             TextAnchor.MiddleCenter;
 
-        passStyle.fontSize = 16;
+        infoStyle.fontSize = 16;
 
-        passStyle.fontStyle =
+        infoStyle.fontStyle =
             FontStyle.Bold;
 
-        passStyle.normal.textColor =
+        infoStyle.normal.textColor =
             Color.white;
 
-        finalPassStyle =
+        warningStyle =
             new GUIStyle(
-                passStyle
+                infoStyle
             );
 
-        finalPassStyle.fontSize = 18;
+        warningStyle.fontSize = 18;
 
         escapeTitleStyle =
             new GUIStyle(
@@ -140,7 +140,7 @@ public class BossHUD : MonoBehaviour
     }
 
     // =========================================================
-    // MAIN BOSS PANEL
+    // MAIN PANEL
     // =========================================================
 
     private void DrawBossPanel(
@@ -163,30 +163,6 @@ public class BossHUD : MonoBehaviour
             ""
         );
 
-        DrawBossName(
-            boss,
-            x,
-            y
-        );
-
-        DrawResistanceBar(
-            boss,
-            x,
-            y
-        );
-
-        DrawPassInfo(
-            boss,
-            x,
-            y
-        );
-    }
-
-    private void DrawBossName(
-        BossEncounterController boss,
-        float x,
-        float y)
-    {
         GUI.Label(
             new Rect(
                 x + 10f,
@@ -196,6 +172,24 @@ public class BossHUD : MonoBehaviour
             ),
             boss.BossName,
             bossNameStyle
+        );
+
+        DrawResistanceBar(
+            boss,
+            x,
+            y
+        );
+
+        DrawPhaseAndPass(
+            boss,
+            x,
+            y
+        );
+
+        DrawActionState(
+            boss,
+            x,
+            y
         );
     }
 
@@ -259,48 +253,105 @@ public class BossHUD : MonoBehaviour
         );
     }
 
-    private void DrawPassInfo(
+    private void DrawPhaseAndPass(
         BossEncounterController boss,
         float x,
         float y)
     {
-        string passText;
+        string passText =
+            boss.IsFinalPass
+                ? $"마지막 회유 ({boss.CurrentPass} / {boss.MaxPasses})"
+                : $"회유 {boss.CurrentPass} / {boss.MaxPasses}";
 
-        GUIStyle style;
+        string phaseText =
+            $"Phase {boss.CurrentPhase} / {boss.MaxPhases}";
 
-        if (boss.IsFinalPass)
+        GUI.Label(
+            new Rect(
+                x + 20f,
+                y + 78f,
+                panelWidth * 0.5f - 20f,
+                28f
+            ),
+            phaseText,
+            infoStyle
+        );
+
+        GUI.Label(
+            new Rect(
+                x + panelWidth * 0.5f,
+                y + 78f,
+                panelWidth * 0.5f - 20f,
+                28f
+            ),
+            passText,
+            boss.IsFinalPass
+                ? warningStyle
+                : infoStyle
+        );
+    }
+
+    private void DrawActionState(
+        BossEncounterController boss,
+        float x,
+        float y)
+    {
+        string stateText = "";
+
+        BossBehaviorController behavior =
+            boss.ActiveBossBehavior;
+
+        if (!boss.IsBetweenPasses &&
+            behavior != null)
         {
-            passText =
-                $"마지막 회유  " +
-                $"({boss.CurrentPass} / {boss.MaxPasses})";
-
-            style =
-                finalPassStyle;
-        }
-        else
-        {
-            passText =
-                $"회유  " +
-                $"{boss.CurrentPass} / {boss.MaxPasses}";
-
-            style =
-                passStyle;
+            if (behavior.IsTelegraphing)
+            {
+                stateText =
+                    boss.CurrentPhase >= 3
+                        ? "회피 기동 - 돌진 준비!"
+                        : "돌진 준비!";
+            }
+            else if (behavior.IsRushing)
+            {
+                stateText =
+                    "돌진!";
+            }
+            else if (behavior.IsRecovering)
+            {
+                stateText =
+                    "돌진 후 빈틈";
+            }
+            else if (boss.CurrentPhase == 1)
+            {
+                stateText =
+                    "기본 회유";
+            }
+            else if (boss.CurrentPhase == 2)
+            {
+                stateText =
+                    "격한 회유";
+            }
+            else
+            {
+                stateText =
+                    "난폭 회유";
+            }
         }
 
         GUI.Label(
             new Rect(
                 x + 10f,
-                y + 78f,
+                y + 108f,
                 panelWidth - 20f,
                 28f
             ),
-            passText,
-            style
+            stateText,
+            warningStyle
         );
     }
 
     // =========================================================
-    // ESCAPE / RECOVERY PANEL
+    // ESCAPE PANEL
     // =========================================================
 
     private void DrawEscapePanel(
@@ -358,7 +409,8 @@ public class BossHUD : MonoBehaviour
                 24f
             ),
             $"다음 회유까지 " +
-            $"{boss.BetweenPassRemaining:F1}초",
+            $"{boss.BetweenPassRemaining:F1}초  |  " +
+            $"Phase {boss.CurrentPhase} 유지",
             escapeTextStyle
         );
     }
