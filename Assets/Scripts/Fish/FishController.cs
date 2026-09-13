@@ -10,9 +10,14 @@ public class FishController : MonoBehaviour
 
     private SpriteRenderer spriteRenderer;
 
-    public FishData Data => fishData;
-    public float CurrentResistance => currentResistance;
-    public bool IsCaptured => isCaptured;
+    public FishData Data =>
+        fishData;
+
+    public float CurrentResistance =>
+        currentResistance;
+
+    public bool IsCaptured =>
+        isCaptured;
 
     public float ResistanceRatio
     {
@@ -39,14 +44,27 @@ public class FishController : MonoBehaviour
             GetComponentInChildren<SpriteRenderer>();
     }
 
-    public void Initialize(FishData data)
+    public void Initialize(
+        FishData data)
     {
         fishData = data;
+
+        if (fishData == null)
+        {
+            currentResistance = 0f;
+            isCaptured = false;
+            Captured = null;
+
+            return;
+        }
 
         currentResistance =
             fishData.MaxResistance;
 
         isCaptured = false;
+
+        // Pool에서 이전 사용 시 등록된 이벤트가
+        // 다음 물고기에게 남지 않도록 초기화.
         Captured = null;
 
         transform.localScale =
@@ -66,18 +84,26 @@ public class FishController : MonoBehaviour
             $"Fish_{fishData.FishName}";
     }
 
-    private void OnEnable()
+    // 보스의 다음 회유에서 이전 Resistance를
+    // 일부 회복한 값으로 복원하기 위해 사용한다.
+    public void SetCurrentResistance(
+        float resistance)
     {
-        if (fishData != null)
+        if (fishData == null)
         {
-            currentResistance =
-                fishData.MaxResistance;
-
-            isCaptured = false;
+            return;
         }
+
+        currentResistance =
+            Mathf.Clamp(
+                resistance,
+                0f,
+                fishData.MaxResistance
+            );
     }
 
-    public bool TakeCaptureDamage(float amount)
+    public bool TakeCaptureDamage(
+        float amount)
     {
         if (fishData == null ||
             isCaptured)
@@ -85,7 +111,13 @@ public class FishController : MonoBehaviour
             return false;
         }
 
-        currentResistance -= amount;
+        if (amount <= 0f)
+        {
+            return false;
+        }
+
+        currentResistance -=
+            amount;
 
         if (currentResistance <= 0f)
         {
@@ -110,13 +142,18 @@ public class FishController : MonoBehaviour
 
         if (RunManager.Instance != null)
         {
-            RunManager.Instance.RegisterFishCaptured(
-                fishData
-            );
+            RunManager.Instance
+                .RegisterFishCaptured(
+                    fishData
+                );
         }
 
-        Captured?.Invoke(this);
+        Captured?.Invoke(
+            this
+        );
 
-        gameObject.SetActive(false);
+        gameObject.SetActive(
+            false
+        );
     }
 }

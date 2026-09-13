@@ -67,6 +67,9 @@ public class FishMovement : MonoBehaviour
     public int RouteTargetIndex =>
         routeTargetIndex;
 
+    public event System.Action<FishMovement>
+        DestinationReached;
+
     private void Awake()
     {
         mainCamera = Camera.main;
@@ -80,10 +83,11 @@ public class FishMovement : MonoBehaviour
     // =========================================================
 
     public void InitializeRouteMovement(
-    FishRoute route,
-    float laneOffset)
+        FishRoute route,
+        float laneOffset)
     {
-        activeRoute = route;
+        activeRoute =
+            route;
 
         routeTargetIndex = 0;
 
@@ -101,14 +105,15 @@ public class FishMovement : MonoBehaviour
         ResetMovementModifiers();
     }
 
-    // 기존 코드가 아직 호출할 수 있으므로
-    // 당분간 유지한다.
+    // 기존 코드와의 호환을 위해
+    // Legacy 이동도 당분간 유지한다.
     public void InitializeSchoolMovement(
         float centerY)
     {
         activeRoute = null;
 
-        schoolCenterY = centerY;
+        schoolCenterY =
+            centerY;
 
         personalOffsetY =
             Random.Range(
@@ -177,8 +182,8 @@ public class FishMovement : MonoBehaviour
 
         Vector2 targetPosition =
             activeRoute.GetTargetPointWithOffset(
-            routeTargetIndex,
-            routeLaneOffset
+                routeTargetIndex,
+                routeLaneOffset
             );
 
         float distanceToTarget =
@@ -200,10 +205,10 @@ public class FishMovement : MonoBehaviour
             routeTargetIndex++;
 
             targetPosition =
-             activeRoute.GetTargetPointWithOffset(
-                routeTargetIndex,
-                routeLaneOffset
-             );
+                activeRoute.GetTargetPointWithOffset(
+                    routeTargetIndex,
+                    routeLaneOffset
+                );
         }
 
         Vector2 toTarget =
@@ -219,8 +224,6 @@ public class FishMovement : MonoBehaviour
         Vector2 routeDirection =
             toTarget.normalized;
 
-        // Route에 딱 붙어서 한 줄로 이동하지 않게
-        // 진행 방향의 수직 방향으로 약간 흔들림을 준다.
         Vector2 perpendicular =
             new Vector2(
                 -routeDirection.y,
@@ -232,7 +235,8 @@ public class FishMovement : MonoBehaviour
                 Time.time *
                 waveFrequency +
                 wavePhase
-            ) *
+            )
+            *
             waveAmplitude;
 
         float lateralAmount =
@@ -262,14 +266,16 @@ public class FishMovement : MonoBehaviour
 
     private void ReachDestination()
     {
-        // Destination 도달 =
-        // 포획하지 못하고 빠져나간 물고기.
-        //
-        // RunManager에는 Spawn 시 CatchValue가 이미
-        // 등록되어 있고 Capture는 등록되지 않으므로,
-        // 그냥 Pool로 반환하면 어획률에서 Miss가 된다.
+        // 보스 시스템에서 회유 종료를 감지할 수 있도록
+        // 비활성화 전에 먼저 이벤트를 발생시킨다.
+        DestinationReached?.Invoke(
+            this
+        );
 
-        gameObject.SetActive(false);
+        // 포획되지 않은 채 Destination에 도착한 물고기는 Miss.
+        gameObject.SetActive(
+            false
+        );
     }
 
     // =========================================================
@@ -422,7 +428,9 @@ public class FishMovement : MonoBehaviour
             cameraRight +
             exitMargin)
         {
-            gameObject.SetActive(false);
+            gameObject.SetActive(
+                false
+            );
         }
     }
 
@@ -496,8 +504,8 @@ public class FishMovement : MonoBehaviour
         RecalculateNetSpeed();
     }
 
-    // 이전 NetController 버전과도
-    // 컴파일이 깨지지 않도록 유지.
+    // 이전 NetController 버전과의
+    // 컴파일 호환을 위해 유지한다.
     public void EnterNet(
         float slowMultiplier)
     {
@@ -534,7 +542,8 @@ public class FishMovement : MonoBehaviour
 
     private void RecalculateNetSpeed()
     {
-        float strongestSlow = 1f;
+        float strongestSlow =
+            1f;
 
         foreach (
             KeyValuePair<NetController, float>
@@ -583,5 +592,7 @@ public class FishMovement : MonoBehaviour
         routeTargetIndex = 0;
 
         wasAttractedByBait = false;
+
+        DestinationReached = null;
     }
 }

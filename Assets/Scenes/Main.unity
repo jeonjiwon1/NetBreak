@@ -210,6 +210,55 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &33066315
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 33066317}
+  - component: {fileID: 33066316}
+  m_Layer: 0
+  m_Name: BossEncounterController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &33066316
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 33066315}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39835ea18838d8c45843881e7af24d73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossEncounterController
+  maxPasses: 3
+  betweenPassDelay: 3
+  firstEscapeRecoveryRate: 0.25
+  secondEscapeRecoveryRate: 0.2
+  showDebugLogs: 1
+--- !u!4 &33066317
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 33066315}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &148901736
 GameObject:
   m_ObjectHideFlags: 0
@@ -1161,6 +1210,7 @@ GameObject:
   - component: {fileID: 876261350}
   - component: {fileID: 876261349}
   - component: {fileID: 876261351}
+  - component: {fileID: 876261352}
   m_Layer: 0
   m_Name: PrototypeHUD
   m_TagString: Untagged
@@ -1214,6 +1264,23 @@ MonoBehaviour:
   panelHeight: 85
   topMargin: 20
   rewardMessageDuration: 2.5
+--- !u!114 &876261352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 876261348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2fc66f96d63bbf4285dcf73407840ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BossHUD
+  panelWidth: 600
+  panelHeight: 115
+  topMargin: 20
+  escapePanelWidth: 520
+  escapePanelHeight: 90
 --- !u!1 &889583749
 GameObject:
   m_ObjectHideFlags: 0
@@ -1554,7 +1621,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f17f4c47e2d02c447bf09b3150706a62, type: 2}
   - {fileID: 11400000, guid: bdeb02fdfac636745b6193e46f8c5f44, type: 2}
   - {fileID: 11400000, guid: b6b9307613d821f4b9607f42fb8efb51, type: 2}
+  - {fileID: 11400000, guid: 72210a83dafc70a41ac08ca92b9c672a, type: 2}
   activeRoute: {fileID: 506839061}
+  bossEncounterController: {fileID: 33066316}
+  bossTestMode: 1
   poolSize: 200
   spawnMargin: 0.5
   verticalPadding: 1
@@ -1568,6 +1638,7 @@ MonoBehaviour:
   largeSchoolWarningTime: 2.5
   specialFishWarningTime: 2.5
   miniBossWarningTime: 2.5
+  bossWarningTime: 3
 --- !u!4 &1679640294
 Transform:
   m_ObjectHideFlags: 0
@@ -1845,3 +1916,4 @@ SceneRoots:
   - {fileID: 148901738}
   - {fileID: 844541568}
   - {fileID: 506839063}
+  - {fileID: 33066317}

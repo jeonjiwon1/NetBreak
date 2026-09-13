@@ -8,10 +8,10 @@ public class PrototypeGameFlowManager : MonoBehaviour
         private set;
     }
 
-    [Header("Final Fishing")]
+    [Header("Legacy Final Fishing")]
     [SerializeField] private float finalFishingDuration = 20f;
 
-    [Header("Clear")]
+    [Header("Legacy Clear")]
     [Range(0f, 1f)]
     [SerializeField] private float clearCatchRate = 0.8f;
 
@@ -20,22 +20,40 @@ public class PrototypeGameFlowManager : MonoBehaviour
     private bool isFishingStarted;
 
     private bool isFinalFishing;
+    private bool isBossEncounter;
+
     private bool isGameEnded;
     private bool isSuccess;
 
     private float finalFishingTimer;
 
-    public bool IsFinalFishing => isFinalFishing;
-    public bool IsGameEnded => isGameEnded;
-    public bool IsSuccess => isSuccess;
+    public bool IsFinalFishing =>
+        isFinalFishing;
+
+    public bool IsBossEncounter =>
+        isBossEncounter;
+
+    public bool IsGameEnded =>
+        isGameEnded;
+
+    public bool IsSuccess =>
+        isSuccess;
 
     public float FinalFishingTimer =>
-        Mathf.Max(0f, finalFishingTimer);
+        Mathf.Max(
+            0f,
+            finalFishingTimer
+        );
 
-    public float ClearCatchRate => clearCatchRate;
+    public float ClearCatchRate =>
+        clearCatchRate;
 
-    public bool IsPreparation => !isFishingStarted && !isGameEnded;
-    public bool IsFishingStarted => isFishingStarted;
+    public bool IsPreparation =>
+        !isFishingStarted &&
+        !isGameEnded;
+
+    public bool IsFishingStarted =>
+        isFishingStarted;
 
     private void Awake()
     {
@@ -45,32 +63,89 @@ public class PrototypeGameFlowManager : MonoBehaviour
     private void Update()
     {
         if (!isFinalFishing ||
+            isBossEncounter ||
             isGameEnded)
         {
             return;
         }
 
-        finalFishingTimer -= Time.deltaTime;
+        finalFishingTimer -=
+            Time.deltaTime;
 
         if (finalFishingTimer <= 0f)
         {
-            EndGame();
+            EndLegacyFinalFishing();
         }
     }
+
+    public void StartFishing()
+    {
+        if (isFishingStarted ||
+            isGameEnded)
+        {
+            return;
+        }
+
+        isFishingStarted = true;
+
+        if (fishSpawner != null)
+        {
+            fishSpawner.StartSpawning();
+        }
+    }
+
+    // =========================================================
+    // BOSS ENCOUNTER
+    // =========================================================
+
+    public void BeginBossEncounter()
+    {
+        if (isGameEnded)
+        {
+            return;
+        }
+
+        isFinalFishing = false;
+        isBossEncounter = true;
+    }
+
+    public void CompleteBossEncounter(
+        bool bossCaptured)
+    {
+        if (isGameEnded)
+        {
+            return;
+        }
+
+        isBossEncounter = false;
+        isFinalFishing = false;
+
+        isGameEnded = true;
+        isSuccess = bossCaptured;
+
+        Time.timeScale = 0f;
+    }
+
+    // =========================================================
+    // LEGACY FINAL FISHING
+    // =========================================================
 
     public void BeginFinalFishing()
     {
         if (isFinalFishing ||
+            isBossEncounter ||
             isGameEnded)
         {
             return;
         }
 
         isFinalFishing = true;
-        finalFishingTimer = finalFishingDuration;
+
+        finalFishingTimer =
+            finalFishingDuration;
     }
 
-    private void EndGame()
+    private void EndLegacyFinalFishing()
     {
         isFinalFishing = false;
         isGameEnded = true;
@@ -84,7 +159,8 @@ public class PrototypeGameFlowManager : MonoBehaviour
         }
 
         isSuccess =
-            catchRate >= clearCatchRate;
+            catchRate >=
+            clearCatchRate;
 
         Time.timeScale = 0f;
     }
@@ -92,20 +168,5 @@ public class PrototypeGameFlowManager : MonoBehaviour
     private void OnDisable()
     {
         Time.timeScale = 1f;
-    }
-
-    public void StartFishing()
-    {
-        if (isFishingStarted || isGameEnded)
-        {
-            return;
-        }
-
-        isFishingStarted = true;
-
-        if (fishSpawner != null)
-        {
-            fishSpawner.StartSpawning();
-        }
     }
 }

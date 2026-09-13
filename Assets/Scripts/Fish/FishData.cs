@@ -5,7 +5,8 @@ public enum FishSpecialType
     None,
     Pufferfish,
     Squid,
-    MiniBoss
+    MiniBoss,
+    Boss
 }
 
 [CreateAssetMenu(
@@ -27,7 +28,8 @@ public class FishData : ScriptableObject
         "복어가 그물 안에 있을 때 적용되는 그물 포획 피해 배율"
     )]
     [Range(0f, 1f)]
-    [SerializeField] private float netDisruptionMultiplier = 1f;
+    [SerializeField]
+    private float netDisruptionMultiplier = 1f;
 
     [Header("Squid")]
     [SerializeField] private float inkRange = 2.5f;
@@ -51,6 +53,10 @@ public class FishData : ScriptableObject
     [SerializeField] private float moveSpeed = 2f;
     [SerializeField] private float baitAttraction = 1f;
     [SerializeField] private float schoolStrength = 1f;
+
+    // 현재는 남겨둔다.
+    // Route 시스템이 완전히 정착되면 플레이 규칙으로서의
+    // Lifetime은 제거할 예정이다.
     [SerializeField] private float lifetime = 15f;
 
     [Header("School")]
@@ -67,7 +73,8 @@ public class FishData : ScriptableObject
     private Color visualColor =
         Color.white;
 
-    public string FishName => fishName;
+    public string FishName =>
+        fishName;
 
     public FishSpecialType SpecialType =>
         specialType;
