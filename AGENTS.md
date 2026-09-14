@@ -27,6 +27,7 @@
 - 도구 구조 작업 중 기존 보스 다중 회유를 불필요하게 재설계하거나 관련 없는 밸런스 값을 바꾸지 않는다.
 - Scene/Prefab/Inspector 수정은 Computer Use가 가능하면 Unity Editor를 우선한다. 복잡한 Unity YAML을 추측해 수정하지 않는다.
 - 의미 있는 코드 변경 후 컴파일 및 관련 검증을 수행하고 Unity Console을 확인한다. 컴파일 오류를 해결하기 전에 다음 주요 기능으로 넘어가지 않는다.
+- 반복 가능한 기능 검사는 수동 Computer Use 재현보다 결정론적 Unity Editor/PlayMode 검증 스크립트를 우선한다. Computer Use는 시각·UI·상호작용처럼 코드로 신뢰성 있게 검증하기 어려운 항목에 주로 사용한다.
 
 ## 검증·인수인계·Git
 - 검증한 주요 마일스톤마다 관련 테스트/Unity 확인 → diff 검토 → `NETBREAK_STATE.md` 갱신 → 의미 있는 커밋 1개 → origin의 현재 개발 브랜치에 push한다. 작은 수정마다 커밋하지 않는다.

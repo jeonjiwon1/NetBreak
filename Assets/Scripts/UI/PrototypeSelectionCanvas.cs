@@ -27,8 +27,13 @@ public class PrototypeSelectionCanvas : MonoBehaviour
     [SerializeField] private Button rerollButton;
     [SerializeField] private TMP_Text rerollText;
 
+    private TMP_Text selectionTitleText;
+    private string defaultSelectionTitle;
+
     private void Awake()
     {
+        FindSelectionTitle();
+
         if (castNetJobButton != null)
         {
             castNetJobButton.onClick.AddListener(
@@ -73,7 +78,7 @@ public class PrototypeSelectionCanvas : MonoBehaviour
         {
             augmentButton1.onClick.AddListener(
                 () =>
-                    SelectAugment(
+                    SelectPrimaryChoice(
                         0
                     )
             );
@@ -83,7 +88,7 @@ public class PrototypeSelectionCanvas : MonoBehaviour
         {
             augmentButton2.onClick.AddListener(
                 () =>
-                    SelectAugment(
+                    SelectPrimaryChoice(
                         1
                     )
             );
@@ -93,7 +98,7 @@ public class PrototypeSelectionCanvas : MonoBehaviour
         {
             augmentButton3.onClick.AddListener(
                 () =>
-                    SelectAugment(
+                    SelectPrimaryChoice(
                         2
                     )
             );
@@ -207,9 +212,17 @@ public class PrototypeSelectionCanvas : MonoBehaviour
         PrototypeAugmentManager manager =
             PrototypeAugmentManager.Instance;
 
+        ToolAcquisitionManager acquisition =
+            ToolAcquisitionManager.Instance;
+
+        bool showingTools =
+            acquisition != null &&
+            acquisition.IsChoosingTool;
+
         bool shouldShow =
-            manager != null &&
-            manager.IsShowingChoices;
+            showingTools ||
+            (manager != null &&
+             manager.IsShowingChoices);
 
         if (augmentSelectionPanel != null &&
             augmentSelectionPanel.activeSelf !=
@@ -220,10 +233,44 @@ public class PrototypeSelectionCanvas : MonoBehaviour
             );
         }
 
-        if (!shouldShow ||
-            manager == null)
+        if (!shouldShow)
         {
             return;
+        }
+
+        if (showingTools)
+        {
+            if (selectionTitleText != null)
+            {
+                selectionTitleText.text = "도구를 선택하세요";
+            }
+
+            UpdateToolChoice(acquisition, 0, augmentButton1, augmentText1);
+            UpdateToolChoice(acquisition, 1, augmentButton2, augmentText2);
+            UpdateToolChoice(acquisition, 2, augmentButton3, augmentText3);
+
+            if (rerollButton != null)
+            {
+                rerollButton.gameObject.SetActive(false);
+            }
+
+            return;
+        }
+
+        if (manager == null)
+        {
+            return;
+        }
+
+        if (selectionTitleText != null)
+        {
+            selectionTitleText.text = defaultSelectionTitle;
+        }
+
+        if (rerollButton != null &&
+            !rerollButton.gameObject.activeSelf)
+        {
+            rerollButton.gameObject.SetActive(true);
         }
 
         UpdateAugmentChoice(
@@ -257,6 +304,37 @@ public class PrototypeSelectionCanvas : MonoBehaviour
         {
             rerollButton.interactable =
                 manager.CanReroll;
+        }
+    }
+
+    private void UpdateToolChoice(
+        ToolAcquisitionManager manager,
+        int index,
+        Button button,
+        TMP_Text text)
+    {
+        string name =
+            manager.GetChoiceName(index);
+
+        string description =
+            manager.GetChoiceDescription(index);
+
+        bool hasChoice =
+            !string.IsNullOrEmpty(name);
+
+        if (button != null)
+        {
+            button.interactable =
+                hasChoice &&
+                manager.CanSelect;
+        }
+
+        if (text != null)
+        {
+            text.text =
+                hasChoice
+                    ? $"{name}\n\n{description}"
+                    : "";
         }
     }
 
@@ -301,6 +379,26 @@ public class PrototypeSelectionCanvas : MonoBehaviour
         }
     }
 
+    private void SelectPrimaryChoice(
+        int index)
+    {
+        ToolAcquisitionManager acquisition =
+            ToolAcquisitionManager.Instance;
+
+        if (acquisition != null &&
+            acquisition.IsChoosingTool)
+        {
+            acquisition.SelectChoiceFromUI(
+                index
+            );
+            return;
+        }
+
+        SelectAugment(
+            index
+        );
+    }
+
     private void SelectAugment(
         int index)
     {
@@ -333,6 +431,30 @@ public class PrototypeSelectionCanvas : MonoBehaviour
     // =========================================================
     // UTILITY
     // =========================================================
+
+    private void FindSelectionTitle()
+    {
+        if (augmentSelectionPanel == null)
+        {
+            return;
+        }
+
+        TMP_Text[] texts =
+            augmentSelectionPanel.GetComponentsInChildren<TMP_Text>(true);
+
+        foreach (TMP_Text text in texts)
+        {
+            if (text != augmentText1 &&
+                text != augmentText2 &&
+                text != augmentText3 &&
+                text != rerollText)
+            {
+                selectionTitleText = text;
+                defaultSelectionTitle = text.text;
+                return;
+            }
+        }
+    }
 
     private void SetButtonInteractable(
         Button button,

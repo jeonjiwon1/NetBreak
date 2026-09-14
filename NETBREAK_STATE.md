@@ -1,6 +1,6 @@
 # NETBREAK 인수인계
 
-기준일: 2026-09-14. 현재 마일스톤: **STEP 10A Dynamic Tool Slot Foundation 완료**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 장기 개발 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
+기준일: 2026-09-14. 현재 마일스톤: **STEP 10B Tool Acquisition 완료**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 장기 개발 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경
 - 저장소: `C:\game_dev\unity\NetBreak`, 브랜치 `vertical-slice`.
@@ -63,5 +63,12 @@
 - Scene/Prefab/Inspector 참조와 밸런스 값은 변경하지 않았다. Tool Acquisition, Run Ownership 기반 증강 필터, Hotbar는 STEP 10B~10D 범위다.
 - Unity 6000.3.11f1에서 스크립트 컴파일과 Console compiler error 0개를 확인했다. Main Play Mode 입력 회귀 32개가 통과해 LMB, Q/W/E/R, ESC/RMB 취소, 실제 설치 비용/피해, Ctrl+LMB 재배치, 슬롯 교환·빈 슬롯을 확인했다.
 
+## 최근 변경 — STEP 10B Tool Acquisition
+- 새 Run은 뜰채만 소유하고 Q/W/E/R 슬롯은 비어 있다. `RunToolLoadout`이 Run 소유권을 관리하며 미소유 도구의 슬롯 배치를 차단한다.
+- `ToolAcquisitionManager`가 현재 구현된 미끼·그물·투망·낚싯대 중 미소유 도구를 최대 3개 제시하고, 선택한 도구를 첫 빈 슬롯에 배치한다. 사용 가능 풀은 이후 Meta 해금 결과로 교체할 수 있게 Run 소유 데이터와 분리했다.
+- 기존 `PrototypeSelectionCanvas`의 3개 선택 버튼을 재사용하며 도구 획득 제목·이름·설명을 한국어로 표시한다. Area 진행 타이밍, 소유 도구 증강 필터, Hotbar는 구현하지 않았다.
+- Unity 컴파일과 Console Error 0개를 확인했다. STEP 10A 회귀 33개와 STEP 10B 획득 16개가 통과했고, Computer Use로 획득 UI의 한국어 제목·3개 선택지 표시를 확인했다.
+- 알려진 문제: 현재 획득 후보 순서는 결정론적 고정 순서이며 Area 1 실제 획득 시점과 연결되지 않았다. 네 도구를 모두 소유한 뒤에는 추가 획득 요청을 받지 않는다.
+
 ## 다음 정확한 단계
-후속 요청 후 STEP 10B Tool Acquisition을 진행한다. 새 Run은 뜰채만 소유하고 빈 액티브 슬롯에서 시작하도록 STEP 10A 임시 로드아웃을 획득 흐름으로 교체한다. 이후 10C 소유 필터/증강 지연 → 10D Hotbar → 10E Slice 통합 순서를 따른다. 본격 밸런스는 전체 Run 실측 이후 STEP 11이다.
+후속 요청 후 STEP 10C Owned-Tool Augment Pool + Delayed Augment Start를 진행한다. 이번 Run에서 소유한 도구와 General만 증강 후보로 만들고, 초기 도구 획득이 끝날 때까지 일반 증강 시작을 지연한다. 이후 10D Hotbar → 10E Slice 통합 순서를 따른다.

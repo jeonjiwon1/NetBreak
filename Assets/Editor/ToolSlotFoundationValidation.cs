@@ -92,11 +92,16 @@ public static class ToolSlotFoundationValidation
         FishSpawner spawner = Object.FindFirstObjectByType<FishSpawner>();
         Require(bait != null && net != null && cast != null && rod != null && spawner != null, "Main 도구 참조");
         var empty = new RunToolLoadout();
-        Require(Enumerable.Range(0, 4).All(i => empty.GetSlot(i) == ToolId.None), "기본 데이터는 빈 슬롯 4개");
-        Require(!empty.TryAssignSlot(0, ToolId.LandingNet) && !empty.TryAssignSlot(-1, ToolId.Bait) &&
+        Require(empty.OwnsTool(ToolId.LandingNet) &&
+            Enumerable.Range(0, 4).All(i => empty.GetSlot(i) == ToolId.None), "기본 데이터는 뜰채 소유/빈 슬롯 4개");
+        Require(!empty.TryAssignSlot(0, ToolId.Bait) &&
+            !empty.TryAssignSlot(0, ToolId.LandingNet) && !empty.TryAssignSlot(-1, ToolId.Bait) &&
             !empty.TryAssignSlot(4, ToolId.Net), "LMB 고정 및 범위 검증");
+        Require(slots.TryAcquireTool(ToolId.Bait) && slots.TryAcquireTool(ToolId.Net) &&
+            slots.TryAcquireTool(ToolId.CastNet) && slots.TryAcquireTool(ToolId.FishingRod),
+            "회귀 검증용 4도구 획득");
         Require(slots.GetSlot(0) == ToolId.Bait && slots.GetSlot(1) == ToolId.Net &&
-            slots.GetSlot(2) == ToolId.CastNet && slots.GetSlot(3) == ToolId.FishingRod, "임시 4도구 로드아웃");
+            slots.GetSlot(2) == ToolId.CastNet && slots.GetSlot(3) == ToolId.FishingRod, "획득 순서 슬롯 배치");
 
         Vector2 a = Camera.main.WorldToScreenPoint(new Vector3(-3, -2, 0));
         Vector2 b = Camera.main.WorldToScreenPoint(new Vector3(-1, -2, 0));

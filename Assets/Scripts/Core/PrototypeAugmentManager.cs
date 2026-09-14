@@ -77,6 +77,10 @@ public class PrototypeAugmentManager : MonoBehaviour
     public bool IsChoosingAugment =>
         showChoices ||
         (
+            ToolAcquisitionManager.Instance != null &&
+            ToolAcquisitionManager.Instance.IsChoosingTool
+        ) ||
+        (
             PrototypeJobManager.Instance != null &&
             PrototypeJobManager.Instance.IsChoosingJob
         );
@@ -168,7 +172,9 @@ public class PrototypeAugmentManager : MonoBehaviour
 
     public void ShowChoices()
     {
-        if (showChoices)
+        if (showChoices ||
+            (ToolAcquisitionManager.Instance != null &&
+             ToolAcquisitionManager.Instance.IsChoosingTool))
         {
             return;
         }

@@ -5,6 +5,7 @@ public class RunManager : MonoBehaviour
 {
     public RunToolLoadout ToolSlots { get; private set; }
     public ToolSlotInput ToolInput { get; private set; }
+    public ToolAcquisitionManager ToolAcquisition { get; private set; }
 
     public static RunManager Instance
     {
@@ -75,12 +76,12 @@ public class RunManager : MonoBehaviour
         Instance = this;
 
         ToolSlots = new RunToolLoadout();
-        // STEP 10A test loadout only. Tool acquisition will replace this bootstrap.
-        ToolSlots.TryAssignSlot(0, ToolId.Bait);
-        ToolSlots.TryAssignSlot(1, ToolId.Net);
-        ToolSlots.TryAssignSlot(2, ToolId.CastNet);
-        ToolSlots.TryAssignSlot(3, ToolId.FishingRod);
         ToolInput = new ToolSlotInput(ToolSlots);
+        ToolAcquisition = GetComponent<ToolAcquisitionManager>();
+        if (ToolAcquisition == null)
+        {
+            ToolAcquisition = gameObject.AddComponent<ToolAcquisitionManager>();
+        }
 
         currentGold =
             startingGold;
