@@ -9,13 +9,6 @@ public class PrototypeGameFlowManager : MonoBehaviour
         private set;
     }
 
-    [Header("Legacy Final Fishing")]
-    [SerializeField] private float finalFishingDuration = 20f;
-
-    [Header("Legacy Clear")]
-    [Range(0f, 1f)]
-    [SerializeField] private float clearCatchRate = 0.8f;
-
     [Header("Catch Rank")]
     [Range(0f, 1f)]
     [SerializeField] private float bRankRate = 0.70f;
@@ -33,17 +26,10 @@ public class PrototypeGameFlowManager : MonoBehaviour
     [SerializeField] private FishSpawner fishSpawner;
 
     private bool isFishingStarted;
-
-    private bool isFinalFishing;
     private bool isBossEncounter;
 
     private bool isGameEnded;
     private bool isSuccess;
-
-    private float finalFishingTimer;
-
-    public bool IsFinalFishing =>
-        isFinalFishing;
 
     public bool IsBossEncounter =>
         isBossEncounter;
@@ -53,16 +39,6 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
     public bool IsSuccess =>
         isSuccess;
-
-    public float FinalFishingTimer =>
-        Mathf.Max(
-            0f,
-            finalFishingTimer
-        );
-
-    // 이전 코드와의 호환용.
-    public float ClearCatchRate =>
-        clearCatchRate;
 
     public bool IsPreparation =>
         !isFishingStarted &&
@@ -131,24 +107,6 @@ public class PrototypeGameFlowManager : MonoBehaviour
         Instance = this;
     }
 
-    private void Update()
-    {
-        if (!isFinalFishing ||
-            isBossEncounter ||
-            isGameEnded)
-        {
-            return;
-        }
-
-        finalFishingTimer -=
-            Time.deltaTime;
-
-        if (finalFishingTimer <= 0f)
-        {
-            EndLegacyFinalFishing();
-        }
-    }
-
     // =========================================================
     // FISHING START
     // =========================================================
@@ -161,13 +119,11 @@ public class PrototypeGameFlowManager : MonoBehaviour
             return;
         }
 
-        isFishingStarted =
-            true;
+        isFishingStarted = true;
 
         if (fishSpawner != null)
         {
-            fishSpawner
-                .StartSpawning();
+            fishSpawner.StartSpawning();
         }
     }
 
@@ -182,11 +138,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
             return;
         }
 
-        isFinalFishing =
-            false;
-
-        isBossEncounter =
-            true;
+        isBossEncounter = true;
     }
 
     public void CompleteBossEncounter(
@@ -197,25 +149,13 @@ public class PrototypeGameFlowManager : MonoBehaviour
             return;
         }
 
-        // 결과를 확정하기 전에
-        // 아직 화면에 남아 있는 일반 물고기를
-        // 어획률 계산에서 제외한다.
         ResolveUnfinishedFishForResult();
 
-        isBossEncounter =
-            false;
+        isBossEncounter = false;
+        isGameEnded = true;
+        isSuccess = bossCaptured;
 
-        isFinalFishing =
-            false;
-
-        isGameEnded =
-            true;
-
-        isSuccess =
-            bossCaptured;
-
-        Time.timeScale =
-            0f;
+        Time.timeScale = 0f;
     }
 
     // =========================================================
@@ -254,15 +194,13 @@ public class PrototypeGameFlowManager : MonoBehaviour
                 continue;
             }
 
-            // 이미 포획 처리된 물고기는
-            // 정상적으로 결과에 포함한다.
             if (fish.IsCaptured)
             {
                 continue;
             }
 
-            // 최종 Boss는 별도의 Encounter 결과로 처리하므로
-            // 여기서 CatchValue를 빼지 않는다.
+            // 최종 보스는 BossEncounterController가
+            // 성공/실패 결과를 별도로 처리한다.
             if (fish.Data.SpecialType ==
                 FishSpecialType.Boss)
             {
@@ -277,7 +215,6 @@ public class PrototypeGameFlowManager : MonoBehaviour
                     );
             }
 
-            // 결과 화면 뒤에서 계속 남아 있지 않도록 제거.
             fish.gameObject.SetActive(
                 false
             );
@@ -291,26 +228,22 @@ public class PrototypeGameFlowManager : MonoBehaviour
     private string GetCatchRank(
         float catchRate)
     {
-        if (catchRate >=
-            perfectRankRate)
+        if (catchRate >= perfectRankRate)
         {
             return "PERFECT";
         }
 
-        if (catchRate >=
-            sRankRate)
+        if (catchRate >= sRankRate)
         {
             return "S";
         }
 
-        if (catchRate >=
-            aRankRate)
+        if (catchRate >= aRankRate)
         {
             return "A";
         }
 
-        if (catchRate >=
-            bRankRate)
+        if (catchRate >= bRankRate)
         {
             return "B";
         }
@@ -324,8 +257,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
     public void RestartPrototype()
     {
-        Time.timeScale =
-            1f;
+        Time.timeScale = 1f;
 
         Scene currentScene =
             SceneManager.GetActiveScene();
@@ -336,60 +268,12 @@ public class PrototypeGameFlowManager : MonoBehaviour
     }
 
     // =========================================================
-    // LEGACY FINAL FISHING
-    // =========================================================
-
-    public void BeginFinalFishing()
-    {
-        if (isFinalFishing ||
-            isBossEncounter ||
-            isGameEnded)
-        {
-            return;
-        }
-
-        isFinalFishing =
-            true;
-
-        finalFishingTimer =
-            finalFishingDuration;
-    }
-
-    private void EndLegacyFinalFishing()
-    {
-        // 기존 Final Fishing에서도 같은 규칙을 적용.
-        ResolveUnfinishedFishForResult();
-
-        isFinalFishing =
-            false;
-
-        isGameEnded =
-            true;
-
-        float catchRate = 0f;
-
-        if (RunManager.Instance != null)
-        {
-            catchRate =
-                RunManager.Instance.CatchRate;
-        }
-
-        isSuccess =
-            catchRate >=
-            clearCatchRate;
-
-        Time.timeScale =
-            0f;
-    }
-
-    // =========================================================
     // UNITY
     // =========================================================
 
     private void OnDisable()
     {
-        Time.timeScale =
-            1f;
+        Time.timeScale = 1f;
 
         if (Instance == this)
         {

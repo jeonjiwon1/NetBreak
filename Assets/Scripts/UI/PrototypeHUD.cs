@@ -4,9 +4,16 @@ using UnityEngine.UI;
 
 public class PrototypeHUD : MonoBehaviour
 {
-    [Header("World Feedback")]
+    [Header("Controllers")]
     [SerializeField] private CastNetController castNet;
     [SerializeField] private NetPlacementController netPlacement;
+
+    [Header("World Feedback Canvas")]
+    [SerializeField] private RectTransform worldFeedbackRoot;
+
+    [SerializeField] private TMP_Text netCostText;
+    [SerializeField] private TMP_Text castNetTargetText;
+    [SerializeField] private TMP_Text castNetCatchText;
 
     [Header("Result Panel")]
     [SerializeField] private GameObject resultPanel;
@@ -23,23 +30,10 @@ public class PrototypeHUD : MonoBehaviour
 
     [SerializeField] private Button restartButton;
 
-    private GUIStyle centerStyle;
-
     private bool resultShown;
 
     private void Awake()
     {
-        centerStyle =
-            new GUIStyle();
-
-        centerStyle.fontSize = 30;
-
-        centerStyle.alignment =
-            TextAnchor.MiddleCenter;
-
-        centerStyle.normal.textColor =
-            Color.white;
-
         if (restartButton != null)
         {
             restartButton.onClick.AddListener(
@@ -54,33 +48,211 @@ public class PrototypeHUD : MonoBehaviour
         {
             resultPanel.SetActive(false);
         }
+
+        SetWorldFeedbackVisible(
+            false,
+            false,
+            false
+        );
     }
 
     private void Update()
     {
         UpdateResultPanel();
+        UpdateWorldFeedback();
     }
 
-    private void OnGUI()
-    {
-        if (RunManager.Instance == null)
-        {
-            return;
-        }
+    // =========================================================
+    // WORLD FEEDBACK
+    // =========================================================
 
+    private void UpdateWorldFeedback()
+    {
         PrototypeGameFlowManager flow =
             PrototypeGameFlowManager.Instance;
 
-        // 결과 화면은 Canvas가 담당한다.
         if (flow != null &&
             flow.IsGameEnded)
+        {
+            SetWorldFeedbackVisible(
+                false,
+                false,
+                false
+            );
+
+            return;
+        }
+
+        UpdateNetCost();
+        UpdateCastNetTarget();
+        UpdateCastNetCatch();
+    }
+
+    private void UpdateNetCost()
+    {
+        bool shouldShow =
+            netPlacement != null &&
+            netPlacement.IsDragging;
+
+        SetTextActive(
+            netCostText,
+            shouldShow
+        );
+
+        if (!shouldShow ||
+            netCostText == null)
         {
             return;
         }
 
-        DrawNetCost();
-        DrawCastNetInfo();
-        DrawLegacyFinalFishing();
+        netCostText.text =
+            $"그물 설치 비용: " +
+            $"{netPlacement.CurrentPlacementCost}G";
+    }
+
+    private void UpdateCastNetTarget()
+    {
+        bool shouldShow =
+            castNet != null &&
+            castNet.IsAiming;
+
+        SetTextActive(
+            castNetTargetText,
+            shouldShow
+        );
+
+        if (!shouldShow ||
+            castNetTargetText == null)
+        {
+            return;
+        }
+
+        castNetTargetText.text =
+            $"범위 내: " +
+            $"{castNet.CurrentTargetCount}마리";
+
+        SetWorldFeedbackPosition(
+            castNetTargetText.rectTransform,
+            castNet.CurrentAimPosition,
+            new Vector2(
+                0f,
+                -45f
+            )
+        );
+    }
+
+    private void UpdateCastNetCatch()
+    {
+        bool shouldShow =
+            castNet != null &&
+            castNet.IsShowingCatchFeedback;
+
+        SetTextActive(
+            castNetCatchText,
+            shouldShow
+        );
+
+        if (!shouldShow ||
+            castNetCatchText == null)
+        {
+            return;
+        }
+
+        castNetCatchText.text =
+            $"+{castNet.LastCapturedCount}마리 포획!";
+
+        SetWorldFeedbackPosition(
+            castNetCatchText.rectTransform,
+            castNet.LastCastPosition,
+            new Vector2(
+                0f,
+                50f
+            )
+        );
+    }
+
+    private void SetWorldFeedbackPosition(
+        RectTransform target,
+        Vector3 worldPosition,
+        Vector2 offset)
+    {
+        if (target == null ||
+            worldFeedbackRoot == null)
+        {
+            return;
+        }
+
+        Camera mainCamera =
+            Camera.main;
+
+        if (mainCamera == null)
+        {
+            return;
+        }
+
+        Vector3 screenPosition =
+            mainCamera.WorldToScreenPoint(
+                worldPosition
+            );
+
+        if (screenPosition.z < 0f)
+        {
+            return;
+        }
+
+        if (!RectTransformUtility
+            .ScreenPointToLocalPointInRectangle(
+                worldFeedbackRoot,
+                screenPosition,
+                null,
+                out Vector2 localPoint
+            ))
+        {
+            return;
+        }
+
+        target.anchoredPosition =
+            localPoint +
+            offset;
+    }
+
+    private void SetWorldFeedbackVisible(
+        bool showNetCost,
+        bool showTarget,
+        bool showCatch)
+    {
+        SetTextActive(
+            netCostText,
+            showNetCost
+        );
+
+        SetTextActive(
+            castNetTargetText,
+            showTarget
+        );
+
+        SetTextActive(
+            castNetCatchText,
+            showCatch
+        );
+    }
+
+    private void SetTextActive(
+        TMP_Text target,
+        bool shouldShow)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        if (target.gameObject.activeSelf !=
+            shouldShow)
+        {
+            target.gameObject.SetActive(
+                shouldShow
+            );
+        }
     }
 
     // =========================================================
@@ -134,10 +306,6 @@ public class PrototypeHUD : MonoBehaviour
             return;
         }
 
-        // -----------------------------------------------------
-        // TITLE / DESCRIPTION
-        // -----------------------------------------------------
-
         if (resultTitleText != null)
         {
             resultTitleText.text =
@@ -150,19 +318,11 @@ public class PrototypeHUD : MonoBehaviour
                 flow.ResultDescription;
         }
 
-        // -----------------------------------------------------
-        // RANK
-        // -----------------------------------------------------
-
         if (resultRankText != null)
         {
             resultRankText.text =
                 $"어획 등급  {flow.CatchRank}";
         }
-
-        // -----------------------------------------------------
-        // RUN RESULT
-        // -----------------------------------------------------
 
         if (resultCatchRateText != null)
         {
@@ -185,10 +345,6 @@ public class PrototypeHUD : MonoBehaviour
                 $"{run.CurrentGold}G";
         }
 
-        // -----------------------------------------------------
-        // JOB
-        // -----------------------------------------------------
-
         string jobName =
             "초보 어부";
 
@@ -204,10 +360,6 @@ public class PrototypeHUD : MonoBehaviour
             resultJobText.text =
                 $"전직: {jobName}";
         }
-
-        // -----------------------------------------------------
-        // BOSS RESULT
-        // -----------------------------------------------------
 
         if (resultBossText != null)
         {
@@ -248,125 +400,6 @@ public class PrototypeHUD : MonoBehaviour
         }
 
         flow.RestartPrototype();
-    }
-
-    // =========================================================
-    // NET COST
-    // =========================================================
-
-    private void DrawNetCost()
-    {
-        if (netPlacement == null ||
-            !netPlacement.IsDragging)
-        {
-            return;
-        }
-
-        GUI.Label(
-            new Rect(
-                20,
-                300,
-                600,
-                40
-            ),
-            $"그물 설치 비용: " +
-            $"{netPlacement.CurrentPlacementCost}G"
-        );
-    }
-
-    // =========================================================
-    // CAST NET WORLD FEEDBACK
-    // =========================================================
-
-    private void DrawCastNetInfo()
-    {
-        if (castNet == null)
-        {
-            return;
-        }
-
-        Camera mainCamera =
-            Camera.main;
-
-        if (mainCamera == null)
-        {
-            return;
-        }
-
-        if (castNet.IsAiming)
-        {
-            Vector3 screenPosition =
-                mainCamera.WorldToScreenPoint(
-                    castNet.CurrentAimPosition
-                );
-
-            float guiY =
-                Screen.height -
-                screenPosition.y;
-
-            GUI.Label(
-                new Rect(
-                    screenPosition.x - 100f,
-                    guiY + 45f,
-                    200f,
-                    40f
-                ),
-                $"범위 내: " +
-                $"{castNet.CurrentTargetCount}마리",
-                centerStyle
-            );
-        }
-
-        if (castNet.IsShowingCatchFeedback)
-        {
-            Vector3 screenPosition =
-                mainCamera.WorldToScreenPoint(
-                    castNet.LastCastPosition
-                );
-
-            float guiY =
-                Screen.height -
-                screenPosition.y;
-
-            GUI.Label(
-                new Rect(
-                    screenPosition.x - 150f,
-                    guiY - 50f,
-                    300f,
-                    50f
-                ),
-                $"+{castNet.LastCapturedCount}마리 포획!",
-                centerStyle
-            );
-        }
-    }
-
-    // =========================================================
-    // LEGACY FINAL FISHING
-    // =========================================================
-
-    private void DrawLegacyFinalFishing()
-    {
-        PrototypeGameFlowManager flow =
-            PrototypeGameFlowManager.Instance;
-
-        if (flow == null ||
-            !flow.IsFinalFishing)
-        {
-            return;
-        }
-
-        GUI.Label(
-            new Rect(
-                Screen.width * 0.5f - 250f,
-                30f,
-                500f,
-                60f
-            ),
-            $"마감 조업: " +
-            $"{flow.FinalFishingTimer:F1}초",
-            centerStyle
-        );
     }
 
     private void OnDestroy()
