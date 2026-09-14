@@ -1,11 +1,11 @@
 # NETBREAK 인수인계
 
-기준일: 2026-09-14. 현재 마일스톤: **STEP 10C 구현 완료, 수동 검증 대기**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 장기 개발 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
+기준일: 2026-09-15. 현재 마일스톤: **STEP 10D Dynamic Hotbar 구현·검증 완료**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 장기 개발 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경
 - 저장소: `C:\game_dev\unity\NetBreak`, 브랜치 `vertical-slice`.
 - origin: `https://github.com/jeonjiwon1/NetBreak.git`.
-- 조사 시 HEAD: `dc31e4704c2826557984811228829761e1dd3910` — `Unify TMP fonts with NanumGothic Bold`.
+- STEP 10D 작업 전 HEAD: `6e744dada4dc8a21e620fc6075a63e09857e0fab`.
 - 기존 사용자 변경: `Assets/UI/Fonts/NanumGothic-Bold SDF.asset`, `NanumGothic-ExtraBold SDF.asset`, `NanumGothic-Regular SDF.asset`. 보존하며 이번 문서 커밋에 자동 포함하지 않는다.
 - Unity `6000.3.11f1`, URP `17.3.0`, Input System `1.19.0`, Test Framework `1.6.0`. `activeInputHandler: 1`.
 - 추적 파일 242개. 주요 구조: Assets/Scripts/{Core,Fish,Gear,UI}, Assets/Editor, Assets/Scenes, Assets/Prefabs/{Fish,Gear}, Assets/UI/Fonts, Packages, ProjectSettings, Docs. Library/Logs/UserSettings는 로컬 Unity 산출물이다.
@@ -75,9 +75,18 @@
 - 액티브 도구 2개를 소유하기 전에는 레벨업 증강을 보류한다. 두 번째 도구 획득 뒤 보류 중인 증강을 열고, 이후에는 기존 레벨업 흐름을 유지한다.
 - 증강 후보는 General, 항상 소유하는 뜰채, 현재 Run에서 소유한 액티브 도구 범주만 허용한다. 미소유 도구의 일반·Unique 증강은 제외한다.
 - 변경 파일: `RunToolLoadout.cs`, `RunManager.cs`, `ToolAcquisitionManager.cs`, `PrototypeAugmentManager.cs`, `FishSpawner.cs`, `NETBREAK_STATE.md`.
-- 사용자 지시에 따라 Unity 컴파일, Console, Play Mode와 게임플레이 검증은 수행하지 않았다. 새 Run 초기 상태, 두 차례 획득 시점과 후보 제외, 증강 지연·필터·재굴림, 도구/전직 진행 유지 여부를 수동 검증해야 한다.
+- STEP 10C 수동 검증 완료: 사용자가 새 Run의 첫 획득에서 미끼 선택, Q 슬롯 배치, 선택창 종료 후 실제 Q 미끼 사용을 확인했다. 확장된 결정론적 획득 검증은 새 Run 뜰채 단독 소유와 빈 Q/W/E/R, 첫·두 번째 도구의 Q/W 배치, 소유 도구 후보 제외, 2개 전 증강 보류, 2개 후 증강 허용, 미소유 도구 증강 제외를 확인했다. 기존 전직 및 Gameplay 코드는 변경하지 않았다.
 - 알려진 임시 페이싱: 현재 첫 도구 획득이 Coast 시작 직후 발생한다. 기능 검증용 임시 배치이며, Area 1 전체 페이싱 정리 단계에서 뜰채만 사용하는 짧은 도입 구간 이후로 이동한다.
 - 알려진 임시 페이싱: 현재 두 번째 도구 획득 직후 보류된 첫 증강 선택창이 바로 이어서 표시된다. 기능 검증용 동작이며, Area 1 전체 페이싱 정리 단계에서 두 번째 도구를 실제로 사용해볼 수 있는 짧은 조업 구간을 둔 뒤 첫 증강이 나오도록 조정한다.
 
+## 최근 변경 — STEP 10D Dynamic Hotbar
+- 기존 `GameCanvas`/`PrototypeHUDCanvas` 안에 Bottom Center 기준의 독립 가로형 Hotbar를 구성했다. `[LMB] 뜰채 / 고정 도구`와 Q/W/E/R 네 슬롯을 표시하며, 빈 액티브 슬롯은 `비어 있음`으로 보인다.
+- Q/W/E/R 표시는 매 프레임 `RunManager.ToolSlots`의 실제 `RunToolLoadout`을 읽는다. HUD에 소유권이나 슬롯 배치를 복제하지 않으며, 도구 획득 직후 실제 배치된 Q/W 슬롯이 즉시 갱신된다. 기존 좌측 상단 HUD에는 Gold·포획·어획률·Level·EXP·구간 등 Run 상태만 남고, 고정 `[E]` 투망 안내는 새 Hotbar의 동적 투망 상태 표시로 대체했다.
+- Hotbar의 배경과 TMP 텍스트는 Raycast를 받지 않아 월드 입력과 선택 UI를 가로막지 않는다. Scene YAML과 NanumGothic 에셋, Gameplay 도구 입력 코드는 변경하지 않았다.
+- `ToolAcquisitionValidation`의 Q 오탐은 선택창 종료 직후 가상 키 press/release 상태를 Gameplay 동작으로 판정하던 검사를 제거하고, 실제 슬롯 배치와 `ToolSlotInput`의 Q 바인딩을 검증하도록 수정했다. 검증 중 Coast 진행 코루틴이 두 번째 획득과 충돌하지 않도록 검증 내부에서만 조업 상태를 분리했다.
+- Unity 6000.3.11f1 컴파일 및 최종 Console Error 0 / Warning 0을 확인했다. STEP 10A 입력 회귀 33개가 통과했고, 확장된 STEP 10B~10D 획득·소유·증강·Hotbar 검증 25개가 통과했다.
+- Computer Use Play Mode 확인: 하단 중앙 5슬롯, LMB 고정 뜰채, 초기 Q/W/E/R 빈 상태, 좌측 상단 Run HUD 유지와 기존 Hotbar 텍스트 제거, 한국어 선택 UI와 Hotbar의 비중첩을 확인했다. 첫 도구 Q 및 두 번째 도구 W 갱신은 결정론적 검증으로 확인했고, 첫 미끼 Q 표시와 실제 Q 사용은 사용자 수동 확인 결과를 반영했다.
+- 알려진 임시 페이싱은 유지한다: 첫 Tool Acquisition은 Coast 시작 직후 발생하고, 두 번째 Tool Acquisition 직후 첫 Augment가 바로 표시된다.
+
 ## 다음 정확한 단계
-STEP 10C를 Unity에서 수동 검증한 뒤 STEP 10D Hotbar UI를 진행한다.
+STEP 10E Area 1 progression/pacing cleanup을 진행한다.

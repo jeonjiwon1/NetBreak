@@ -4,6 +4,11 @@ using UnityEngine.UI;
 
 public class PrototypeHUDCanvas : MonoBehaviour
 {
+    private static readonly string[] ActiveSlotBindings =
+    {
+        "Q", "W", "E", "R"
+    };
+
     [Header("Run")]
     [SerializeField] private TMP_Text goldText;
     [SerializeField] private TMP_Text captureText;
@@ -15,7 +20,7 @@ public class PrototypeHUDCanvas : MonoBehaviour
     [SerializeField] private TMP_Text stageText;
     [SerializeField] private TMP_Text phaseText;
 
-    [Header("Gear")]
+    [Header("Hotbar")]
     [SerializeField] private TMP_Text castNetText;
 
     [Header("Job")]
@@ -33,8 +38,14 @@ public class PrototypeHUDCanvas : MonoBehaviour
     [SerializeField] private FishSpawner fishSpawner;
     [SerializeField] private CastNetController castNet;
 
+    private readonly TMP_Text[] hotbarSlotTexts =
+        new TMP_Text[RunToolLoadout.SlotCount + 1];
+    private RectTransform hotbarRoot;
+
     private void Awake()
     {
+        BuildHotbar();
+
         if (startFishingButton != null)
         {
             startFishingButton.onClick.AddListener(
@@ -52,7 +63,7 @@ public class PrototypeHUDCanvas : MonoBehaviour
     {
         UpdateRunInfo();
         UpdateEncounterInfo();
-        UpdateCastNetInfo();
+        UpdateHotbar();
         UpdateJobInfo();
 
         UpdatePreparationUI();
@@ -141,51 +152,179 @@ public class PrototypeHUDCanvas : MonoBehaviour
     }
 
     // =========================================================
-    // CAST NET
+    // HOTBAR
     // =========================================================
 
-    private void UpdateCastNetInfo()
+    private void BuildHotbar()
     {
-        if (castNetText == null ||
-            castNet == null)
+        if (castNetText == null)
         {
             return;
         }
 
-        string binding = ToolSlotInput.GetBindingLabel(ToolId.CastNet);
-        if (castNet.MaxCharges > 1)
+        GameObject rootObject = new GameObject(
+            "DynamicHotbar",
+            typeof(RectTransform),
+            typeof(HorizontalLayoutGroup)
+        );
+        rootObject.layer = gameObject.layer;
+        hotbarRoot = rootObject.GetComponent<RectTransform>();
+        hotbarRoot.SetParent(transform, false);
+        hotbarRoot.anchorMin = new Vector2(0.5f, 0f);
+        hotbarRoot.anchorMax = new Vector2(0.5f, 0f);
+        hotbarRoot.pivot = new Vector2(0.5f, 0f);
+        hotbarRoot.anchoredPosition = new Vector2(0f, 24f);
+        hotbarRoot.sizeDelta = new Vector2(1100f, 84f);
+
+        HorizontalLayoutGroup layout =
+            rootObject.GetComponent<HorizontalLayoutGroup>();
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.spacing = 12f;
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = false;
+
+        for (int i = 0; i < hotbarSlotTexts.Length; i++)
         {
-            if (castNet.CurrentCharges ==
-                castNet.MaxCharges)
-            {
-                castNetText.text =
-                    $"투망 [{binding}]: " +
-                    $"{castNet.CurrentCharges}/" +
-                    $"{castNet.MaxCharges}";
-
-                return;
-            }
-
-            castNetText.text =
-                $"투망 [{binding}]: " +
-                $"{castNet.CurrentCharges}/" +
-                $"{castNet.MaxCharges} " +
-                $"(충전 {castNet.CooldownTimer:F1}초)";
-
-            return;
+            string binding = i == 0
+                ? "LMB"
+                : ActiveSlotBindings[i - 1];
+            hotbarSlotTexts[i] = CreateHotbarSlot(
+                binding,
+                i == 0
+            );
         }
+    }
 
-        if (castNet.IsReady)
+    private TMP_Text CreateHotbarSlot(
+        string binding,
+        bool isFixedTool)
+    {
+        GameObject slotObject = new GameObject(
+            $"HotbarSlot_{binding}",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image),
+            typeof(LayoutElement)
+        );
+        slotObject.layer = gameObject.layer;
+        slotObject.transform.SetParent(hotbarRoot, false);
+
+        Image background = slotObject.GetComponent<Image>();
+        background.color = isFixedTool
+            ? new Color(0.10f, 0.28f, 0.42f, 0.88f)
+            : new Color(0.04f, 0.08f, 0.14f, 0.82f);
+        background.raycastTarget = false;
+
+        LayoutElement layoutElement =
+            slotObject.GetComponent<LayoutElement>();
+        layoutElement.preferredWidth = 205f;
+        layoutElement.preferredHeight = 84f;
+
+        TMP_Text slotText;
+        if (isFixedTool)
         {
-            castNetText.text =
-                $"투망 [{binding}]: 준비 완료";
+            slotText = castNetText;
+            slotText.transform.SetParent(slotObject.transform, false);
         }
         else
         {
-            castNetText.text =
-                $"투망 [{binding}]: " +
-                $"{castNet.CooldownTimer:F1}초";
+            slotText = Instantiate(
+                castNetText,
+                slotObject.transform
+            );
         }
+
+        slotText.gameObject.name = $"HotbarText_{binding}";
+        slotText.raycastTarget = false;
+        slotText.alignment = TextAlignmentOptions.Center;
+        slotText.fontSize = 22f;
+
+        RectTransform textRect = slotText.rectTransform;
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.pivot = new Vector2(0.5f, 0.5f);
+        textRect.anchoredPosition = Vector2.zero;
+        textRect.offsetMin = new Vector2(6f, 4f);
+        textRect.offsetMax = new Vector2(-6f, -4f);
+
+        return slotText;
+    }
+
+    private void UpdateHotbar()
+    {
+        if (hotbarSlotTexts[0] == null)
+        {
+            return;
+        }
+
+        RunToolLoadout loadout =
+            RunManager.Instance != null
+                ? RunManager.Instance.ToolSlots
+                : null;
+
+        hotbarSlotTexts[0].text =
+            "[LMB]\n뜰채\n고정 도구";
+
+        for (int i = 0; i < RunToolLoadout.SlotCount; i++)
+        {
+            hotbarSlotTexts[i + 1].text =
+                GetSlotText(
+                    loadout,
+                    i,
+                    ActiveSlotBindings[i]
+                );
+        }
+    }
+
+    private string GetSlotText(
+        RunToolLoadout loadout,
+        int slotIndex,
+        string binding)
+    {
+        ToolId tool = loadout != null
+            ? loadout.GetSlot(slotIndex)
+            : ToolId.None;
+
+        return tool == ToolId.None
+            ? $"[{binding}]\n비어 있음"
+            : $"[{binding}]\n{GetToolStatus(tool)}";
+    }
+
+    private string GetToolStatus(ToolId tool)
+    {
+        if (tool != ToolId.CastNet || castNet == null)
+        {
+            return GetToolName(tool);
+        }
+
+        if (castNet.MaxCharges > 1)
+        {
+            string cooldown = castNet.CurrentCharges == castNet.MaxCharges
+                ? ""
+                : $" (충전 {castNet.CooldownTimer:F1}초)";
+
+            return
+                $"투망 {castNet.CurrentCharges}/{castNet.MaxCharges}{cooldown}";
+        }
+
+        return castNet.IsReady
+            ? "투망\n준비 완료"
+            : $"투망\n{castNet.CooldownTimer:F1}초";
+    }
+
+    private static string GetToolName(ToolId tool)
+    {
+        return tool switch
+        {
+            ToolId.Bait => "미끼",
+            ToolId.Net => "그물",
+            ToolId.CastNet => "투망",
+            ToolId.FishingRod => "낚싯대",
+            ToolId.LandingNet => "뜰채",
+            _ => "비어 있음"
+        };
     }
 
     // =========================================================
@@ -301,6 +440,7 @@ public class PrototypeHUDCanvas : MonoBehaviour
 
     private void RefreshImmediateState()
     {
+        UpdateHotbar();
         UpdatePreparationUI();
         UpdateAnnouncementUI();
     }
