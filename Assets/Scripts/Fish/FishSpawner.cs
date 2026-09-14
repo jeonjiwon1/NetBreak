@@ -40,6 +40,8 @@ public class FishSpawner : MonoBehaviour
 
     [Header("Phase Duration")]
     [SerializeField] private float earlyPhaseDuration = 75f;
+    [SerializeField] private float landingNetIntroDuration = 15f;
+    [SerializeField] private float postSecondToolPracticeDuration = 15f;
     [SerializeField] private float growthPhaseDuration = 105f;
     [SerializeField] private float specialPhaseDuration = 90f;
     [SerializeField] private float miniBossPhaseDuration = 45f;
@@ -347,15 +349,19 @@ public class FishSpawner : MonoBehaviour
             "초반 조업"
         );
 
-        yield return RequestToolAcquisition();
-
         SpawnLooseFish(
             lowValueFish,
             2
         );
 
+        float introDuration =
+            Mathf.Min(
+                landingNetIntroDuration,
+                earlyPhaseDuration
+            );
+
         yield return RunAmbientWindow(
-            earlyPhaseDuration,
+            introDuration,
             AmbientIntensity.Early,
             lowValueFish,
             midValueFish,
@@ -365,6 +371,52 @@ public class FishSpawner : MonoBehaviour
         );
 
         yield return RequestToolAcquisition();
+
+        float secondToolPracticeDuration =
+            Mathf.Min(
+                postSecondToolPracticeDuration,
+                Mathf.Max(
+                    0f,
+                    earlyPhaseDuration -
+                    introDuration
+                )
+            );
+
+        float firstToolPracticeDuration =
+            Mathf.Max(
+                0f,
+                earlyPhaseDuration -
+                introDuration -
+                secondToolPracticeDuration
+            );
+
+        yield return RunAmbientWindow(
+            firstToolPracticeDuration,
+            AmbientIntensity.Early,
+            lowValueFish,
+            midValueFish,
+            null,
+            null,
+            null
+        );
+
+        yield return RequestToolAcquisition();
+
+        yield return RunAmbientWindow(
+            secondToolPracticeDuration,
+            AmbientIntensity.Early,
+            lowValueFish,
+            midValueFish,
+            null,
+            null,
+            null
+        );
+
+        if (RunManager.Instance != null)
+        {
+            RunManager.Instance
+                .UnlockAugmentProgression();
+        }
     }
 
     private IEnumerator RequestToolAcquisition()

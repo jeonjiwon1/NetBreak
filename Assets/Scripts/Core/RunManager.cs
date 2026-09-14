@@ -7,7 +7,9 @@ public class RunManager : MonoBehaviour
     public ToolSlotInput ToolInput { get; private set; }
     public ToolAcquisitionManager ToolAcquisition { get; private set; }
     public bool AreAugmentsUnlocked =>
-        ToolSlots != null && ToolSlots.OwnedActiveToolCount >= 2;
+        augmentProgressionUnlocked &&
+        ToolSlots != null &&
+        ToolSlots.OwnedActiveToolCount >= 2;
 
     public static RunManager Instance
     {
@@ -29,6 +31,7 @@ public class RunManager : MonoBehaviour
     private int expToNextLevel = 20;
 
     private bool levelUpPending;
+    private bool augmentProgressionUnlocked;
 
     public int CurrentGold =>
         currentGold;
@@ -239,6 +242,17 @@ public class RunManager : MonoBehaviour
 
     public void NotifyToolAcquired()
     {
+        TryShowPendingLevelUpChoice();
+    }
+
+    public void UnlockAugmentProgression()
+    {
+        if (augmentProgressionUnlocked)
+        {
+            return;
+        }
+
+        augmentProgressionUnlocked = true;
         TryShowPendingLevelUpChoice();
     }
 

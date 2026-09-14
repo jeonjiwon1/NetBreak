@@ -102,8 +102,19 @@ public static class ToolAcquisitionValidation
         NetPlacementController net = Object.FindFirstObjectByType<NetPlacementController>();
         CastNetController cast = Object.FindFirstObjectByType<CastNetController>();
         FishingRodPlacementController rod = Object.FindFirstObjectByType<FishingRodPlacementController>();
-        Require(acquisition != null && canvas != null && hud != null && bait != null && net != null && cast != null && rod != null,
+        FishSpawner spawner = Object.FindFirstObjectByType<FishSpawner>();
+        Require(acquisition != null && canvas != null && hud != null && bait != null && net != null && cast != null &&
+            rod != null && spawner != null,
             "Main 획득/UI/도구 참조");
+        float earlyDuration = GetValueField<float>(spawner, "earlyPhaseDuration");
+        float introDuration = GetValueField<float>(spawner, "landingNetIntroDuration");
+        float secondToolPracticeDuration = GetValueField<float>(spawner, "postSecondToolPracticeDuration");
+        Require(earlyDuration == 75f && introDuration == 15f && secondToolPracticeDuration == 15f &&
+            earlyDuration - introDuration - secondToolPracticeDuration == 45f,
+            "Coast 초반 페이싱: 뜰채 15초/첫 도구 45초/두 도구 15초");
+        SetValueField(spawner, "earlyPhaseDuration", 0.9f);
+        SetValueField(spawner, "landingNetIntroDuration", 0.2f);
+        SetValueField(spawner, "postSecondToolPracticeDuration", 0.2f);
         TMP_Text[] hotbarSlotTexts = GetField<TMP_Text[]>(hud, "hotbarSlotTexts");
         RectTransform hotbarRoot = GetField<RectTransform>(hud, "hotbarRoot");
         Require(slots.OwnsTool(ToolId.LandingNet) &&
@@ -129,8 +140,12 @@ public static class ToolAcquisitionValidation
         Require(!bait.IsActive && !NetPlacementController.IsNetModeActive &&
             !FishingRodPlacementController.IsRodModeActive && !cast.IsAiming, "미소유 4도구 입력 차단");
 
-        Require(acquisition.RequestToolAcquisition(), "결정론적 첫 도구 획득 요청");
-        yield return new WaitForSecondsRealtime(0.5f);
+        PrototypeGameFlowManager.Instance.StartFishing();
+        yield return null;
+        Require(spawner.HasStarted && run.TotalCatchValue > 0 && !acquisition.IsAcquisitionPending,
+            "조업 시작 즉시 물고기 스폰 및 첫 획득 미표시");
+
+        yield return WaitForAcquisitionReady(acquisition, 2f);
         yield return null;
         GameObject panel = GetField<GameObject>(canvas, "augmentSelectionPanel");
         Button[] buttons =
@@ -145,7 +160,8 @@ public static class ToolAcquisitionValidation
             GetField<TMP_Text>(canvas, "augmentText2"),
             GetField<TMP_Text>(canvas, "augmentText3")
         };
-        Require(panel.activeSelf && acquisition.IsChoosingTool && acquisition.CanSelect, "획득 선택 UI 표시/입력 잠금 해제");
+        Require(panel.activeSelf && acquisition.IsChoosingTool && acquisition.CanSelect,
+            "뜰채 전용 도입 뒤 첫 획득 선택 UI 표시");
         Require(Enumerable.Range(0, 3).All(i => acquisition.GetChoice(i) != ToolId.None &&
             buttons[i].interactable && !string.IsNullOrWhiteSpace(texts[i].text)), "유효한 한국어 도구 선택지 3개");
         Require(texts[0].text.Contains("미끼") && texts[1].text.Contains("그물") && texts[2].text.Contains("투망"),
@@ -158,22 +174,28 @@ public static class ToolAcquisitionValidation
         Require(hotbarSlotTexts[1].text.Contains("[Q]") && hotbarSlotTexts[1].text.Contains("미끼") &&
             hotbarSlotTexts[2].text.Contains("[W]") && hotbarSlotTexts[2].text.Contains("비어 있음"),
             "첫 획득 Hotbar Q 갱신");
-        FieldInfo fishingStartedField = typeof(PrototypeGameFlowManager).GetField(
-            "isFishingStarted", BindingFlags.Instance | BindingFlags.NonPublic);
-        Require(fishingStartedField != null, "검증용 조업 상태 필드 확인");
-        fishingStartedField.SetValue(PrototypeGameFlowManager.Instance, true);
         yield return Send(point, 0);
         Require(ToolSlotInput.GetBindingLabel(ToolId.Bait) == "Q",
             "획득한 미끼의 실제 입력 바인딩은 Q");
+
+        yield return Send(point, 0, Key.Q);
+        Require(bait.IsActive, "첫 도구 연습 구간에서 실제 Q 사용");
+        yield return new WaitForSecondsRealtime(0.1f);
+        Require(!acquisition.IsAcquisitionPending,
+            "첫 획득 직후 두 번째 획득을 연속 표시하지 않음");
 
         run.GrantBonusReward(0, run.ExpToNextLevel);
         yield return null;
         Require(run.CurrentLevel == 2 && !PrototypeAugmentManager.Instance.IsShowingChoices,
             "액티브 도구 2개 전 일반 증강 보류");
 
-        Require(acquisition.RequestToolAcquisition(), "결정론적 두 번째 도구 획득 요청");
-        yield return new WaitForSecondsRealtime(0.5f);
+        yield return WaitForAcquisitionReady(acquisition, 2f);
         yield return null;
+        Require(acquisition.IsChoosingTool && acquisition.CanSelect,
+            $"첫 도구 연습 구간 뒤 두 번째 획득 표시 " +
+            $"(choosing={acquisition.IsChoosingTool}, pending={acquisition.IsAcquisitionPending}, " +
+            $"canSelect={acquisition.CanSelect}, stage={spawner.CurrentStageIndex}, " +
+            $"owned={slots.OwnedActiveToolCount}, timeScale={Time.timeScale})");
         Require(Enumerable.Range(0, 3).All(i => acquisition.GetChoice(i) != ToolId.Bait &&
             acquisition.GetChoice(i) != ToolId.None), "두 번째 선택에서 소유 도구 제외");
         ToolId secondTool = acquisition.GetChoice(0);
@@ -185,14 +207,32 @@ public static class ToolAcquisitionValidation
             hotbarSlotTexts[2].text.Contains("[W]") &&
             hotbarSlotTexts[2].text.Contains(GetToolName(secondTool)),
             "두 번째 획득 Hotbar W 갱신");
+        Require(!PrototypeAugmentManager.Instance.IsShowingChoices && run.CurrentLevel == 2,
+            "두 번째 획득 직후 증강 미표시 및 보류 레벨 보존");
+
+        yield return Send(point, 0, Key.W);
+        Require(NetPlacementController.IsNetModeActive,
+            "두 번째 도구 연습 구간에서 실제 W 사용");
+        yield return Send(point, 2);
+        Require(!NetPlacementController.IsNetModeActive,
+            "두 번째 도구 ESC/RMB 취소 유지");
+
+        yield return new WaitForSecondsRealtime(0.1f);
+        Require(!PrototypeAugmentManager.Instance.IsShowingChoices && Time.timeScale == 1f,
+            "두 도구 실제 플레이 구간 및 정상 시간 재개");
+
+        yield return WaitForAugmentChoices(PrototypeAugmentManager.Instance, 2f);
+        yield return null;
         Require(PrototypeAugmentManager.Instance.IsShowingChoices,
-            "액티브 도구 2개 후 보류된 일반 증강 허용");
+            "두 도구 연습 구간 뒤 보류된 일반 증강 허용");
         Require(CurrentAugmentCategoriesAreOwned(PrototypeAugmentManager.Instance, slots),
             "미소유 도구 증강 후보 제외");
 
         yield return new WaitForSecondsRealtime(0.5f);
         buttons[0].onClick.Invoke();
         yield return null;
+        Require(spawner.CurrentStageIndex == 2 && Time.timeScale == 1f,
+            "첫 증강 뒤 첫 대어군 단계 진행 및 시간 정상화");
 
         FishData data = AssetDatabase.FindAssets("t:FishData")
             .Select(g => AssetDatabase.LoadAssetAtPath<FishData>(AssetDatabase.GUIDToAssetPath(g)))
@@ -280,6 +320,28 @@ public static class ToolAcquisitionValidation
         return field?.GetValue(target) as T;
     }
 
+    private static T GetValueField<T>(object target, string name) where T : struct
+    {
+        FieldInfo field = target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+        if (field?.GetValue(target) is T value)
+        {
+            return value;
+        }
+
+        throw new InvalidOperationException($"필드를 읽을 수 없습니다: {name}");
+    }
+
+    private static void SetValueField<T>(object target, string name, T value) where T : struct
+    {
+        FieldInfo field = target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+        if (field == null)
+        {
+            throw new InvalidOperationException($"필드를 찾을 수 없습니다: {name}");
+        }
+
+        field.SetValue(target, value);
+    }
+
     private static IEnumerator Send(Vector2 position, ushort buttons, params Key[] keys)
     {
         keyboard.MakeCurrent();
@@ -287,6 +349,42 @@ public static class ToolAcquisitionValidation
         InputSystem.QueueStateEvent(keyboard, new KeyboardState(keys));
         InputSystem.QueueStateEvent(mouse, new MouseState { position = position, buttons = buttons });
         yield return null;
+    }
+
+    private static IEnumerator WaitForAcquisitionReady(
+        ToolAcquisitionManager acquisition,
+        float timeout)
+    {
+        float deadline = Time.realtimeSinceStartup + timeout;
+        while (!acquisition.IsChoosingTool && Time.realtimeSinceStartup < deadline)
+        {
+            yield return null;
+        }
+
+        if (!acquisition.IsChoosingTool)
+        {
+            yield break;
+        }
+
+        mouse.MakeCurrent();
+        InputSystem.QueueStateEvent(mouse, new MouseState());
+        yield return null;
+
+        while (!acquisition.CanSelect && Time.realtimeSinceStartup < deadline)
+        {
+            yield return null;
+        }
+    }
+
+    private static IEnumerator WaitForAugmentChoices(
+        PrototypeAugmentManager augment,
+        float timeout)
+    {
+        float deadline = Time.realtimeSinceStartup + timeout;
+        while (!augment.IsShowingChoices && Time.realtimeSinceStartup < deadline)
+        {
+            yield return null;
+        }
     }
 
     private static void Require(bool condition, string name)
