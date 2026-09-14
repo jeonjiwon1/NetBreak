@@ -9,6 +9,8 @@ public sealed class RunToolLoadout
     private readonly HashSet<ToolId> ownedTools = new() { ToolId.LandingNet };
 
     public int Revision { get; private set; }
+    public int OwnedActiveToolCount =>
+        ownedTools.Count - (ownedTools.Contains(ToolId.LandingNet) ? 1 : 0);
 
     public ToolId GetSlot(int index) =>
         index >= 0 && index < SlotCount ? slots[index] : ToolId.None;

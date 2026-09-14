@@ -1,6 +1,6 @@
 # NETBREAK 인수인계
 
-기준일: 2026-09-14. 현재 마일스톤: **STEP 10B Tool Acquisition 완료**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 장기 개발 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
+기준일: 2026-09-14. 현재 마일스톤: **STEP 10C 구현 완료, 수동 검증 대기**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 장기 개발 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경
 - 저장소: `C:\game_dev\unity\NetBreak`, 브랜치 `vertical-slice`.
@@ -70,5 +70,14 @@
 - Unity 컴파일과 Console Error 0개를 확인했다. STEP 10A 회귀 33개와 STEP 10B 획득 16개가 통과했고, Computer Use로 획득 UI의 한국어 제목·3개 선택지 표시를 확인했다.
 - 알려진 문제: 현재 획득 후보 순서는 결정론적 고정 순서이며 Area 1 실제 획득 시점과 연결되지 않았다. 네 도구를 모두 소유한 뒤에는 추가 획득 요청을 받지 않는다.
 
+## 최근 변경 — STEP 10C 초기 도구 진행과 소유 도구 증강
+- Coast 초반 조업 시작 시 첫 도구 획득을 요청하고, 초반 조업 종료 뒤 두 번째 도구 획득을 요청한다. 선택이 끝날 때까지 진행을 대기하며 기존 획득 시스템과 선택 Canvas를 그대로 사용한다.
+- 액티브 도구 2개를 소유하기 전에는 레벨업 증강을 보류한다. 두 번째 도구 획득 뒤 보류 중인 증강을 열고, 이후에는 기존 레벨업 흐름을 유지한다.
+- 증강 후보는 General, 항상 소유하는 뜰채, 현재 Run에서 소유한 액티브 도구 범주만 허용한다. 미소유 도구의 일반·Unique 증강은 제외한다.
+- 변경 파일: `RunToolLoadout.cs`, `RunManager.cs`, `ToolAcquisitionManager.cs`, `PrototypeAugmentManager.cs`, `FishSpawner.cs`, `NETBREAK_STATE.md`.
+- 사용자 지시에 따라 Unity 컴파일, Console, Play Mode와 게임플레이 검증은 수행하지 않았다. 새 Run 초기 상태, 두 차례 획득 시점과 후보 제외, 증강 지연·필터·재굴림, 도구/전직 진행 유지 여부를 수동 검증해야 한다.
+- 알려진 임시 페이싱: 현재 첫 도구 획득이 Coast 시작 직후 발생한다. 기능 검증용 임시 배치이며, Area 1 전체 페이싱 정리 단계에서 뜰채만 사용하는 짧은 도입 구간 이후로 이동한다.
+- 알려진 임시 페이싱: 현재 두 번째 도구 획득 직후 보류된 첫 증강 선택창이 바로 이어서 표시된다. 기능 검증용 동작이며, Area 1 전체 페이싱 정리 단계에서 두 번째 도구를 실제로 사용해볼 수 있는 짧은 조업 구간을 둔 뒤 첫 증강이 나오도록 조정한다.
+
 ## 다음 정확한 단계
-후속 요청 후 STEP 10C Owned-Tool Augment Pool + Delayed Augment Start를 진행한다. 이번 Run에서 소유한 도구와 General만 증강 후보로 만들고, 초기 도구 획득이 끝날 때까지 일반 증강 시작을 지연한다. 이후 10D Hotbar → 10E Slice 통합 순서를 따른다.
+STEP 10C를 Unity에서 수동 검증한 뒤 STEP 10D Hotbar UI를 진행한다.

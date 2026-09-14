@@ -347,6 +347,8 @@ public class FishSpawner : MonoBehaviour
             "초반 조업"
         );
 
+        yield return RequestToolAcquisition();
+
         SpawnLooseFish(
             lowValueFish,
             2
@@ -360,6 +362,28 @@ public class FishSpawner : MonoBehaviour
             null,
             null,
             null
+        );
+
+        yield return RequestToolAcquisition();
+    }
+
+    private IEnumerator RequestToolAcquisition()
+    {
+        ToolAcquisitionManager acquisition =
+            ToolAcquisitionManager.Instance;
+
+        if (acquisition == null ||
+            !acquisition.RequestToolAcquisition())
+        {
+            yield break;
+        }
+
+        yield return new WaitUntil(
+            () =>
+                (acquisition == null ||
+                 !acquisition.IsAcquisitionPending) &&
+                (PrototypeAugmentManager.Instance == null ||
+                 !PrototypeAugmentManager.Instance.IsShowingChoices)
         );
     }
 

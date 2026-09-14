@@ -172,7 +172,9 @@ public class PrototypeAugmentManager : MonoBehaviour
 
     public void ShowChoices()
     {
-        if (showChoices ||
+        if (RunManager.Instance == null ||
+            !RunManager.Instance.AreAugmentsUnlocked ||
+            showChoices ||
             (ToolAcquisitionManager.Instance != null &&
              ToolAcquisitionManager.Instance.IsChoosingTool))
         {
@@ -445,7 +447,37 @@ public class PrototypeAugmentManager : MonoBehaviour
             pool
         );
 
+        pool.RemoveAll(option =>
+            !IsAugmentCategoryOwned(option.Category));
+
         return pool;
+    }
+
+    private bool IsAugmentCategoryOwned(
+        AugmentCategory category)
+    {
+        if (category == AugmentCategory.General ||
+            category == AugmentCategory.LandingNet)
+        {
+            return true;
+        }
+
+        if (RunManager.Instance == null)
+        {
+            return false;
+        }
+
+        ToolId tool = category switch
+        {
+            AugmentCategory.Bait => ToolId.Bait,
+            AugmentCategory.Net => ToolId.Net,
+            AugmentCategory.CastNet => ToolId.CastNet,
+            AugmentCategory.FishingRod => ToolId.FishingRod,
+            _ => ToolId.None
+        };
+
+        return tool != ToolId.None &&
+            RunManager.Instance.ToolSlots.OwnsTool(tool);
     }
 
     private void AddUniqueAugments(

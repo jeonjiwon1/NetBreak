@@ -21,6 +21,7 @@ public sealed class ToolAcquisitionManager : MonoBehaviour
 
     public static ToolAcquisitionManager Instance { get; private set; }
     public bool IsChoosingTool => isChoosingTool;
+    public bool IsAcquisitionPending => requestPending || isChoosingTool;
     public bool CanSelect => canSelect;
     public int ChoiceCount => currentChoices.Length;
 
@@ -87,6 +88,7 @@ public sealed class ToolAcquisitionManager : MonoBehaviour
         }
 
         FinishSelection();
+        RunManager.Instance.NotifyToolAcquired();
     }
 
     private void ShowChoices()

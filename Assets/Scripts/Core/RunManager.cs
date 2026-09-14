@@ -6,6 +6,8 @@ public class RunManager : MonoBehaviour
     public RunToolLoadout ToolSlots { get; private set; }
     public ToolSlotInput ToolInput { get; private set; }
     public ToolAcquisitionManager ToolAcquisition { get; private set; }
+    public bool AreAugmentsUnlocked =>
+        ToolSlots != null && ToolSlots.OwnedActiveToolCount >= 2;
 
     public static RunManager Instance
     {
@@ -232,7 +234,23 @@ public class RunManager : MonoBehaviour
         levelUpPending =
             true;
 
-        if (PrototypeAugmentManager.Instance != null)
+        TryShowPendingLevelUpChoice();
+    }
+
+    public void NotifyToolAcquired()
+    {
+        TryShowPendingLevelUpChoice();
+    }
+
+    private void TryShowPendingLevelUpChoice()
+    {
+        if (!levelUpPending || !AreAugmentsUnlocked)
+        {
+            return;
+        }
+
+        if (PrototypeAugmentManager.Instance != null &&
+            !PrototypeAugmentManager.Instance.IsShowingChoices)
         {
             PrototypeAugmentManager.Instance
                 .ShowChoices();
