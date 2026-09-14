@@ -52,30 +52,14 @@ public class FishingRodPlacementController : MonoBehaviour
 
     private void Update()
     {
-        if (Mouse.current == null ||
-            Keyboard.current == null)
-        {
-            return;
-        }
-
-        bool inputBlocked =
-                (PrototypeAugmentManager.Instance != null &&
-                PrototypeAugmentManager.Instance.IsChoosingAugment)
-                ||
-                (PrototypeGameFlowManager.Instance != null &&
-                PrototypeGameFlowManager.Instance.IsGameEnded)
-                ||
-                NetPlacementController.IsNetModeActive
-                ||
-                GearRepositionController.IsRepositioning;
-
-        if (inputBlocked)
+        ToolInputState input = ToolSlotInput.Read(ToolId.FishingRod);
+        if (input.Cancelled)
         {
             CancelPlacementMode();
             return;
         }
 
-        HandleModeInput();
+        HandleModeInput(input);
 
         if (!IsRodModeActive)
         {
@@ -86,9 +70,9 @@ public class FishingRodPlacementController : MonoBehaviour
         HandlePlacementInput();
     }
 
-    private void HandleModeInput()
+    private void HandleModeInput(ToolInputState input)
     {
-        if (Keyboard.current.rKey.wasPressedThisFrame)
+        if (input.Pressed)
         {
             if (IsRodModeActive)
             {
@@ -100,19 +84,11 @@ public class FishingRodPlacementController : MonoBehaviour
             }
         }
 
-        if (!IsRodModeActive)
-        {
-            return;
-        }
+    }
 
-        bool cancelPressed =
-            Mouse.current.rightButton.wasPressedThisFrame ||
-            Keyboard.current.escapeKey.wasPressedThisFrame;
-
-        if (cancelPressed)
-        {
-            CancelPlacementMode();
-        }
+    private void OnDisable()
+    {
+        CancelPlacementMode();
     }
 
     private void HandlePlacementInput()

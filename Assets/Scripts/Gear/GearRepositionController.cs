@@ -52,11 +52,7 @@ public class GearRepositionController : MonoBehaviour
         }
 
         bool inputBlocked =
-            (PrototypeAugmentManager.Instance != null &&
-             PrototypeAugmentManager.Instance.IsChoosingAugment)
-            ||
-            (PrototypeGameFlowManager.Instance != null &&
-             PrototypeGameFlowManager.Instance.IsGameEnded)
+            ToolSlotInput.IsSelectionOrEndBlocked
             ||
             NetPlacementController.IsNetModeActive
             ||
@@ -103,7 +99,7 @@ public class GearRepositionController : MonoBehaviour
                 selectionRadius
             );
 
-        // ³¬½Ë´ë¸¦ ¿ì¼± ¼±ÅÃÇÑ´Ù.
+        // ë‚šì‹¯ëŒ€ë¥¼ ìš°ì„  ì„ íƒí•œë‹¤.
         foreach (Collider2D hit in hits)
         {
             FishingRodController rod =

@@ -85,33 +85,14 @@ public class CastNetController : MonoBehaviour
                 Time.deltaTime;
         }
 
-        if (Mouse.current == null ||
-            Keyboard.current == null)
-        {
-            return;
-        }
-
-        bool inputBlocked =
-            (PrototypeAugmentManager.Instance != null &&
-             PrototypeAugmentManager.Instance.IsChoosingAugment)
-            ||
-            (PrototypeGameFlowManager.Instance != null &&
-             PrototypeGameFlowManager.Instance.IsPreparation)
-            ||
-            (PrototypeGameFlowManager.Instance != null &&
-             PrototypeGameFlowManager.Instance.IsGameEnded)
-            ||
-            FishingRodPlacementController.IsRodModeActive
-            ||
-            NetPlacementController.IsNetModeActive;
-
-        if (inputBlocked)
+        ToolInputState input = ToolSlotInput.Read(ToolId.CastNet);
+        if (input.Cancelled)
         {
             CancelAiming();
             return;
         }
 
-        HandleCastNetInput();
+        HandleCastNetInput(input);
     }
 
     private void UpdateRecharge()
@@ -146,11 +127,11 @@ public class CastNetController : MonoBehaviour
         }
     }
 
-    private void HandleCastNetInput()
+    private void HandleCastNetInput(ToolInputState input)
     {
         if (!isAiming &&
             IsReady &&
-            Keyboard.current.eKey.wasPressedThisFrame)
+            input.Pressed)
         {
             StartAiming();
         }
@@ -162,17 +143,7 @@ public class CastNetController : MonoBehaviour
 
         UpdateAimPosition();
 
-        bool cancelPressed =
-            Mouse.current.rightButton.wasPressedThisFrame ||
-            Keyboard.current.escapeKey.wasPressedThisFrame;
-
-        if (cancelPressed)
-        {
-            CancelAiming();
-            return;
-        }
-
-        if (Keyboard.current.eKey.wasReleasedThisFrame)
+        if (input.Released)
         {
             UseCastNet(
                 currentAimPosition
@@ -375,6 +346,11 @@ public class CastNetController : MonoBehaviour
         {
             castVisual.gameObject.SetActive(false);
         }
+    }
+
+    private void OnDisable()
+    {
+        CancelAiming();
     }
 
     private void UpdateVisualScale()

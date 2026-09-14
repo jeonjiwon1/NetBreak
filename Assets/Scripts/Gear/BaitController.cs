@@ -40,37 +40,7 @@ public class BaitController : MonoBehaviour
 
     private void HandleInput()
     {
-        if (PrototypeAugmentManager.Instance != null &&
-            PrototypeAugmentManager.Instance.IsChoosingAugment)
-        {
-            return;
-        }
-
-        if (PrototypeGameFlowManager.Instance != null &&
-            PrototypeGameFlowManager.Instance.IsGameEnded)
-        {
-            return;
-        }
-
-        if (Mouse.current == null ||
-            Keyboard.current == null)
-        {
-            return;
-        }
-
-        if (PrototypeGameFlowManager.Instance != null &&
-    PrototypeGameFlowManager.Instance.IsPreparation)
-        {
-            return;
-        }
-
-        if (NetPlacementController.IsNetModeActive ||
-            FishingRodPlacementController.IsRodModeActive)
-        {
-            return;
-        }
-
-        if (Keyboard.current.qKey.wasPressedThisFrame &&
+        if (ToolSlotInput.Read(ToolId.Bait).Pressed &&
             cooldownTimer <= 0f)
         {
             PlaceBait();

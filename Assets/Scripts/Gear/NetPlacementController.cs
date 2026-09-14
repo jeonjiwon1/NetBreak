@@ -80,31 +80,15 @@ public class NetPlacementController : MonoBehaviour
 
     private void Update()
     {
-        if (Mouse.current == null ||
-            Keyboard.current == null)
-        {
-            return;
-        }
-
-        bool inputBlocked =
-                (PrototypeAugmentManager.Instance != null &&
-                PrototypeAugmentManager.Instance.IsChoosingAugment)
-                ||
-                (PrototypeGameFlowManager.Instance != null &&
-                PrototypeGameFlowManager.Instance.IsGameEnded)
-                ||
-                FishingRodPlacementController.IsRodModeActive
-                ||
-                GearRepositionController.IsRepositioning;
-
-        if (inputBlocked)
+        ToolInputState input = ToolSlotInput.Read(ToolId.Net);
+        if (input.Cancelled)
         {
             IsNetModeActive = false;
             CancelPlacement();
             return;
         }
 
-        HandleModeInput();
+        HandleModeInput(input);
 
         if (!IsNetModeActive)
         {
@@ -114,9 +98,9 @@ public class NetPlacementController : MonoBehaviour
         HandlePlacement();
     }
 
-    private void HandleModeInput()
+    private void HandleModeInput(ToolInputState input)
     {
-        if (Keyboard.current.wKey.wasPressedThisFrame)
+        if (input.Pressed)
         {
             IsNetModeActive =
                 !IsNetModeActive;
@@ -127,16 +111,12 @@ public class NetPlacementController : MonoBehaviour
             }
         }
 
-        bool cancelPressed =
-            Keyboard.current.escapeKey.wasPressedThisFrame ||
-            Mouse.current.rightButton.wasPressedThisFrame;
+    }
 
-        if (cancelPressed &&
-            IsNetModeActive)
-        {
-            IsNetModeActive = false;
-            CancelPlacement();
-        }
+    private void OnDisable()
+    {
+        IsNetModeActive = false;
+        CancelPlacement();
     }
 
     private void HandlePlacement()

@@ -1,6 +1,6 @@
 # NETBREAK 인수인계
 
-기준일: 2026-09-14. 현재 마일스톤: **초기 온보딩 문서 사용자 검토 완료·상용 1.0 로드맵 추가**. STEP 10A는 시작하지 않았다. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 장기 개발 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
+기준일: 2026-09-14. 현재 마일스톤: **STEP 10A Dynamic Tool Slot Foundation 완료**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 장기 개발 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경
 - 저장소: `C:\game_dev\unity\NetBreak`, 브랜치 `vertical-slice`.
@@ -57,5 +57,11 @@
 - 이번 수정 파일은 로드맵과 `NETBREAK_STATE.md`뿐이다. 기존 온보딩 문서와 폰트 변경을 보존한다. 문서 검토 및 Git status/diff 확인 대상이며 Unity 컴파일/실행 검증을 의미하지 않는다.
 - STEP 10A, 게임 코드/Scene/Prefab/설정 변경, commit/push는 이번 요청 범위에서 제외했다.
 
+## 최근 변경 — STEP 10A Dynamic Tool Slot Foundation
+- `RunManager`가 Run 단위 4칸 `RunToolLoadout`과 프레임 단위 `ToolSlotInput`을 소유한다. LMB 뜰채는 슬롯 밖에 고정하고, STEP 10A 임시 로드아웃은 Q=미끼, W=그물, E=투망, R=낚싯대다.
+- 네 액티브 도구 Controller의 Q/W/E/R 직접 참조를 제거했다. 공통 입력이 슬롯 누름/뗌/취소를 도구에 전달하며 빈 슬롯, 슬롯 교환, 선택창 차단, 설치·재배치 충돌을 처리한다.
+- Scene/Prefab/Inspector 참조와 밸런스 값은 변경하지 않았다. Tool Acquisition, Run Ownership 기반 증강 필터, Hotbar는 STEP 10B~10D 범위다.
+- Unity 6000.3.11f1에서 스크립트 컴파일과 Console compiler error 0개를 확인했다. Main Play Mode 입력 회귀 32개가 통과해 LMB, Q/W/E/R, ESC/RMB 취소, 실제 설치 비용/피해, Ctrl+LMB 재배치, 슬롯 교환·빈 슬롯을 확인했다.
+
 ## 다음 정확한 단계
-추가 로드맵을 사용자에게 제시한다. 후속 구현 요청 후 Git 상태를 다시 확인하고 STEP 10A의 도구 슬롯 기반을 점진적으로 설계/구현한다. 입력 press/release/cancel, 빈 슬롯, LMB 고정, 배치/재배치 및 선택 중 차단, 직렬화 참조 보존을 우선한다. 10B 획득 → 10C 소유 필터/증강 지연 → 10D Hotbar → 10E Slice 통합 순서를 따른다. 본격 밸런스는 전체 Run 실측 이후 STEP 11이다. 이는 장기 로드맵 PHASE 1에 해당하며 이후 외부 플레이테스트를 거쳐 Area 2 제작 파이프라인을 검증한다. 현재 사용자 지시에 따라 commit/push하지 않는다.
+후속 요청 후 STEP 10B Tool Acquisition을 진행한다. 새 Run은 뜰채만 소유하고 빈 액티브 슬롯에서 시작하도록 STEP 10A 임시 로드아웃을 획득 흐름으로 교체한다. 이후 10C 소유 필터/증강 지연 → 10D Hotbar → 10E Slice 통합 순서를 따른다. 본격 밸런스는 전체 Run 실측 이후 STEP 11이다.

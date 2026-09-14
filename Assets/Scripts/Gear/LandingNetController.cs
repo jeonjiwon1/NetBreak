@@ -31,14 +31,7 @@ public class LandingNetController : MonoBehaviour
 
     private void Update()
     {
-        if (PrototypeAugmentManager.Instance != null &&
-            PrototypeAugmentManager.Instance.IsChoosingAugment)
-        {
-            return;
-        }
-
-        if (PrototypeGameFlowManager.Instance != null &&
-            PrototypeGameFlowManager.Instance.IsGameEnded)
+        if (ToolSlotInput.IsWorldPointerReserved)
         {
             return;
         }

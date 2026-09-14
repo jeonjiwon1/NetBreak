@@ -1,7 +1,11 @@
 using UnityEngine;
 
+[DefaultExecutionOrder(-100)]
 public class RunManager : MonoBehaviour
 {
+    public RunToolLoadout ToolSlots { get; private set; }
+    public ToolSlotInput ToolInput { get; private set; }
+
     public static RunManager Instance
     {
         get;
@@ -70,8 +74,21 @@ public class RunManager : MonoBehaviour
 
         Instance = this;
 
+        ToolSlots = new RunToolLoadout();
+        // STEP 10A test loadout only. Tool acquisition will replace this bootstrap.
+        ToolSlots.TryAssignSlot(0, ToolId.Bait);
+        ToolSlots.TryAssignSlot(1, ToolId.Net);
+        ToolSlots.TryAssignSlot(2, ToolId.CastNet);
+        ToolSlots.TryAssignSlot(3, ToolId.FishingRod);
+        ToolInput = new ToolSlotInput(ToolSlots);
+
         currentGold =
             startingGold;
+    }
+
+    private void Update()
+    {
+        ToolInput.Sample();
     }
 
     // =========================================================
@@ -112,9 +129,9 @@ public class RunManager : MonoBehaviour
         CheckLevelUp();
     }
 
-    // °ÔÀÓ Á¾·á ¼ø°£ ¾ÆÁ÷ ¸Ê¿¡ ³²¾Æ ÀÖ¾î
-    // Æ÷È¹/µµÁÖ °á°ú°¡ È®Á¤µÇÁö ¾ÊÀº ¹°°í±â¸¦
-    // ÃÖÁ¾ ¾îÈ¹·ü °è»ê¿¡¼­ Á¦¿ÜÇÑ´Ù.
+    // ê²Œì„ ì¢…ë£Œ ìˆœê°„ ì•„ì§ ë§µì— ë‚¨ì•„ ìˆì–´
+    // í¬íš/ë„ì£¼ ê²°ê³¼ê°€ í™•ì •ë˜ì§€ ì•Šì€ ë¬¼ê³ ê¸°ë¥¼
+    // ìµœì¢… ì–´íšë¥  ê³„ì‚°ì—ì„œ ì œì™¸í•œë‹¤.
     public void ExcludeUnresolvedFish(
         FishData fishData)
     {

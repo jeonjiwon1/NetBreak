@@ -76,31 +76,31 @@ public class PrototypeHUDCanvas : MonoBehaviour
         if (goldText != null)
         {
             goldText.text =
-                $"∞ÒµÂ: {run.CurrentGold}";
+                $"Í≥®Îìú: {run.CurrentGold}";
         }
 
         if (captureText != null)
         {
             captureText.text =
-                $"∆˜»π ºˆ: {run.CapturedFishCount}";
+                $"Ìè¨Ìöç Ïàò: {run.CapturedFishCount}";
         }
 
         if (catchRateText != null)
         {
             catchRateText.text =
-                $"æÓ»π∑¸: {run.CatchRate * 100f:F1}%";
+                $"Ïñ¥ÌöçÎ•†: {run.CatchRate * 100f:F1}%";
         }
 
         if (levelText != null)
         {
             levelText.text =
-                $"∑π∫ß: {run.CurrentLevel}";
+                $"Î†àÎ≤®: {run.CurrentLevel}";
         }
 
         if (expText != null)
         {
             expText.text =
-                $"∞Ê«Ëƒ°: {run.CurrentExp} / " +
+                $"Í≤ΩÌóòÏπò: {run.CurrentExp} / " +
                 $"{run.ExpToNextLevel}";
         }
     }
@@ -121,21 +121,21 @@ public class PrototypeHUDCanvas : MonoBehaviour
             if (fishSpawner.HasStarted)
             {
                 stageText.text =
-                    $"¡∂æ˜ ¥‹∞Ë: " +
+                    $"Ï°∞ÏóÖ Îã®Í≥Ñ: " +
                     $"{fishSpawner.CurrentStageIndex} / " +
                     $"{fishSpawner.TotalStageCount}";
             }
             else
             {
                 stageText.text =
-                    "¡∂æ˜ ¥‹∞Ë: ¡ÿ∫Ò";
+                    "Ï°∞ÏóÖ Îã®Í≥Ñ: Ï§ÄÎπÑ";
             }
         }
 
         if (phaseText != null)
         {
             phaseText.text =
-                $"«ˆ¿Á ±∏∞£: " +
+                $"ÌòÑÏû¨ Íµ¨Í∞Ñ: " +
                 $"{fishSpawner.CurrentPhaseName}";
         }
     }
@@ -152,13 +152,14 @@ public class PrototypeHUDCanvas : MonoBehaviour
             return;
         }
 
+        string binding = ToolSlotInput.GetBindingLabel(ToolId.CastNet);
         if (castNet.MaxCharges > 1)
         {
             if (castNet.CurrentCharges ==
                 castNet.MaxCharges)
             {
                 castNetText.text =
-                    $"≈ı∏¡ [E]: " +
+                    $"Ìà¨Îßù [{binding}]: " +
                     $"{castNet.CurrentCharges}/" +
                     $"{castNet.MaxCharges}";
 
@@ -166,10 +167,10 @@ public class PrototypeHUDCanvas : MonoBehaviour
             }
 
             castNetText.text =
-                $"≈ı∏¡ [E]: " +
+                $"Ìà¨Îßù [{binding}]: " +
                 $"{castNet.CurrentCharges}/" +
                 $"{castNet.MaxCharges} " +
-                $"(√Ê¿¸ {castNet.CooldownTimer:F1}√ )";
+                $"(Ï∂©Ï†Ñ {castNet.CooldownTimer:F1}Ï¥à)";
 
             return;
         }
@@ -177,13 +178,13 @@ public class PrototypeHUDCanvas : MonoBehaviour
         if (castNet.IsReady)
         {
             castNetText.text =
-                "≈ı∏¡ [E]: ¡ÿ∫Ò øœ∑·";
+                $"Ìà¨Îßù [{binding}]: Ï§ÄÎπÑ ÏôÑÎ£å";
         }
         else
         {
             castNetText.text =
-                $"≈ı∏¡ [E]: " +
-                $"{castNet.CooldownTimer:F1}√ ";
+                $"Ìà¨Îßù [{binding}]: " +
+                $"{castNet.CooldownTimer:F1}Ï¥à";
         }
     }
 
@@ -204,13 +205,13 @@ public class PrototypeHUDCanvas : MonoBehaviour
         if (jobManager == null)
         {
             jobText.text =
-                "¿¸¡˜: √ ∫∏ æÓ∫Œ";
+                "Ï†ÑÏßÅ: Ï¥àÎ≥¥ Ïñ¥Î∂Ä";
 
             return;
         }
 
         jobText.text =
-            $"¿¸¡˜: {jobManager.CurrentJobName}";
+            $"Ï†ÑÏßÅ: {jobManager.CurrentJobName}";
     }
 
     // =========================================================
