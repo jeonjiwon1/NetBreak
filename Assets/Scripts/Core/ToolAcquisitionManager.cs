@@ -181,7 +181,15 @@ public sealed class ToolAcquisitionManager : MonoBehaviour
     {
         isChoosingTool = false;
         canSelect = false;
-        Time.timeScale = 1f;
+        if (PrototypeGameFlowManager.Instance != null)
+        {
+            PrototypeGameFlowManager.Instance
+                .ResumeGameplayTimeScale();
+        }
+        else
+        {
+            Time.timeScale = 1f;
+        }
     }
 
     private static string GetToolName(ToolId tool)

@@ -239,6 +239,12 @@ public class FishSpawner : MonoBehaviour
             miniBoss
         );
 
+        if (PrototypeGameFlowManager.Instance != null &&
+            PrototypeGameFlowManager.Instance.IsGameEnded)
+        {
+            yield break;
+        }
+
         yield return RunRushPhase(
             lowValueFish,
             midValueFish,
@@ -583,6 +589,7 @@ public class FishSpawner : MonoBehaviour
         float elapsed = 0f;
 
         while (spawnedMiniBoss != null &&
+               spawnedMiniBoss.gameObject.activeSelf &&
                !spawnedMiniBoss.IsCaptured &&
                elapsed < miniBossPhaseDuration)
         {
@@ -598,9 +605,22 @@ public class FishSpawner : MonoBehaviour
             );
         }
 
-        if (spawnedMiniBoss != null &&
-            spawnedMiniBoss.IsCaptured &&
-            PrototypeJobManager.Instance != null)
+        bool miniBossCaptured =
+            spawnedMiniBoss != null &&
+            spawnedMiniBoss.IsCaptured;
+
+        if (!miniBossCaptured)
+        {
+            if (PrototypeGameFlowManager.Instance != null)
+            {
+                PrototypeGameFlowManager.Instance
+                    .FailMiniBossEncounter();
+            }
+
+            yield break;
+        }
+
+        if (PrototypeJobManager.Instance != null)
         {
             PrototypeJobManager.Instance
                 .RequestJobSelection();

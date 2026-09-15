@@ -135,3 +135,12 @@ FULL RUN #2 수동 검증 및 실측.
 - 첫 Job Selection 요청을 첫 대형 어군 종료 시점에서 MiniBoss 실제 포획 직후로 이동했다. 첫 대형 어군은 초기 빌드의 첫 pressure test, MiniBoss는 중간 시험과 1차 전직 보상 역할을 맡는다.
 - MiniBoss 포획이 확인된 경우에만 기존 `PrototypeJobManager` 선택을 요청하고, 선택 완료 뒤 Rush로 진행한다. Rush 이후 구간에서 전직 효과를 충분히 체험하도록 했다.
 - Unity 수동 검증이 필요하며 다음 단계는 FULL RUN #2다. Codex는 Unity 실행, validation, commit/push를 수행하지 않았다.
+
+## Full Run #2 및 후속 1차 조정
+- 결과: 플레이 시간 10:21, 낚싯대+그물 빌드, 낚시꾼, Final Level 9, Gold 2226, 어획률 99.1%. 초반은 적당했고 중반과 연속 Augment 문제, Special Fish/복어는 개선되었다.
+- MiniBoss 구간은 긴장감이 생겼으나 적극 공격 후 Resistance 약 20을 남기고 포획하지 못했다. 당시 구현은 이후 Job/Rush 진행을 허용했다. Rush 이전/초반에 저장 Gold로 낚싯대를 대량 설치해 Rod 12 + Net 3 최종 빌드가 너무 빨리 완성됐고 후반/Boss는 여전히 쉬웠다.
+- 설계 결론: 낚시꾼의 높은 Rod 최대 수와 공격력은 유지하고 최종 빌드 완성 속도를 경제 곡선으로 조절한다. Boss/후반 추가 밸런스는 새 Rod 경제와 MiniBoss 관문 규칙을 확인한 뒤 결정한다.
+- 낚싯대 가격을 선형에서 `Round(BasePlacementCost × GrowthMultiplier^CurrentActiveRodCount × 기존 Job 비용 배율)` 지수식으로 변경했다. Base Inspector 값 30을 유지하고 Growth Multiplier 기본값은 1.5다. Hotbar는 실제 다음 가격을 그대로 읽는다.
+- MiniBoss는 Area 1 중간 관문이다. 본체 포획 성공 시 기존 보상 → Job 선택 → Rush로 진행한다. 본체 도주 또는 Encounter 시간 초과 시 `미니보스 포획 실패`로 Run Failure 처리하며 Job/Rush/Final/Boss를 중단한다. 지원 일반어 Escape는 이 실패 조건과 무관하다.
+- 개발 Test Speed를 기존 `PrototypeGameFlowManager`의 단일 상태로 추가했다. Editor/Development Build에서 F1=x1, F2=x2, F3=x3 및 동일 public Button API를 제공한다. 선택 UI는 0으로 pause하고 종료 시 저장된 배속을 복원한다. 기존 Run Timer는 scaled `Time.deltaTime` 동작을 유지한다.
+- Unity 수동 검증이 필요하며 다음 단계는 Full Run #3다. Codex는 Unity 실행, validation, commit/push를 수행하지 않았다.

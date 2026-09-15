@@ -16,7 +16,7 @@ public class FishingRodPlacementController : MonoBehaviour
 
     [Header("Placement")]
     [SerializeField] private int basePlacementCost = 25;
-    [SerializeField] private int costIncreasePerRod = 10;
+    [SerializeField] private float placementCostGrowthMultiplier = 1.5f;
     [SerializeField] private int maxActiveRods = 2;
 
     private Camera mainCamera;
@@ -182,13 +182,12 @@ public class FishingRodPlacementController : MonoBehaviour
 
     private int CalculatePlacementCost()
     {
-        int rawCost =
-            basePlacementCost +
-            activeRods.Count *
-            costIncreasePerRod;
-
-        return Mathf.CeilToInt(
-            rawCost *
+        return Mathf.RoundToInt(
+            basePlacementCost *
+            Mathf.Pow(
+                placementCostGrowthMultiplier,
+                activeRods.Count
+            ) *
             costMultiplier
         );
     }

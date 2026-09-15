@@ -174,7 +174,15 @@ public class PrototypeJobManager : MonoBehaviour
         isChoosingJob = false;
         canSelect = false;
 
-        Time.timeScale = 1f;
+        if (PrototypeGameFlowManager.Instance != null)
+        {
+            PrototypeGameFlowManager.Instance
+                .ResumeGameplayTimeScale();
+        }
+        else
+        {
+            Time.timeScale = 1f;
+        }
     }
 
     // =========================================================

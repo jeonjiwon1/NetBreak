@@ -753,7 +753,15 @@ public class PrototypeAugmentManager : MonoBehaviour
         showChoices = false;
         canSelect = false;
 
-        Time.timeScale = 1f;
+        if (PrototypeGameFlowManager.Instance != null)
+        {
+            PrototypeGameFlowManager.Instance
+                .ResumeGameplayTimeScale();
+        }
+        else
+        {
+            Time.timeScale = 1f;
+        }
 
         if (RunManager.Instance != null)
         {

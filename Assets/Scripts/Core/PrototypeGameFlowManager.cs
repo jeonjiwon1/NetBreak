@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class PrototypeGameFlowManager : MonoBehaviour
 {
@@ -30,7 +31,9 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
     private bool isGameEnded;
     private bool isSuccess;
+    private string failureDescription;
     private float activeRunTime;
+    private float currentTestSpeedMultiplier = 1f;
 
     public bool IsBossEncounter =>
         isBossEncounter;
@@ -50,6 +53,9 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
     public float ActiveRunTime =>
         activeRunTime;
+
+    public float CurrentTestSpeedMultiplier =>
+        currentTestSpeedMultiplier;
 
     public string ResultTitle
     {
@@ -75,6 +81,10 @@ public class PrototypeGameFlowManager : MonoBehaviour
                 return "";
             }
 
+            if (!string.IsNullOrEmpty(failureDescription))
+            {
+                return failureDescription;
+            }
             return isSuccess
                 ? "최종 보스를 포획했습니다."
                 : "최종 보스가 마지막 회유에서 도주했습니다.";
@@ -113,12 +123,94 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
     private void Update()
     {
+        UpdateTestSpeedInput();
+
         if (isFishingStarted && !isGameEnded)
         {
             activeRunTime += Time.deltaTime;
         }
     }
 
+    private void UpdateTestSpeedInput()
+    {
+        if (!CanUseTestSpeed() ||
+            Keyboard.current == null ||
+            isGameEnded)
+        {
+            return;
+        }
+
+        if (Keyboard.current.f1Key.wasPressedThisFrame)
+        {
+            SetTestSpeed1x();
+        }
+        else if (Keyboard.current.f2Key.wasPressedThisFrame)
+        {
+            SetTestSpeed2x();
+        }
+        else if (Keyboard.current.f3Key.wasPressedThisFrame)
+        {
+            SetTestSpeed3x();
+        }
+    }
+
+    public void SetTestSpeed1x()
+    {
+        SetTestSpeed(1f);
+    }
+
+    public void SetTestSpeed2x()
+    {
+        SetTestSpeed(2f);
+    }
+
+    public void SetTestSpeed3x()
+    {
+        SetTestSpeed(3f);
+    }
+
+    private void SetTestSpeed(
+        float multiplier)
+    {
+        if (!CanUseTestSpeed())
+        {
+            currentTestSpeedMultiplier = 1f;
+            return;
+        }
+
+        currentTestSpeedMultiplier =
+            Mathf.Clamp(
+                multiplier,
+                1f,
+                3f
+            );
+
+        if (Time.timeScale > 0f &&
+            !isGameEnded)
+        {
+            Time.timeScale =
+                currentTestSpeedMultiplier;
+        }
+    }
+
+    public void ResumeGameplayTimeScale()
+    {
+        if (isGameEnded)
+        {
+            return;
+        }
+
+        Time.timeScale =
+            CanUseTestSpeed()
+                ? currentTestSpeedMultiplier
+                : 1f;
+    }
+
+    private static bool CanUseTestSpeed()
+    {
+        return Application.isEditor ||
+            Debug.isDebugBuild;
+    }
     // =========================================================
     // FISHING START
     // =========================================================
@@ -170,6 +262,22 @@ public class PrototypeGameFlowManager : MonoBehaviour
         Time.timeScale = 0f;
     }
 
+    public void FailMiniBossEncounter()
+    {
+        if (isGameEnded)
+        {
+            return;
+        }
+
+        ResolveUnfinishedFishForResult();
+
+        isBossEncounter = false;
+        isGameEnded = true;
+        isSuccess = false;
+        failureDescription = "미니보스 포획 실패";
+
+        Time.timeScale = 0f;
+    }
     // =========================================================
     // UNRESOLVED FISH
     // =========================================================
