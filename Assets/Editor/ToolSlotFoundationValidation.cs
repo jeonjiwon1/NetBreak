@@ -221,8 +221,8 @@ public static class ToolSlotFoundationValidation
         Require(!cast.IsAiming && cast.CurrentCharges == charges, "조준 중 슬롯 교환: 취소 및 유령 발동 없음");
         yield return Send(a, 0, Key.R);
         Require(cast.IsAiming, "교환된 R 투망 조준");
-        run.UnlockAugmentProgression();
-        PrototypeAugmentManager.Instance.ShowChoices();
+        PrototypeJobManager.Instance.RequestJobSelection();
+        yield return null;
         yield return Send(a, 0);
         Require(!cast.IsAiming && cast.CurrentCharges == charges, "선택창 진입 시 조준 취소");
         yield return Send(a, 0, Key.Q, Key.W, Key.E, Key.R);

@@ -49,6 +49,9 @@ public class NetPlacementController : MonoBehaviour
     public int MaxActiveNets =>
         maxActiveNets;
 
+    public Vector2 CurrentDragEndPosition =>
+        currentEndPosition;
+
     public int CurrentPlacementCost
     {
         get

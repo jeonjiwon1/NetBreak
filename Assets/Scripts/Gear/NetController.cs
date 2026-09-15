@@ -8,6 +8,7 @@ public class NetController : MonoBehaviour
     [Header("Net Effect")]
     [SerializeField] private float slowMultiplier = 0.35f;
     [SerializeField] private float captureDamagePerSecond = 3f;
+    [SerializeField] private float pufferfishDisableDuration = 3f;
 
     private BoxCollider2D netCollider;
     private Rigidbody2D rigidBody;
@@ -110,8 +111,33 @@ public class NetController : MonoBehaviour
             return;
         }
 
+        if (TryTriggerPufferfishDisruption(other))
+        {
+            return;
+        }
+
         RegisterFish(other);
         RecalculateNetDisruption();
+    }
+
+    private bool TryTriggerPufferfishDisruption(
+        Collider2D other)
+    {
+        FishController fish =
+            other.GetComponent<FishController>();
+
+        if (fish == null ||
+            fish.Data == null ||
+            fish.Data.SpecialType != FishSpecialType.Pufferfish)
+        {
+            return false;
+        }
+
+        DisableTemporarily(
+            pufferfishDisableDuration
+        );
+
+        return true;
     }
 
     private void OnTriggerStay2D(

@@ -16,6 +16,7 @@ public class PrototypeHUDCanvas : MonoBehaviour
     [SerializeField] private TMP_Text catchRateText;
     [SerializeField] private TMP_Text levelText;
     [SerializeField] private TMP_Text expText;
+    [SerializeField] private TMP_Text runTimeText;
 
     [Header("Encounter")]
     [SerializeField] private TMP_Text stageText;
@@ -47,6 +48,8 @@ public class PrototypeHUDCanvas : MonoBehaviour
     private RectTransform hotbarRoot;
     private LandingNetController landingNet;
     private BaitController bait;
+    private NetPlacementController netPlacement;
+    private FishingRodPlacementController rodPlacement;
 
     private void Awake()
     {
@@ -54,6 +57,8 @@ public class PrototypeHUDCanvas : MonoBehaviour
         bait = BaitController.Instance != null
             ? BaitController.Instance
             : FindFirstObjectByType<BaitController>();
+        netPlacement = FindFirstObjectByType<NetPlacementController>();
+        rodPlacement = FindFirstObjectByType<FishingRodPlacementController>();
 
         BuildHotbar();
 
@@ -73,6 +78,7 @@ public class PrototypeHUDCanvas : MonoBehaviour
     private void Update()
     {
         UpdateRunInfo();
+        UpdateRunTimeInfo();
         UpdateEncounterInfo();
         UpdateHotbar();
         UpdateJobInfo();
@@ -125,6 +131,27 @@ public class PrototypeHUDCanvas : MonoBehaviour
                 $"경험치: {run.CurrentExp} / " +
                 $"{run.ExpToNextLevel}";
         }
+    }
+
+    private void UpdateRunTimeInfo()
+    {
+        if (runTimeText == null)
+        {
+            return;
+        }
+
+        float activeRunTime =
+            PrototypeGameFlowManager.Instance != null
+                ? PrototypeGameFlowManager.Instance.ActiveRunTime
+                : 0f;
+        int totalSeconds =
+            Mathf.Max(
+                0,
+                Mathf.FloorToInt(activeRunTime)
+            );
+
+        runTimeText.text =
+            $"플레이 시간: {totalSeconds / 60:00}:{totalSeconds % 60:00}";
     }
 
     // =========================================================
@@ -327,6 +354,21 @@ public class PrototypeHUDCanvas : MonoBehaviour
 
     private string GetToolStatus(ToolId tool)
     {
+        if (tool == ToolId.FishingRod && rodPlacement != null)
+        {
+            return
+                $"낚싯대\n" +
+                $"{rodPlacement.ActiveRodCount} / {rodPlacement.MaxActiveRods}\n" +
+                $"다음: {rodPlacement.PlacementCost}G";
+        }
+
+        if (tool == ToolId.Net && netPlacement != null)
+        {
+            return
+                $"그물\n" +
+                $"{netPlacement.ActiveNetCount} / {netPlacement.MaxActiveNets}";
+        }
+
         if (tool == ToolId.Bait && bait != null)
         {
             return bait.RemainingCooldown > 0f

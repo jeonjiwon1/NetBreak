@@ -106,8 +106,17 @@ public class PrototypeHUD : MonoBehaviour
         }
 
         netCostText.text =
-            $"그물 설치 비용: " +
+            $"예상 비용: " +
             $"{netPlacement.CurrentPlacementCost}G";
+
+        SetWorldFeedbackPosition(
+            netCostText.rectTransform,
+            netPlacement.CurrentDragEndPosition,
+            new Vector2(
+                24f,
+                24f
+            )
+        );
     }
 
     private void UpdateCastNetTarget()
@@ -211,7 +220,7 @@ public class PrototypeHUD : MonoBehaviour
             return;
         }
 
-        target.anchoredPosition =
+        target.localPosition =
             localPoint +
             offset;
     }
@@ -363,22 +372,32 @@ public class PrototypeHUD : MonoBehaviour
 
         if (resultBossText != null)
         {
+            int totalSeconds =
+                Mathf.Max(
+                    0,
+                    Mathf.FloorToInt(flow.ActiveRunTime)
+                );
+            string durationText =
+                $"플레이 시간: {totalSeconds / 60:00}:{totalSeconds % 60:00}";
+
             BossEncounterController boss =
                 BossEncounterController.Instance;
 
             if (boss == null)
             {
-                resultBossText.text = "";
+                resultBossText.text = durationText;
             }
             else if (flow.IsSuccess)
             {
                 resultBossText.text =
+                    $"{durationText}\n" +
                     $"보스 포획: " +
                     $"{boss.CurrentPass}차 회유";
             }
             else
             {
                 resultBossText.text =
+                    $"{durationText}\n" +
                     $"보스 도주: " +
                     $"{boss.CurrentPass}차 회유";
             }

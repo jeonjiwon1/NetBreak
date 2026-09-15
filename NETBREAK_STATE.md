@@ -105,4 +105,33 @@
 - 이번 정리는 코드 구현만 수행했으며 Unity 컴파일, Console, Play Mode 및 자동 검증을 실행하지 않았다. 수동 Unity 검증이 필요하다.
 
 ## 다음 정확한 단계
-Manual pre-full-run validation → STEP 11 measured full-run testing.
+FULL RUN #2 수동 검증 및 실측.
+
+## 최근 변경 — FULL RUN #1 후 1차 밸런스·UX 패치
+- FULL RUN #1 실측: 약 10~12분, Level 12, 잔여 Gold 2361, 어획률 100%, 포획 1594마리. 낚싯대+그물 빌드와 낚시꾼 직업을 사용했다. 중반 이후 난도가 낮고 자동화되었으며 미니보스는 약 3초, 빌드 완성 뒤 Gold는 의미를 잃었다. 특수어는 약하고 드물었으나 스폰 템포는 이전 버전보다 크게 개선되었다.
+- 설계 결론: Level Up 즉시 Augment 규칙은 유지하고 연속 초기 Augment는 EXP 요구 곡선으로 조정한다. 비전문화 뜰채가 후반에 자연스럽게 덜 쓰이는 것은 허용하며, 빌드 전문화와 선택한 빌드가 성숙할수록 편안해지는 진행을 의도한다.
+- FULL RUN #2용 사용자 Inspector 값: Starting Gold 0, 낚싯대 Base Cost 30 / Cost Increase Per Rod 25, 그물 Base Cost 8 / Cost Per Unit Length 6 / Cost Increase Per Net 0.50, Special Fish Warning Time 4.0초, Boss Resistance 700, MiniBoss Resistance 280, Coast 일반 테스트 모드 비활성. 현재 직렬화 값과 기타 사용자 변경을 보존했다.
+- 소스 패치: 실제 조업 시작부터 `Time.deltaTime`으로 Run Timer를 누적해 선택 UI의 `timeScale=0` 구간과 결과 화면을 제외하고 결과에 `MM:SS`로 표시한다. 동적 Hotbar의 실제 슬롯에서 낚싯대 개수/상한/다음 비용과 그물 개수/상한을 표시하며, 드래그 중 그물의 실제 계산 비용을 `예상 비용`으로 표시한다.
+- EXP 요구량은 최초 20을 유지하고 이후 기존 `이전 요구량 × 1.35`에서 `Round(20 × 1.45^(현재 Level-1))`로 변경했다. 첫 Augment 시점은 유지하면서 이후 요구량이 더 빠르게 증가하는 1차 조정이다.
+- Ambient 특수어 이벤트 비율을 성장 12%→20%, 특수 구간 22%→35%, Rush 18%→35%, Final 25%→40%로 높였다. 첫 복어·오징어 소개 시퀀스와 전체 어군 크기/구간 시간은 유지했다.
+- 복어가 활성 그물에 처음 닿으면 그물을 3초간 비활성화하고 접촉 중인 물고기를 풀어 후속 어군이 통과할 시간을 만든다. 오징어가 쓰는 기존 그물 임시 비활성화 구조를 재사용했다.
+- Codex는 Unity 실행, 컴파일, Console, Play Mode 및 자동 검증을 수행하지 않았다. 한 번의 실측 Run 뒤 적용한 1차 튜닝이므로 수동 검증이 필수이며 다음 단계는 FULL RUN #2다. commit/push하지 않았다.
+
+## 최근 변경 — FULL RUN #2 전 수동 확인 후 보정
+- 기존 Run Timer의 동일한 실제 경과 시간을 왼쪽 상태 HUD에 `플레이 시간: MM:SS`로 추가했다. 결과 화면 표시는 유지한다.
+- EXP Curve를 OLD `20 × 1.45^(Level-1)`에서 NEW `50 × 1.30^(Level-1)`로 변경했다. Level Up 즉시 Augment 규칙과 Fish EXP, Augment gating/presentation은 유지하며 첫 Augment 직후 연속 Augment 현상을 FULL RUN #2에서 재확인한다.
+- Net 예상 설치비는 상시 HUD/Hotbar가 아니라 기존 `NetCostText`를 사용해 배치 드래그 중에만 현재 드래그 끝점 근처에 표시한다. 실제 `CurrentPlacementCost`를 그대로 사용하며 Net Hotbar에는 현재/최대 설치 수만 유지한다.
+- Unity 수동 검증이 필요하다. Codex는 Unity 실행, Computer Use, 자동 검증, commit/push를 수행하지 않았다.
+
+## 최근 변경 — Level Reward 기반 초기 성장 전환
+- `ExpText`는 다시 EXP 전용으로 복원했다. Live Run Timer는 `PrototypeHUDCanvas.runTimeText` 별도 TMP 참조로 분리했으며 Top Center 배치와 Scene Inspector 연결은 사용자가 수행해야 한다. 결과 화면 타이머와 기존 시간 계산은 유지한다.
+- Level Reward는 Lv2=Tool Acquisition #1, Lv3=Tool Acquisition #2, Lv4+=Augment로 변경했다. EXP는 Run 시작부터 항상 획득하며 Level Up마다 해당 성장 보상을 즉시 연다. 선택 완료 뒤 기존 `ResolveLevelUp()`이 overflow를 이어서 처리한다.
+- EXP 요구량은 Lv1→2 30, Lv2→3 80, Lv3→4 120, 현재 Level 4 이상은 `Round(120 × 1.30^(Level-3))`이다. Fish EXP는 변경하지 않았다.
+- Coast 시간/구간 기반 Tool Acquisition 호출과 진행 기반 Augment 잠금은 제거했다. Augment 가능 여부는 Lv4 이상 및 Active Tool 2개 소유 조건으로 단순화했고 Job 흐름은 유지했다.
+- 기존 `NetCostText`의 부모 Canvas local point를 앵커 기준 `anchoredPosition`에 잘못 적용해 화면 밖으로 밀리던 문제를 부모 피벗 기준 `localPosition` 적용으로 수정했다. 배치 중 실제 비용과 드래그 끝점 추적, 종료 시 숨김 동작은 기존 구조를 유지한다.
+- Unity 수동 검증이 필요하며 다음 단계는 FULL RUN #2다. Codex는 Unity 실행, Computer Use, 자동 검증, commit/push를 수행하지 않았다.
+
+## 최근 변경 — Vertical Slice 1차 전직 시점 조정
+- 첫 Job Selection 요청을 첫 대형 어군 종료 시점에서 MiniBoss 실제 포획 직후로 이동했다. 첫 대형 어군은 초기 빌드의 첫 pressure test, MiniBoss는 중간 시험과 1차 전직 보상 역할을 맡는다.
+- MiniBoss 포획이 확인된 경우에만 기존 `PrototypeJobManager` 선택을 요청하고, 선택 완료 뒤 Rush로 진행한다. Rush 이후 구간에서 전직 효과를 충분히 체험하도록 했다.
+- Unity 수동 검증이 필요하며 다음 단계는 FULL RUN #2다. Codex는 Unity 실행, validation, commit/push를 수행하지 않았다.

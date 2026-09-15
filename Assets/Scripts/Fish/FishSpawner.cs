@@ -40,8 +40,8 @@ public class FishSpawner : MonoBehaviour
 
     [Header("Phase Duration")]
     [SerializeField] private float earlyPhaseDuration = 75f;
-    [SerializeField] private float landingNetIntroDuration = 15f;
-    [SerializeField] private float postSecondToolPracticeDuration = 15f;
+
+
     [SerializeField] private float growthPhaseDuration = 105f;
     [SerializeField] private float specialPhaseDuration = 90f;
     [SerializeField] private float miniBossPhaseDuration = 45f;
@@ -354,14 +354,8 @@ public class FishSpawner : MonoBehaviour
             2
         );
 
-        float introDuration =
-            Mathf.Min(
-                landingNetIntroDuration,
-                earlyPhaseDuration
-            );
-
         yield return RunAmbientWindow(
-            introDuration,
+            earlyPhaseDuration,
             AmbientIntensity.Early,
             lowValueFish,
             midValueFish,
@@ -369,54 +363,6 @@ public class FishSpawner : MonoBehaviour
             null,
             null
         );
-
-        yield return RequestToolAcquisition();
-
-        float secondToolPracticeDuration =
-            Mathf.Min(
-                postSecondToolPracticeDuration,
-                Mathf.Max(
-                    0f,
-                    earlyPhaseDuration -
-                    introDuration
-                )
-            );
-
-        float firstToolPracticeDuration =
-            Mathf.Max(
-                0f,
-                earlyPhaseDuration -
-                introDuration -
-                secondToolPracticeDuration
-            );
-
-        yield return RunAmbientWindow(
-            firstToolPracticeDuration,
-            AmbientIntensity.Early,
-            lowValueFish,
-            midValueFish,
-            null,
-            null,
-            null
-        );
-
-        yield return RequestToolAcquisition();
-
-        yield return RunAmbientWindow(
-            secondToolPracticeDuration,
-            AmbientIntensity.Early,
-            lowValueFish,
-            midValueFish,
-            null,
-            null,
-            null
-        );
-
-        if (RunManager.Instance != null)
-        {
-            RunManager.Instance
-                .UnlockAugmentProgression();
-        }
     }
 
     private IEnumerator RequestToolAcquisition()
@@ -474,30 +420,6 @@ public class FishSpawner : MonoBehaviour
             firstLargeSchool,
             18f
         );
-
-        ShowAnnouncement(
-            "1차 전직이 가능합니다.",
-            1.2f
-        );
-
-        yield return new WaitForSeconds(
-            1.2f
-        );
-
-        if (PrototypeJobManager.Instance != null)
-        {
-            PrototypeJobManager.Instance
-                .RequestJobSelection();
-
-            yield return new WaitUntil(
-                () =>
-                    PrototypeJobManager.Instance ==
-                    null
-                    ||
-                    PrototypeJobManager.Instance
-                        .HasAdvanced
-            );
-        }
 
         yield return new WaitForSeconds(
             1f
@@ -626,24 +548,70 @@ public class FishSpawner : MonoBehaviour
             miniBossWarningTime
         );
 
-        SpawnMixedSchool(
-            midValueFish,
-            4,
-            miniBoss,
-            1,
-            0.8f,
-            0.9f
-        );
+        List<FishController> miniBossSchool =
+            SpawnMixedSchool(
+                midValueFish,
+                4,
+                miniBoss,
+                1,
+                0.8f,
+                0.9f
+            );
 
-        yield return RunAmbientWindow(
-            miniBossPhaseDuration,
-            AmbientIntensity.MiniBossSupport,
-            lowValueFish,
-            midValueFish,
-            highValueFish,
-            null,
-            null
-        );
+        FishController spawnedMiniBoss =
+            miniBossSchool.Find(
+                fish =>
+                    fish != null &&
+                    fish.Data != null &&
+                    fish.Data.SpecialType ==
+                    FishSpecialType.MiniBoss
+            );
+
+        Coroutine supportSpawning =
+            StartCoroutine(
+                RunAmbientWindow(
+                    miniBossPhaseDuration,
+                    AmbientIntensity.MiniBossSupport,
+                    lowValueFish,
+                    midValueFish,
+                    highValueFish,
+                    null,
+                    null
+                )
+            );
+
+        float elapsed = 0f;
+
+        while (spawnedMiniBoss != null &&
+               !spawnedMiniBoss.IsCaptured &&
+               elapsed < miniBossPhaseDuration)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+
+        if (supportSpawning != null)
+        {
+            StopCoroutine(
+                supportSpawning
+            );
+        }
+
+        if (spawnedMiniBoss != null &&
+            spawnedMiniBoss.IsCaptured &&
+            PrototypeJobManager.Instance != null)
+        {
+            PrototypeJobManager.Instance
+                .RequestJobSelection();
+
+            yield return new WaitUntil(
+                () =>
+                    PrototypeJobManager.Instance == null
+                    ||
+                    PrototypeJobManager.Instance.HasAdvanced
+            );
+        }
     }
 
     // =========================================================
@@ -1132,7 +1100,7 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 88)
+        if (roll < 80)
         {
             SpawnSchool(
                 lowValueFish,
@@ -1190,7 +1158,7 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 78)
+        if (roll < 65)
         {
             SpawnSchool(
                 lowValueFish,
@@ -1201,7 +1169,7 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 90)
+        if (roll < 83)
         {
             SpawnMixedSchool(
                 midValueFish,
@@ -1277,7 +1245,7 @@ public class FishSpawner : MonoBehaviour
         int roll =
             Random.Range(0, 100);
 
-        if (roll < 20)
+        if (roll < 15)
         {
             SpawnLooseFish(
                 highValueFish,
@@ -1286,7 +1254,7 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 45)
+        if (roll < 35)
         {
             SpawnLooseFish(
                 lowValueFish,
@@ -1295,7 +1263,7 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 65)
+        if (roll < 50)
         {
             SpawnLooseFish(
                 midValueFish,
@@ -1304,7 +1272,7 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 82)
+        if (roll < 65)
         {
             SpawnSchool(
                 lowValueFish,
@@ -1315,7 +1283,7 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 91)
+        if (roll < 82)
         {
             SpawnMixedSchool(
                 lowValueFish,
@@ -1357,7 +1325,7 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 35)
+        if (roll < 30)
         {
             SpawnLooseFish(
                 lowValueFish,
@@ -1366,7 +1334,7 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 55)
+        if (roll < 45)
         {
             SpawnLooseFish(
                 midValueFish,
@@ -1375,7 +1343,7 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 75)
+        if (roll < 60)
         {
             SpawnSchool(
                 lowValueFish,
@@ -1386,7 +1354,7 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 87)
+        if (roll < 80)
         {
             SpawnMixedSchool(
                 lowValueFish,

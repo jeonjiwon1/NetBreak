@@ -54,6 +54,12 @@ public sealed class ToolAcquisitionManager : MonoBehaviour
         }
 
         requestPending = true;
+
+        if (!IsAnotherSelectionOpen())
+        {
+            ShowChoices();
+        }
+
         return true;
     }
 
@@ -88,7 +94,7 @@ public sealed class ToolAcquisitionManager : MonoBehaviour
         }
 
         FinishSelection();
-        RunManager.Instance.NotifyToolAcquired();
+        RunManager.Instance.ResolveLevelUp();
     }
 
     private void ShowChoices()

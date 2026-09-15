@@ -30,6 +30,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
     private bool isGameEnded;
     private bool isSuccess;
+    private float activeRunTime;
 
     public bool IsBossEncounter =>
         isBossEncounter;
@@ -46,6 +47,9 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
     public bool IsFishingStarted =>
         isFishingStarted;
+
+    public float ActiveRunTime =>
+        activeRunTime;
 
     public string ResultTitle
     {
@@ -105,6 +109,14 @@ public class PrototypeGameFlowManager : MonoBehaviour
         }
 
         Instance = this;
+    }
+
+    private void Update()
+    {
+        if (isFishingStarted && !isGameEnded)
+        {
+            activeRunTime += Time.deltaTime;
+        }
     }
 
     // =========================================================

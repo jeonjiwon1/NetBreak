@@ -7,7 +7,7 @@ public class RunManager : MonoBehaviour
     public ToolSlotInput ToolInput { get; private set; }
     public ToolAcquisitionManager ToolAcquisition { get; private set; }
     public bool AreAugmentsUnlocked =>
-        augmentProgressionUnlocked &&
+        currentLevel >= 4 &&
         ToolSlots != null &&
         ToolSlots.OwnedActiveToolCount >= 2;
 
@@ -28,10 +28,9 @@ public class RunManager : MonoBehaviour
 
     private int currentLevel = 1;
     private int currentExp = 0;
-    private int expToNextLevel = 20;
+    private int expToNextLevel = 30;
 
     private bool levelUpPending;
-    private bool augmentProgressionUnlocked;
 
     public int CurrentGold =>
         currentGold;
@@ -229,41 +228,62 @@ public class RunManager : MonoBehaviour
         currentLevel++;
 
         expToNextLevel =
-            Mathf.RoundToInt(
-                expToNextLevel *
-                1.35f
+            CalculateExpRequirement(
+                currentLevel
             );
 
         levelUpPending =
             true;
 
-        TryShowPendingLevelUpChoice();
+        TryShowPendingLevelReward();
     }
 
-    public void NotifyToolAcquired()
+    private int CalculateExpRequirement(
+        int level)
     {
-        TryShowPendingLevelUpChoice();
+        if (level <= 1)
+        {
+            return 30;
+        }
+
+        if (level == 2)
+        {
+            return 80;
+        }
+
+        if (level == 3)
+        {
+            return 120;
+        }
+
+        return Mathf.RoundToInt(
+            120f *
+            Mathf.Pow(
+                1.30f,
+                level - 3
+            )
+        );
     }
 
-    public void UnlockAugmentProgression()
+    private void TryShowPendingLevelReward()
     {
-        if (augmentProgressionUnlocked)
+        if (!levelUpPending)
         {
             return;
         }
 
-        augmentProgressionUnlocked = true;
-        TryShowPendingLevelUpChoice();
-    }
-
-    private void TryShowPendingLevelUpChoice()
-    {
-        if (!levelUpPending || !AreAugmentsUnlocked)
+        if (currentLevel == 2 || currentLevel == 3)
         {
+            if (ToolAcquisition != null)
+            {
+                ToolAcquisition.RequestToolAcquisition();
+            }
+
             return;
         }
 
         if (PrototypeAugmentManager.Instance != null &&
+            AreAugmentsUnlocked &&
             !PrototypeAugmentManager.Instance.IsShowingChoices)
         {
             PrototypeAugmentManager.Instance
