@@ -95,6 +95,11 @@ public class PrototypeGameFlowManager : MonoBehaviour
     {
         get
         {
+            if (isGameEnded && !isSuccess)
+            {
+                return "F";
+            }
+
             float catchRate = 0f;
 
             if (RunManager.Instance != null)

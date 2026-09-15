@@ -144,3 +144,10 @@ FULL RUN #2 수동 검증 및 실측.
 - MiniBoss는 Area 1 중간 관문이다. 본체 포획 성공 시 기존 보상 → Job 선택 → Rush로 진행한다. 본체 도주 또는 Encounter 시간 초과 시 `미니보스 포획 실패`로 Run Failure 처리하며 Job/Rush/Final/Boss를 중단한다. 지원 일반어 Escape는 이 실패 조건과 무관하다.
 - 개발 Test Speed를 기존 `PrototypeGameFlowManager`의 단일 상태로 추가했다. Editor/Development Build에서 F1=x1, F2=x2, F3=x3 및 동일 public Button API를 제공한다. 선택 UI는 0으로 pause하고 종료 시 저장된 배속을 복원한다. 기존 Run Timer는 scaled `Time.deltaTime` 동작을 유지한다.
 - Unity 수동 검증이 필요하며 다음 단계는 Full Run #3다. Codex는 Unity 실행, validation, commit/push를 수행하지 않았다.
+
+## Full Run #3 후 입력 보조 및 실패 등급 보정
+- 확인 결과 MiniBoss 포획 실패는 Run Failure로 정상 종료되었지만, 어획률 97.9%가 반영되어 실패 결과 등급이 S로 표시되었다. 전직 전 반복 LMB 입력의 피로도도 확인했다.
+- 다음 Run용 사용자 Inspector 변경인 낚싯대 Base Max 2→3, MiniBoss Resistance 280→220을 확인했으며 해당 직렬화 값은 그대로 보존한다.
+- 실제 Run Failure는 어획률 통계 계산과 표시는 유지하되 결과 등급을 항상 F로 표시한다. 성공 Run은 기존 어획률 등급 계산을 유지한다.
+- 뜰채는 LMB를 누르고 있는 동안 기존 실제 쿨다운이 준비될 때마다 현재 커서 위치에 다시 사용된다. 기존 단일 클릭, 선택/결과/배치·재배치 포인터 예약 차단과 직업 자동 사용 구조는 유지하며 별도 쿨다운이나 완전 자동화는 추가하지 않았다.
+- 입력 피로도를 낮추는 보조 변경이며 Unity 수동 검증이 필요하다. 다음 단계는 Full Run #4다. Codex는 Unity 실행, Computer Use, validation, commit/push를 수행하지 않았다.

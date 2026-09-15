@@ -2179,7 +2179,7 @@ MonoBehaviour:
   placementPreview: {fileID: 13304390}
   basePlacementCost: 30
   placementCostGrowthMultiplier: 1.5
-  maxActiveRods: 2
+  maxActiveRods: 3
 --- !u!4 &241344188
 Transform:
   m_ObjectHideFlags: 0

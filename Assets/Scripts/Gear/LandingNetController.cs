@@ -89,7 +89,7 @@ public class LandingNetController : MonoBehaviour
         else
         {
             shouldUse =
-                Mouse.current.leftButton.wasPressedThisFrame &&
+                Mouse.current.leftButton.isPressed &&
                 Time.time >= nextAttackTime;
         }
 
