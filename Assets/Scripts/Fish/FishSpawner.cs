@@ -53,6 +53,19 @@ public class FishSpawner : MonoBehaviour
     [SerializeField] private float specialFishWarningTime = 2.5f;
     [SerializeField] private float miniBossWarningTime = 2.5f;
     [SerializeField] private float bossWarningTime = 3f;
+    [Header("Spawn Timing")]
+    [SerializeField] private Vector2 earlyAmbientInterval = new Vector2(2f, 3f);
+    [SerializeField] private Vector2 growthAmbientInterval = new Vector2(1.7f, 2.6f);
+    [SerializeField] private Vector2 specialAmbientInterval = new Vector2(1.5f, 2.4f);
+    [SerializeField] private Vector2 miniBossSupportAmbientInterval = new Vector2(2f, 3f);
+    [SerializeField] private Vector2 rushAmbientInterval = new Vector2(0.9f, 1.6f);
+    [SerializeField] private Vector2 finalAmbientInterval = new Vector2(1.1f, 1.8f);
+
+    [Header("Special Fish")]
+    [Range(0, 100)] [SerializeField] private int growthSpecialFishChancePercent = 20;
+    [Range(0, 100)] [SerializeField] private int specialPhaseSpecialFishChancePercent = 35;
+    [Range(0, 100)] [SerializeField] private int rushSpecialFishChancePercent = 35;
+    [Range(0, 100)] [SerializeField] private int finalSpecialFishChancePercent = 40;
 
     private const int CoastStageCount = 8;
 
@@ -942,40 +955,22 @@ public class FishSpawner : MonoBehaviour
         switch (intensity)
         {
             case AmbientIntensity.Early:
-                return new Vector2(
-                    2f,
-                    3f
-                );
+                return earlyAmbientInterval;
 
             case AmbientIntensity.Growth:
-                return new Vector2(
-                    1.7f,
-                    2.6f
-                );
+                return growthAmbientInterval;
 
             case AmbientIntensity.Special:
-                return new Vector2(
-                    1.5f,
-                    2.4f
-                );
+                return specialAmbientInterval;
 
             case AmbientIntensity.Rush:
-                return new Vector2(
-                    0.9f,
-                    1.6f
-                );
+                return rushAmbientInterval;
 
             case AmbientIntensity.MiniBossSupport:
-                return new Vector2(
-                    2f,
-                    3f
-                );
+                return miniBossSupportAmbientInterval;
 
             case AmbientIntensity.Final:
-                return new Vector2(
-                    1.1f,
-                    1.8f
-                );
+                return finalAmbientInterval;
 
             default:
                 return new Vector2(
@@ -984,7 +979,6 @@ public class FishSpawner : MonoBehaviour
                 );
         }
     }
-
     private void SpawnAmbientEvent(
         AmbientIntensity intensity,
         FishData lowValueFish,
@@ -1120,7 +1114,7 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 80)
+        if (roll < 100 - growthSpecialFishChancePercent)
         {
             SpawnSchool(
                 lowValueFish,
@@ -1178,7 +1172,9 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 65)
+        int specialStart = 100 - specialPhaseSpecialFishChancePercent;
+
+        if (roll < specialStart)
         {
             SpawnSchool(
                 lowValueFish,
@@ -1189,7 +1185,12 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 83)
+        int squidChance = Mathf.RoundToInt(
+            specialPhaseSpecialFishChancePercent *
+            (18f / 35f)
+        );
+
+        if (roll < specialStart + squidChance)
         {
             SpawnMixedSchool(
                 midValueFish,
@@ -1292,7 +1293,9 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 65)
+        int specialStart = 100 - rushSpecialFishChancePercent;
+
+        if (roll < specialStart)
         {
             SpawnSchool(
                 lowValueFish,
@@ -1303,7 +1306,12 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 82)
+        int pufferfishChance = Mathf.RoundToInt(
+            rushSpecialFishChancePercent *
+            (17f / 35f)
+        );
+
+        if (roll < specialStart + pufferfishChance)
         {
             SpawnMixedSchool(
                 lowValueFish,
@@ -1363,7 +1371,9 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 60)
+        int specialStart = 100 - finalSpecialFishChancePercent;
+
+        if (roll < specialStart)
         {
             SpawnSchool(
                 lowValueFish,
@@ -1374,7 +1384,11 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (roll < 80)
+        int pufferfishChance = Mathf.RoundToInt(
+            finalSpecialFishChancePercent * 0.5f
+        );
+
+        if (roll < specialStart + pufferfishChance)
         {
             SpawnMixedSchool(
                 lowValueFish,

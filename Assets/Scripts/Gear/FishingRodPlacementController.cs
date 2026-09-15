@@ -14,10 +14,14 @@ public class FishingRodPlacementController : MonoBehaviour
     [SerializeField] private FishingRodController rodPrefab;
     [SerializeField] private Transform placementPreview;
 
-    [Header("Placement")]
+    [Header("Placement Economy")]
     [SerializeField] private int basePlacementCost = 25;
     [SerializeField] private float placementCostGrowthMultiplier = 1.5f;
     [SerializeField] private int maxActiveRods = 2;
+
+    [Header("Fishing Specialist Balance")]
+    [Min(1)] [SerializeField] private int anglerMaxActiveRods = 12;
+    [Min(0f)] [SerializeField] private float anglerPlacementCostMultiplier = 0.7f;
 
     private Camera mainCamera;
 
@@ -324,9 +328,9 @@ public class FishingRodPlacementController : MonoBehaviour
         maxActiveRods =
             Mathf.Max(
                 maxActiveRods,
-                12
+                anglerMaxActiveRods
             );
 
-        costMultiplier *= 0.7f;
+        costMultiplier *= anglerPlacementCostMultiplier;
     }
 }

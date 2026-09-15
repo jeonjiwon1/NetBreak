@@ -2180,6 +2180,8 @@ MonoBehaviour:
   basePlacementCost: 30
   placementCostGrowthMultiplier: 1.5
   maxActiveRods: 3
+  anglerMaxActiveRods: 12
+  anglerPlacementCostMultiplier: 0.9
 --- !u!4 &241344188
 Transform:
   m_ObjectHideFlags: 0
@@ -6130,6 +6132,7 @@ MonoBehaviour:
   capturePower: 15
   captureRadius: 1
   cooldown: 7
+  maxCharges: 1
   refundThreshold: 8
   refundAmount: 2
   castVisual: {fileID: 214365347}
@@ -10348,6 +10351,16 @@ MonoBehaviour:
   specialFishWarningTime: 4
   miniBossWarningTime: 2.5
   bossWarningTime: 3
+  earlyAmbientInterval: {x: 2, y: 3}
+  growthAmbientInterval: {x: 1.7, y: 2.6}
+  specialAmbientInterval: {x: 1.5, y: 2.4}
+  miniBossSupportAmbientInterval: {x: 2, y: 3}
+  rushAmbientInterval: {x: 0.9, y: 1.6}
+  finalAmbientInterval: {x: 1.1, y: 1.8}
+  growthSpecialFishChancePercent: 20
+  specialPhaseSpecialFishChancePercent: 35
+  rushSpecialFishChancePercent: 35
+  finalSpecialFishChancePercent: 40
 --- !u!4 &1679640294
 Transform:
   m_ObjectHideFlags: 0
@@ -12163,6 +12176,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RunManager
   startingGold: 0
+  level2ExpRequirement: 30
+  level3ExpRequirement: 80
+  level4ExpRequirement: 120
+  level4PlusBaseExpRequirement: 120
+  level4PlusGrowthMultiplier: 1.3
 --- !u!4 &1986760358
 Transform:
   m_ObjectHideFlags: 0

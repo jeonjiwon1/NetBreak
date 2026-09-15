@@ -8,6 +8,7 @@ public class CastNetController : MonoBehaviour
     [SerializeField] private float capturePower = 15f;
     [SerializeField] private float captureRadius = 1f;
     [SerializeField] private float cooldown = 7f;
+    [Min(1)] [SerializeField] private int maxCharges = 1;
 
     [Header("Mass Catch Refund")]
     [SerializeField] private int refundThreshold = 8;
@@ -19,8 +20,7 @@ public class CastNetController : MonoBehaviour
 
     private Camera mainCamera;
 
-    private int maxCharges = 1;
-    private int currentCharges = 1;
+    private int currentCharges;
     private float rechargeTimer;
 
     private bool isAiming;
@@ -70,6 +70,8 @@ public class CastNetController : MonoBehaviour
 
     private void Awake()
     {
+        currentCharges = maxCharges;
+
         mainCamera = Camera.main;
 
         if (castVisual != null)

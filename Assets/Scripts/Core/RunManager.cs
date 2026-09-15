@@ -20,6 +20,13 @@ public class RunManager : MonoBehaviour
     [Header("Starting Resources")]
     [SerializeField] private int startingGold = 60;
 
+    [Header("Experience Balance")]
+    [Min(1)] [SerializeField] private int level2ExpRequirement = 30;
+    [Min(1)] [SerializeField] private int level3ExpRequirement = 80;
+    [Min(1)] [SerializeField] private int level4ExpRequirement = 120;
+    [Min(1)] [SerializeField] private int level4PlusBaseExpRequirement = 120;
+    [Min(0.01f)] [SerializeField] private float level4PlusGrowthMultiplier = 1.30f;
+
     private int currentGold;
     private int capturedFishCount;
 
@@ -28,7 +35,7 @@ public class RunManager : MonoBehaviour
 
     private int currentLevel = 1;
     private int currentExp = 0;
-    private int expToNextLevel = 30;
+    private int expToNextLevel;
 
     private bool levelUpPending;
 
@@ -89,6 +96,9 @@ public class RunManager : MonoBehaviour
 
         currentGold =
             startingGold;
+
+        expToNextLevel =
+            level2ExpRequirement;
     }
 
     private void Update()
@@ -243,23 +253,23 @@ public class RunManager : MonoBehaviour
     {
         if (level <= 1)
         {
-            return 30;
+            return level2ExpRequirement;
         }
 
         if (level == 2)
         {
-            return 80;
+            return level3ExpRequirement;
         }
 
         if (level == 3)
         {
-            return 120;
+            return level4ExpRequirement;
         }
 
         return Mathf.RoundToInt(
-            120f *
+            level4PlusBaseExpRequirement *
             Mathf.Pow(
-                1.30f,
+                level4PlusGrowthMultiplier,
                 level - 3
             )
         );
