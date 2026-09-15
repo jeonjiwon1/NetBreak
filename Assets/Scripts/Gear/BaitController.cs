@@ -23,6 +23,12 @@ public class BaitController : MonoBehaviour
 
     public Vector2 Position => transform.position;
     public float AttractionRadius => attractionRadius;
+    public float RemainingCooldown =>
+        Mathf.Max(0f, cooldownTimer);
+    public float CooldownNormalized =>
+        cooldown > 0f
+            ? Mathf.Clamp01(RemainingCooldown / cooldown)
+            : 0f;
 
     private void Awake()
     {

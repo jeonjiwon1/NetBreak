@@ -22,6 +22,14 @@ public class LandingNetController : MonoBehaviour
     private bool chainCaptureEnabled;
     private bool autoUseEnabled;
 
+    public float RemainingCooldown =>
+        Mathf.Max(0f, nextAttackTime - Time.time);
+
+    public float CooldownNormalized =>
+        attackCooldown > 0f
+            ? Mathf.Clamp01(RemainingCooldown / attackCooldown)
+            : 0f;
+
     private void Awake()
     {
         mainCamera = Camera.main;

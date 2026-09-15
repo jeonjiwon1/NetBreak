@@ -954,24 +954,39 @@ public class FishSpawner : MonoBehaviour
         switch (intensity)
         {
             case AmbientIntensity.Early:
+                return new Vector2(
+                    2f,
+                    3f
+                );
+
             case AmbientIntensity.Growth:
+                return new Vector2(
+                    1.7f,
+                    2.6f
+                );
+
             case AmbientIntensity.Special:
+                return new Vector2(
+                    1.5f,
+                    2.4f
+                );
+
             case AmbientIntensity.Rush:
                 return new Vector2(
-                    6f,
-                    8f
+                    0.9f,
+                    1.6f
                 );
 
             case AmbientIntensity.MiniBossSupport:
                 return new Vector2(
-                    7f,
-                    9f
+                    2f,
+                    3f
                 );
 
             case AmbientIntensity.Final:
                 return new Vector2(
-                    5f,
-                    7f
+                    1.1f,
+                    1.8f
                 );
 
             default:

@@ -93,7 +93,16 @@
 - `RunManager`에 진행 기반 Augment 잠금을 추가했다. 두 도구 소유 조건과 별도로 위 페이싱이 끝날 때 잠금을 해제하며, 그동안 쌓인 EXP와 보류된 레벨업은 유지된다.
 - STEP 10A 검증은 ESC 복원 직후 합성 입력의 물리 위치를 동기화하고 중립 프레임을 둔다. 또한 STEP 10E 진행 잠금을 검증 내부에서만 해제한 뒤 선택창 입력 차단을 확인한다. `GearRepositionController`, `ToolSlotInput`, `RunToolLoadout` 및 배치·입력 Gameplay 코드는 변경하지 않았다.
 - Unity 6000.3.11f1 스크립트 컴파일과 Console Error 0개를 확인했다. STEP 10A 입력 회귀 33개와 STEP 10B~10E 통합 검증 32개가 통과했다. Ctrl+LMB Gear Reposition의 그물 선택·재배치는 사용자 수동 검증에서도 정상임을 확인했다.
-- 알려진 문제: 현재 Tool Acquisition 후보는 고정 순서라 첫 선택에서 낚싯대가 나오지 않을 수 있다.
+
+## 최근 변경 — Pre-full-run cleanup
+- STEP 10E 완료 상태는 유지된다.
+- Tool Acquisition은 현재 구현된 Active Tool 중 현재 Run에서 미소유인 도구 풀을 임시 목록으로 만들고, 마스터 사용 가능 목록을 변경하지 않은 채 최대 3개를 무작위·중복 없이 제시한다. 남은 유효 도구가 3개 미만이면 그 도구만 후보가 되며, Tool Acquisition 리롤은 의도적으로 추가하지 않았다.
+- Coast의 일반 Ambient Spawn Event 간격을 임시 1차 조정했다: Early 2.0~3.0초, Growth 1.7~2.6초, Special 1.5~2.4초, MiniBossSupport 2.0~3.0초, Rush 0.9~1.6초, Final 1.1~1.8초.
+- Spawn 수량·어종 구성·어군 크기·Boss/MiniBoss·풀링·보상 및 밸런스 구조는 재설계하지 않았다. 진지한 스폰/밸런스 결정은 측정된 전체 Run 테스트 이후로 미룬다.
+- Bottom-center Hotbar에 뜰채·미끼·투망 쿨다운 Fill을 추가했다. 미끼와 투망은 실제 배치된 Q/W/E/R 슬롯을 따라가며 쿨다운 중 남은 초도 표시한다.
+- 쿨다운 UI는 각 Controller의 기존 실제 쿨다운 타이머를 읽으며 독립 HUD 타이머를 만들지 않는다. 기존 효과로 실제 쿨다운이 바뀌면 같은 상태가 즉시 반영된다.
+- 기존 좌측 `CastNetText`의 고정 키·준비/쿨다운 표시는 비활성화해 동적 Hotbar를 유일한 플레이어 노출 투망 상태 표시로 사용한다. Gold·포획·어획률·Level·EXP·구간 등 Run HUD는 유지한다.
+- 이번 정리는 코드 구현만 수행했으며 Unity 컴파일, Console, Play Mode 및 자동 검증을 실행하지 않았다. 수동 Unity 검증이 필요하다.
 
 ## 다음 정확한 단계
-Tool Acquisition 후보를 랜덤화한 뒤 STEP 11 measured full-run testing을 진행한다.
+Manual pre-full-run validation → STEP 11 measured full-run testing.

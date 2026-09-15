@@ -104,14 +104,26 @@ public sealed class ToolAcquisitionManager : MonoBehaviour
     private void GenerateChoices()
     {
         RunToolLoadout loadout = RunManager.Instance.ToolSlots;
-        int choiceIndex = 0;
-        for (int i = 0; i < availableTools.Count && choiceIndex < currentChoices.Length; i++)
+        List<ToolId> candidates = new();
+
+        for (int i = 0; i < availableTools.Count; i++)
         {
             ToolId tool = availableTools[i];
             if (!loadout.OwnsTool(tool))
             {
-                currentChoices[choiceIndex++] = tool;
+                candidates.Add(tool);
             }
+        }
+
+        int choiceIndex = 0;
+        int choiceCount = Mathf.Min(currentChoices.Length, candidates.Count);
+        while (choiceIndex < choiceCount)
+        {
+            int selectedIndex = Random.Range(choiceIndex, candidates.Count);
+            (candidates[choiceIndex], candidates[selectedIndex]) =
+                (candidates[selectedIndex], candidates[choiceIndex]);
+            currentChoices[choiceIndex] = candidates[choiceIndex];
+            choiceIndex++;
         }
 
         while (choiceIndex < currentChoices.Length)

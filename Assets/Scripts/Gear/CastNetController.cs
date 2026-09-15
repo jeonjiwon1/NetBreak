@@ -42,6 +42,11 @@ public class CastNetController : MonoBehaviour
     public float CooldownTimer =>
         Mathf.Max(0f, rechargeTimer);
 
+    public float CooldownNormalized =>
+        cooldown > 0f
+            ? Mathf.Clamp01(CooldownTimer / cooldown)
+            : 0f;
+
     public int CurrentCharges =>
         currentCharges;
 

@@ -162,24 +162,27 @@ public static class ToolAcquisitionValidation
         };
         Require(panel.activeSelf && acquisition.IsChoosingTool && acquisition.CanSelect,
             "뜰채 전용 도입 뒤 첫 획득 선택 UI 표시");
-        Require(Enumerable.Range(0, 3).All(i => acquisition.GetChoice(i) != ToolId.None &&
-            buttons[i].interactable && !string.IsNullOrWhiteSpace(texts[i].text)), "유효한 한국어 도구 선택지 3개");
-        Require(texts[0].text.Contains("미끼") && texts[1].text.Contains("그물") && texts[2].text.Contains("투망"),
-            "첫 선택지 한국어 표시");
+        ToolId[] firstChoices = Enumerable.Range(0, 3).Select(acquisition.GetChoice).ToArray();
+        Require(firstChoices.All(tool => tool != ToolId.None && !slots.OwnsTool(tool)) &&
+            firstChoices.Distinct().Count() == firstChoices.Length &&
+            buttons.All(button => button.interactable) &&
+            texts.All(text => !string.IsNullOrWhiteSpace(text.text)),
+            "첫 선택은 유효한 미소유 도구 3개를 중복 없이 표시");
 
+        ToolId firstTool = firstChoices[0];
         buttons[0].onClick.Invoke();
         yield return null;
-        Require(slots.OwnsTool(ToolId.Bait) && slots.GetSlot(0) == ToolId.Bait &&
+        Require(slots.OwnsTool(firstTool) && slots.GetSlot(0) == firstTool &&
             Enumerable.Range(1, 3).All(i => slots.GetSlot(i) == ToolId.None), "첫 획득은 Q 빈 슬롯에 배치");
-        Require(hotbarSlotTexts[1].text.Contains("[Q]") && hotbarSlotTexts[1].text.Contains("미끼") &&
+        Require(hotbarSlotTexts[1].text.Contains("[Q]") && hotbarSlotTexts[1].text.Contains(GetToolName(firstTool)) &&
             hotbarSlotTexts[2].text.Contains("[W]") && hotbarSlotTexts[2].text.Contains("비어 있음"),
             "첫 획득 Hotbar Q 갱신");
         yield return Send(point, 0);
-        Require(ToolSlotInput.GetBindingLabel(ToolId.Bait) == "Q",
-            "획득한 미끼의 실제 입력 바인딩은 Q");
+        Require(ToolSlotInput.GetBindingLabel(firstTool) == "Q",
+            "첫 획득 도구의 실제 입력 바인딩은 Q");
 
         yield return Send(point, 0, Key.Q);
-        Require(bait.IsActive, "첫 도구 연습 구간에서 실제 Q 사용");
+        Require(IsToolActive(firstTool, bait, net, cast, rod), "첫 도구 연습 구간에서 실제 Q 사용");
         yield return new WaitForSecondsRealtime(0.1f);
         Require(!acquisition.IsAcquisitionPending,
             "첫 획득 직후 두 번째 획득을 연속 표시하지 않음");
@@ -196,12 +199,14 @@ public static class ToolAcquisitionValidation
             $"(choosing={acquisition.IsChoosingTool}, pending={acquisition.IsAcquisitionPending}, " +
             $"canSelect={acquisition.CanSelect}, stage={spawner.CurrentStageIndex}, " +
             $"owned={slots.OwnedActiveToolCount}, timeScale={Time.timeScale})");
-        Require(Enumerable.Range(0, 3).All(i => acquisition.GetChoice(i) != ToolId.Bait &&
-            acquisition.GetChoice(i) != ToolId.None), "두 번째 선택에서 소유 도구 제외");
-        ToolId secondTool = acquisition.GetChoice(0);
+        ToolId[] secondChoices = Enumerable.Range(0, 3).Select(acquisition.GetChoice).ToArray();
+        Require(secondChoices.All(tool => tool != ToolId.None && !slots.OwnsTool(tool)) &&
+            secondChoices.Distinct().Count() == secondChoices.Length,
+            "두 번째 선택은 미소유 도구만 중복 없이 표시");
+        ToolId secondTool = secondChoices[0];
         buttons[0].onClick.Invoke();
         yield return null;
-        Require(slots.OwnsTool(secondTool) && slots.GetSlot(1) == secondTool && slots.GetSlot(0) == ToolId.Bait,
+        Require(slots.OwnsTool(secondTool) && slots.GetSlot(1) == secondTool && slots.GetSlot(0) == firstTool,
             "두 번째 획득은 W 빈 슬롯에 배치");
         Require(hotbarSlotTexts[1].text.Contains("[Q]") && hotbarSlotTexts[1].text.Contains("미끼") &&
             hotbarSlotTexts[2].text.Contains("[W]") &&
@@ -211,10 +216,10 @@ public static class ToolAcquisitionValidation
             "두 번째 획득 직후 증강 미표시 및 보류 레벨 보존");
 
         yield return Send(point, 0, Key.W);
-        Require(NetPlacementController.IsNetModeActive,
+        Require(IsToolActive(secondTool, bait, net, cast, rod),
             "두 번째 도구 연습 구간에서 실제 W 사용");
         yield return Send(point, 2);
-        Require(!NetPlacementController.IsNetModeActive,
+        Require(!IsToolActive(secondTool, bait, net, cast, rod),
             "두 번째 도구 ESC/RMB 취소 유지");
 
         yield return new WaitForSecondsRealtime(0.1f);
@@ -311,6 +316,23 @@ public static class ToolAcquisitionValidation
             ToolId.CastNet => "투망",
             ToolId.FishingRod => "낚싯대",
             _ => ""
+        };
+    }
+
+    private static bool IsToolActive(
+        ToolId tool,
+        BaitController bait,
+        NetPlacementController net,
+        CastNetController cast,
+        FishingRodPlacementController rod)
+    {
+        return tool switch
+        {
+            ToolId.Bait => bait.IsActive,
+            ToolId.Net => NetPlacementController.IsNetModeActive,
+            ToolId.CastNet => cast.IsAiming,
+            ToolId.FishingRod => FishingRodPlacementController.IsRodModeActive,
+            _ => false
         };
     }
 

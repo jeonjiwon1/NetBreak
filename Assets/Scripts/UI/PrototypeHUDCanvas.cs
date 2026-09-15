@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class PrototypeHUDCanvas : MonoBehaviour
@@ -21,7 +22,8 @@ public class PrototypeHUDCanvas : MonoBehaviour
     [SerializeField] private TMP_Text phaseText;
 
     [Header("Hotbar")]
-    [SerializeField] private TMP_Text castNetText;
+    [FormerlySerializedAs("castNetText")]
+    [SerializeField] private TMP_Text legacyCastNetText;
 
     [Header("Job")]
     [SerializeField] private TMP_Text jobText;
@@ -40,10 +42,19 @@ public class PrototypeHUDCanvas : MonoBehaviour
 
     private readonly TMP_Text[] hotbarSlotTexts =
         new TMP_Text[RunToolLoadout.SlotCount + 1];
+    private readonly Image[] hotbarCooldownOverlays =
+        new Image[RunToolLoadout.SlotCount + 1];
     private RectTransform hotbarRoot;
+    private LandingNetController landingNet;
+    private BaitController bait;
 
     private void Awake()
     {
+        landingNet = FindFirstObjectByType<LandingNetController>();
+        bait = BaitController.Instance != null
+            ? BaitController.Instance
+            : FindFirstObjectByType<BaitController>();
+
         BuildHotbar();
 
         if (startFishingButton != null)
@@ -157,7 +168,7 @@ public class PrototypeHUDCanvas : MonoBehaviour
 
     private void BuildHotbar()
     {
-        if (castNetText == null)
+        if (legacyCastNetText == null)
         {
             return;
         }
@@ -192,14 +203,18 @@ public class PrototypeHUDCanvas : MonoBehaviour
                 : ActiveSlotBindings[i - 1];
             hotbarSlotTexts[i] = CreateHotbarSlot(
                 binding,
-                i == 0
+                i == 0,
+                i
             );
         }
+
+        legacyCastNetText.gameObject.SetActive(false);
     }
 
     private TMP_Text CreateHotbarSlot(
         string binding,
-        bool isFixedTool)
+        bool isFixedTool,
+        int slotIndex)
     {
         GameObject slotObject = new GameObject(
             $"HotbarSlot_{binding}",
@@ -222,19 +237,30 @@ public class PrototypeHUDCanvas : MonoBehaviour
         layoutElement.preferredWidth = 205f;
         layoutElement.preferredHeight = 84f;
 
-        TMP_Text slotText;
-        if (isFixedTool)
-        {
-            slotText = castNetText;
-            slotText.transform.SetParent(slotObject.transform, false);
-        }
-        else
-        {
-            slotText = Instantiate(
-                castNetText,
-                slotObject.transform
-            );
-        }
+        GameObject overlayObject = new GameObject(
+            $"HotbarCooldown_{binding}",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image)
+        );
+        overlayObject.layer = gameObject.layer;
+        overlayObject.transform.SetParent(slotObject.transform, false);
+
+        Image overlay = overlayObject.GetComponent<Image>();
+        overlay.color = new Color(0.02f, 0.04f, 0.08f, 0.72f);
+        overlay.raycastTarget = false;
+        hotbarCooldownOverlays[slotIndex] = overlay;
+
+        RectTransform overlayRect = overlay.rectTransform;
+        overlayRect.anchorMin = new Vector2(0f, 1f);
+        overlayRect.anchorMax = Vector2.one;
+        overlayRect.offsetMin = Vector2.zero;
+        overlayRect.offsetMax = Vector2.zero;
+
+        TMP_Text slotText = Instantiate(
+            legacyCastNetText,
+            slotObject.transform
+        );
 
         slotText.gameObject.name = $"HotbarText_{binding}";
         slotText.raycastTarget = false;
@@ -266,27 +292,34 @@ public class PrototypeHUDCanvas : MonoBehaviour
 
         hotbarSlotTexts[0].text =
             "[LMB]\n뜰채\n고정 도구";
+        SetCooldownOverlay(
+            0,
+            landingNet != null
+                ? landingNet.CooldownNormalized
+                : 0f
+        );
 
         for (int i = 0; i < RunToolLoadout.SlotCount; i++)
         {
+            ToolId tool = loadout != null
+                ? loadout.GetSlot(i)
+                : ToolId.None;
             hotbarSlotTexts[i + 1].text =
                 GetSlotText(
-                    loadout,
-                    i,
+                    tool,
                     ActiveSlotBindings[i]
                 );
+            SetCooldownOverlay(
+                i + 1,
+                GetCooldownNormalized(tool)
+            );
         }
     }
 
     private string GetSlotText(
-        RunToolLoadout loadout,
-        int slotIndex,
+        ToolId tool,
         string binding)
     {
-        ToolId tool = loadout != null
-            ? loadout.GetSlot(slotIndex)
-            : ToolId.None;
-
         return tool == ToolId.None
             ? $"[{binding}]\n비어 있음"
             : $"[{binding}]\n{GetToolStatus(tool)}";
@@ -294,6 +327,13 @@ public class PrototypeHUDCanvas : MonoBehaviour
 
     private string GetToolStatus(ToolId tool)
     {
+        if (tool == ToolId.Bait && bait != null)
+        {
+            return bait.RemainingCooldown > 0f
+                ? $"미끼\n{bait.RemainingCooldown:F1}초"
+                : "미끼";
+        }
+
         if (tool != ToolId.CastNet || castNet == null)
         {
             return GetToolName(tool);
@@ -312,6 +352,35 @@ public class PrototypeHUDCanvas : MonoBehaviour
         return castNet.IsReady
             ? "투망\n준비 완료"
             : $"투망\n{castNet.CooldownTimer:F1}초";
+    }
+
+    private float GetCooldownNormalized(ToolId tool)
+    {
+        return tool switch
+        {
+            ToolId.Bait when bait != null => bait.CooldownNormalized,
+            ToolId.CastNet when castNet != null => castNet.CooldownNormalized,
+            _ => 0f
+        };
+    }
+
+    private void SetCooldownOverlay(
+        int slotIndex,
+        float normalizedCooldown)
+    {
+        Image overlay = hotbarCooldownOverlays[slotIndex];
+        if (overlay == null)
+        {
+            return;
+        }
+
+        float fill = Mathf.Clamp01(normalizedCooldown);
+        RectTransform overlayRect = overlay.rectTransform;
+        overlayRect.anchorMin = new Vector2(0f, 1f - fill);
+        overlayRect.anchorMax = Vector2.one;
+        overlayRect.offsetMin = Vector2.zero;
+        overlayRect.offsetMax = Vector2.zero;
+        overlay.enabled = fill > 0f;
     }
 
     private static string GetToolName(ToolId tool)
