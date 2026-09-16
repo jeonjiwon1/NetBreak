@@ -88,6 +88,15 @@ Lv4부터는 매 레벨 강제 팝업을 띄우지 않는다. `레벨 업! / 숙
 
 **현재 Random Augment와 Job의 미래:** 기존 도구 증강은 Tree 노드로, 전체 빌드 시너지는 필요하면 아이템으로 이전한다. 기존 Angler/Job 수치 중 유효한 것은 Tool Tree의 노드/분기로 흡수한다. 새 Tree와 구 레벨업 Augment·Job을 최종적으로 동시에 운영하지 않는다. 그러나 G1에서는 기존 시스템을 삭제하거나 전환하지 않는다. 마이그레이션 시점을 명시한 뒤 단계적으로 바꾼다.
 
+### G2+G3 Vertical Slice 확정 콘텐츠
+
+- Lv2 Core와 Lv3 Partner는 최종 양면 Tree 화면 안에서 처리하며, 각 `?` 루트 구매 비용은 기본 1P다. 필수 획득 중에는 닫기·Escape·Tab으로 이탈할 수 없고 확정 뒤에는 일반 Tree 탐색 상태가 되어 자유롭게 닫을 수 있다.
+- Tree는 기본 `Tab` 또는 HUD Button으로 열며 열려 있는 동안 일시정지한다. 좌우 콘텐츠는 각자의 `RectTransform`을 드래그하고 휠로 확대·축소한다. 확대 범위·감도는 `SkillTreePanZoom`에서 조절한다.
+- 현재 VS 기본 트리는 도구별 2개 노드로 작게 시작한다. 주 노드는 3랭크(비용 1/2/3), 보조 노드는 주 노드 1랭크를 요구한다. 주 노드 3랭크는 해역 2 도달 조건을 표시해 장기 Max Rank와 현재 허용 Rank Cap의 차이를 검증하지만 해역 2 콘텐츠를 구현하지 않는다.
+- 낚싯대: 포획력 다중 랭크 + 선행 포획력 뒤 범위. 그물: 최대 길이 다중 랭크 + 선행 길이 뒤 설치 상한. 투망: 포획력 다중 랭크 + 선행 포획력 뒤 반경. 미끼: 유인 반경 다중 랭크 + 선행 반경 뒤 지속시간.
+- `SkillTreeDefinition` 에셋은 같은 Tool/Role 조합의 내장 VS 기본 정의를 대체할 수 있다. 에셋이 없어도 내장 정의로 기능하며, 에셋을 사용하면 비용·효과·랭크 조건을 데이터로 튜닝한다.
+- 기존 Random Augment의 `FishingRodPower/Range`, `NetLength`, `CastNetPower/Radius`, `BaitRadius/Duration`에 대응하는 효과를 Tree로 이전했다. 레벨업 Random Augment 호출은 중단한다. Landing Net 계열, Cast Net Cooldown/Full Haul, Fishing Rod Speed/Extra Hook은 기존 소스만 남고 현재 레벨 보상에서는 휴면이다. Job은 G4 전 임시 흐름을 유지한다.
+
 ---
 
 ## 6. E 전술 액티브와 R 궁극기

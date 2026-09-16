@@ -35,6 +35,7 @@ public sealed class ToolSlotInput
     }
 
     public static bool IsSelectionOrEndBlocked =>
+        (SkillTreeManager.Instance != null && SkillTreeManager.Instance.IsOpen) ||
         (ToolAcquisitionManager.Instance != null && ToolAcquisitionManager.Instance.IsChoosingTool) ||
         (PrototypeAugmentManager.Instance != null && PrototypeAugmentManager.Instance.IsChoosingAugment) ||
         (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob) ||

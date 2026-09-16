@@ -29,6 +29,7 @@ public sealed class RunGrowthState
     public ToolId SelectedPartnerTool => partnerTree.Tool;
     public int AvailableMasteryPoints { get; private set; }
     public int SpentMasteryPoints { get; private set; }
+    public event Action<int> AvailableMasteryPointsChanged;
 
     public RunSkillTreeProgress GetTree(GrowthToolRole role) => role switch
     {
@@ -67,6 +68,45 @@ public sealed class RunGrowthState
         return true;
     }
 
+    public bool CanAcquireTool(
+        GrowthToolRole role,
+        ToolId tool,
+        int masteryPointCost)
+    {
+        if (!Enum.IsDefined(typeof(GrowthToolRole), role) ||
+            !IsActiveTool(tool) ||
+            !CanSpendMasteryPoints(masteryPointCost))
+        {
+            return false;
+        }
+
+        RunSkillTreeProgress target = GetTree(role);
+        RunSkillTreeProgress other = GetTree(
+            role == GrowthToolRole.Core
+                ? GrowthToolRole.Partner
+                : GrowthToolRole.Core);
+
+        return target.Tool == ToolId.None && other.Tool != tool;
+    }
+
+    public bool TryAcquireTool(
+        GrowthToolRole role,
+        ToolId tool,
+        int masteryPointCost)
+    {
+        if (!CanAcquireTool(role, tool, masteryPointCost) ||
+            masteryPointCost > int.MaxValue - SpentMasteryPoints)
+        {
+            return false;
+        }
+
+        AvailableMasteryPoints -= masteryPointCost;
+        SpentMasteryPoints += masteryPointCost;
+        GetTree(role).SelectTool(tool);
+        AvailableMasteryPointsChanged?.Invoke(AvailableMasteryPoints);
+        return true;
+    }
+
     public bool TryGrantMasteryPoints(int amount)
     {
         if (amount <= 0 || amount > int.MaxValue - AvailableMasteryPoints)
@@ -75,6 +115,7 @@ public sealed class RunGrowthState
         }
 
         AvailableMasteryPoints += amount;
+        AvailableMasteryPointsChanged?.Invoke(AvailableMasteryPoints);
         return true;
     }
 
@@ -91,6 +132,7 @@ public sealed class RunGrowthState
 
         AvailableMasteryPoints -= amount;
         SpentMasteryPoints += amount;
+        AvailableMasteryPointsChanged?.Invoke(AvailableMasteryPoints);
         return true;
     }
 

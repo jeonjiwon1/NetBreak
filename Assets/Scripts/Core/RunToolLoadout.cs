@@ -20,6 +20,14 @@ public sealed class RunToolLoadout
 
     public bool OwnsTool(ToolId tool) => ownedTools.Contains(tool);
 
+    public bool CanAcquireToolAt(int index, ToolId tool) =>
+        index >= 0 && index < SlotCount &&
+        slots[index] == ToolId.None &&
+        tool != ToolId.None &&
+        tool != ToolId.LandingNet &&
+        Enum.IsDefined(typeof(ToolId), tool) &&
+        !ownedTools.Contains(tool);
+
     public int FindFirstEmptySlot() => Array.IndexOf(slots, ToolId.None);
 
     public bool TryAcquireTool(ToolId tool)
@@ -33,6 +41,19 @@ public sealed class RunToolLoadout
 
         ownedTools.Add(tool);
         slots[emptySlot] = tool;
+        Revision++;
+        return true;
+    }
+
+    public bool TryAcquireToolAt(int index, ToolId tool)
+    {
+        if (!CanAcquireToolAt(index, tool))
+        {
+            return false;
+        }
+
+        ownedTools.Add(tool);
+        slots[index] = tool;
         Revision++;
         return true;
     }

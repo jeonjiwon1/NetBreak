@@ -6,11 +6,9 @@ public class RunManager : MonoBehaviour
     public RunToolLoadout ToolSlots { get; private set; }
     public RunGrowthState GrowthState { get; private set; }
     public ToolSlotInput ToolInput { get; private set; }
-    public ToolAcquisitionManager ToolAcquisition { get; private set; }
-    public bool AreAugmentsUnlocked =>
-        currentLevel >= 4 &&
-        ToolSlots != null &&
-        ToolSlots.OwnedActiveToolCount >= 2;
+    public SkillTreeManager SkillTree { get; private set; }
+    // Legacy manager reads this guard. Random level-up Augments are retired by G3.
+    public bool AreAugmentsUnlocked => false;
 
     public static RunManager Instance
     {
@@ -27,6 +25,9 @@ public class RunManager : MonoBehaviour
     [Min(1)] [SerializeField] private int level4ExpRequirement = 120;
     [Min(1)] [SerializeField] private int level4PlusBaseExpRequirement = 120;
     [Min(0.01f)] [SerializeField] private float level4PlusGrowthMultiplier = 1.30f;
+
+    [Header("Growth Rewards")]
+    [Min(1)] [SerializeField] private int masteryPointsPerLevel = 1;
 
     private int currentGold;
     private int capturedFishCount;
@@ -90,10 +91,10 @@ public class RunManager : MonoBehaviour
         ToolSlots = new RunToolLoadout();
         GrowthState = new RunGrowthState();
         ToolInput = new ToolSlotInput(ToolSlots);
-        ToolAcquisition = GetComponent<ToolAcquisitionManager>();
-        if (ToolAcquisition == null)
+        SkillTree = GetComponent<SkillTreeManager>();
+        if (SkillTree == null)
         {
-            ToolAcquisition = gameObject.AddComponent<ToolAcquisitionManager>();
+            SkillTree = gameObject.AddComponent<SkillTreeManager>();
         }
 
         currentGold =
@@ -239,6 +240,8 @@ public class RunManager : MonoBehaviour
 
         currentLevel++;
 
+        GrowthState.TryGrantMasteryPoints(masteryPointsPerLevel);
+
         expToNextLevel =
             CalculateExpRequirement(
                 currentLevel
@@ -286,21 +289,25 @@ public class RunManager : MonoBehaviour
 
         if (currentLevel == 2 || currentLevel == 3)
         {
-            if (ToolAcquisition != null)
+            if (SkillTree != null)
             {
-                ToolAcquisition.RequestToolAcquisition();
+                SkillTree.RequestMandatoryAcquisition(
+                    currentLevel == 2
+                        ? GrowthToolRole.Core
+                        : GrowthToolRole.Partner);
             }
 
             return;
         }
 
-        if (PrototypeAugmentManager.Instance != null &&
-            AreAugmentsUnlocked &&
-            !PrototypeAugmentManager.Instance.IsShowingChoices)
+        if (SkillTree != null)
         {
-            PrototypeAugmentManager.Instance
-                .ShowChoices();
+            SkillTree.NotifyMasteryPointGranted(
+                masteryPointsPerLevel);
         }
+
+
+        ResolveLevelUp();
     }
 
     public void ResolveLevelUp()

@@ -168,3 +168,29 @@ FULL RUN #2 수동 검증 및 실측.
 - 변경 파일: `Assets/Scripts/Core/RunGrowthState.cs`, `Assets/Scripts/Core/SkillTreeDefinition.cs`, `Assets/Scripts/Core/RunManager.cs`, `NETBREAK_STATE.md`. Scene/Prefab/기존 `.asset`/밸런스/Inspector 값은 변경하지 않았고 실제 Skill Tree asset도 생성하지 않았다.
 - 정적 점검으로 `ToolId` 정의가 기존 한 곳뿐임, 기존 Level Up 보상 호출이 Lv2/Lv3 `ToolAcquisition` 및 Lv4+ `PrototypeAugmentManager`를 계속 사용함, 새 Growth API가 기존 Gameplay 코드에서 호출되지 않음을 확인했다. Unity 실행, 컴파일, Console, Play Mode, Computer Use는 요청에 따라 수행하지 않았다. commit/push하지 않았다.
 - 다음 성장 단계는 G2 Core/Partner Acquisition 연결이다. G2 전까지 Lv2/Lv3 숙련 포인트 지급, Core/Partner 루트 비용 지출, Q/W 배정 전환은 의도적으로 미구현이다.
+
+## 최근 변경 — G2+G3 Core/Partner 및 기능형 Skill Tree
+- `RunManager`는 Lv2부터 레벨마다 Inspector의 `masteryPointsPerLevel`(기본 1)을 한 번만 지급한다. Lv2는 Core, Lv3은 Partner 필수 획득을 열고 Lv4+는 포인트만 지급한 뒤 EXP overflow 레벨업을 계속 처리한다. 기존 Lv4+ `PrototypeAugmentManager.ShowChoices()` 호출은 제거했고 legacy `AreAugmentsUnlocked`는 false로 고정해 우발적인 Random Augment 표시도 차단했다.
+- `SkillTreeManager`가 최종 Tree 모달, 필수 획득, 후보 생성, 구매 검증, 효과 적용을 조정한다. Core 후보는 Fishing Rod/Net/Cast Net 3개, Partner 후보는 Bait와 Core를 제외한 나머지 도구 2개로 현재 정확히 3개다. 확정 시에만 기본 1P를 지출하고 Core는 Q(index 0), Partner는 W(index 1)에 같은 프레임의 검증된 연산으로 획득시킨다. 중복 Tool, 이미 찬 목표 슬롯, 부족 포인트는 상태를 바꾸지 않는다.
+- 필수 획득 중 Tree는 닫기/Escape/Tab을 거부한다. 일반 탐색은 Tab 또는 UI API로 열고 닫을 수 있으며 닫을 때 기존 개발 배속 x1/x2/x3을 복원한다. `ToolSlotInput`이 열린 Tree를 월드 입력 차단 조건에 포함하므로 뜰채 Hold, 도구 입력, 배치/재배치의 클릭 누수를 취소·차단한다.
+- 최종 UI용 `SkillTreeCanvas`, 좌우 `SkillTreeBranchView`, 재사용 `SkillTreeNodeView`, 해상도 독립 RectTransform 기반 `SkillTreePanZoom`을 추가했다. 공용 포인트, `?` 루트와 한국어 상태, 후보 3개, 도구별 전체 노드, 제목/설명/랭크/다음 비용/다음 효과/잠금 이유, 구매 가능 색상, 닫기 제한을 표시한다. UI Hierarchy와 직렬화 참조는 사용자가 Editor에서 연결해야 하며 Scene/Prefab YAML은 수정하지 않았다.
+- 에셋 없이도 동작하는 내장 VS 정의 7개(Core 3 + Partner 4)를 추가했다. 각 Tool Tree에는 비용 1/2/3의 3랭크 수치 노드와 그 1랭크를 선행 조건으로 요구하는 보조 노드가 있다. 랭크 1은 Lv4, 랭크 2는 Lv6, 랭크 3은 해역 2에서 열리므로 미래 랭크가 보이면서 Area 1에서는 Cap으로 막힌다. 사용자가 만든 동일 Tool/Role `SkillTreeDefinition` 에셋은 내장 정의를 대체한다.
+- 실제 효과: Fishing Rod 포획력/범위, Net 최대 길이/설치 상한, Cast Net 포획력/반경, Bait 유인 반경/지속시간. 기존 컨트롤러의 authoritative 증가 API를 재사용하며 효과 참조나 effect ID가 유효하지 않으면 포인트를 쓰기 전에 구매를 거부한다. 성공 구매 후 해당 랭크 효과만 한 번 적용하므로 Tree 재열기만으로 중복 적용하지 않는다.
+- Tree로 이전된 legacy Augment 대응 효과는 FishingRodPower/Range, NetLength, CastNetPower/Radius, BaitRadius/Duration이다. LandingNet 3종, CastNetCooldown/FullHaul, FishingRodSpeed/ExtraHook은 소스만 보존된 휴면 상태다. 기존 MiniBoss Job 선택은 G4 전까지 유지하며 새 Core/Partner 상태를 변경하지 않는다.
+- 새/변경 C#: `RunManager`, `RunGrowthState`, `RunToolLoadout`, `SkillTreeDefinition`, `ToolSlotInput`, `SkillTreeManager`, `VerticalSliceSkillTreeDefaults`, `SkillTreeCanvas`, `SkillTreeBranchView`, `SkillTreeNodeView`, `SkillTreePanZoom`. 문서: `Docs/NETBREAK_GROWTH_SYSTEM.md`, `NETBREAK_STATE.md`.
+- Unity Editor를 실행하지 않았다. 기존 Unity Bee 응답 파일을 임시 출력 대상으로 사용한 Roslyn 소스 컴파일은 C# 오류 없이 통과했고, Editor 밖 compiler host와 Unity source generator 버전 차이 경고만 발생했다. 실제 Unity compile/Console/Hierarchy 참조/Play Mode는 사용자 검증이 필요하다. Scene/Prefab/기존 `.asset`, commit/push는 변경하거나 수행하지 않았다.
+- G4 E/R, reroll/meta persistence, Tree art/animation, Area 2 실제 진행·콘텐츠, legacy 코드 삭제는 구현하지 않았다.
+
+## 최근 변경 — G2+G3 Skill Tree UI Editor 생성기
+- `Assets/Editor/SkillTreeUIGenerator.cs`에 `NETBREAK/UI/Generate Skill Tree UI` 메뉴를 추가했다. 활성 Scene의 유일한 `GameCanvas`와 `InputSystemUIInputModule` EventSystem을 확인한 뒤 SkillTreeUI root, 입력 차단 TreePanel, Header/포인트/공지/닫기, Core·Partner Viewport/Content/Branch/Node Container, 런타임 Node Template, Acquisition 3후보 Panel, Tree 열기 Button, Pan/Zoom을 한 번에 생성한다.
+- 생성기는 현재 `SkillTreeCanvas`, `SkillTreeBranchView`, `SkillTreeNodeView`, `SkillTreePanZoom`의 실제 private serialized field를 `SerializedObject`로 자동 연결하고, Open Button persistent listener도 연결한다. SkillTreeUI root는 활성, TreePanel은 비활성으로 저장한다. `NanumGothic-Bold SDF`가 있으면 자동 사용하며 모든 화면 배치는 Canvas anchor/layout 기반이다.
+- 동일 Scene에 완전한 `GameCanvas/SkillTreeUI + SkillTreeCanvas`가 이미 있으면 선택만 하고 종료한다. 이름 또는 컴포넌트만 남은 부분 구조, 중복 GameCanvas/SkillTreeCanvas, Input System EventSystem 부재는 사용자 UI를 덮어쓰지 않고 명시적 경고로 중단한다. 자동 실행하지 않으며 생성은 단일 Undo 그룹이고 성공 시 Scene을 dirty 처리한다.
+- Unity/Computer Use는 실행하지 않았다. Editor 어셈블리 Roslyn 소스 컴파일은 오류 없이 통과했으며 실제 메뉴 실행, 생성 결과 Scene 저장, Play Mode UI/입력/해상도 검증은 사용자가 수행해야 한다. Scene/Prefab YAML, gameplay/balance, commit/push는 변경하거나 수행하지 않았다.
+
+## 최근 변경 — G2+G3 Skill Tree UI/UX 폴리시
+- `RunGrowthState.AvailableMasteryPointsChanged`와 `SkillTreeManager.OpenStateChanged` 이벤트를 추가했다. 포인트 지급·Core/Partner 획득 비용·노드 구매와 Tree 열기/닫기에만 발행하므로 별도 매 프레임 폴링 없이 UI가 즉시 반응하며 성장 수치와 규칙은 변경하지 않았다.
+- `MasteryPointReminder`는 미사용 숙련 포인트가 1 이상이고 Tree가 닫혔을 때만 하단 중앙 Hotbar 위에 `숙련 포인트 N개 사용 가능! / Tab — 스킬 트리 열기`를 지속 표시한다. Tree가 열리거나 잔액이 0이면 숨고, CanvasGroup과 비 Raycast UI로 월드·도구·Hotbar 입력을 차단하지 않는다.
+- 플레이어 노출 `Core/Partner`를 `주력/보조`로 변경했다. Branch 제목은 `주력 스킬 트리`/`보조 스킬 트리`, 필수 획득 제목과 안내는 `주력 도구`/`보조 도구`를 사용한다.
+- Node Card는 설명에 전체 랭크 표를 반복하지 않고 노드 요약과 다음 효과만 표시한다. 현재 랭크, 다음 비용, 잠금 이유는 독립 영역으로 유지했다. 생성기 표준 Template의 높이·패딩·행간·각 TMP 영역을 넓혀 중첩을 줄였다.
+- 기존 Scene용 `NETBREAK/UI/Apply Skill Tree UI Polish` 메뉴를 추가했다. 기존 SkillTreeUI를 삭제·재생성하지 않고 Reminder만 없을 때 추가하며, 알려진 Branch/Acquisition TMP와 Scene 내부 Node Template만 Undo 가능한 방식으로 갱신한다. 부분 Reminder, 누락 참조, Project Asset Template 등 모호한 구조는 경고 후 중단한다. 최초 `Generate Skill Tree UI`도 새 한국어 표기와 Reminder를 포함한다.
+- Runtime과 Editor 어셈블리 Roslyn 소스 컴파일은 오류 없이 통과했다. Unity/Computer Use는 실행하지 않았으므로 기존 Main Scene에 폴리시 메뉴 적용, 저장, Play Mode 포인트 이벤트/비차단/가독성/해상도 검증이 필요하다. Scene/Prefab YAML, gameplay balance/progression, commit/push는 변경하거나 수행하지 않았다.

@@ -38,6 +38,21 @@ public sealed class SkillTreeDefinition : ScriptableObject
         node = null;
         return false;
     }
+
+    public static SkillTreeDefinition CreateRuntime(
+        string id,
+        ToolId definitionTool,
+        GrowthToolRole definitionRole,
+        params SkillTreeNodeDefinition[] definitionNodes)
+    {
+        SkillTreeDefinition definition = CreateInstance<SkillTreeDefinition>();
+        definition.hideFlags = HideFlags.HideAndDontSave;
+        definition.treeId = id;
+        definition.tool = definitionTool;
+        definition.role = definitionRole;
+        definition.nodes = definitionNodes ?? Array.Empty<SkillTreeNodeDefinition>();
+        return definition;
+    }
 }
 
 [Serializable]
@@ -57,6 +72,20 @@ public sealed class SkillTreeNodeDefinition
     public IReadOnlyList<SkillTreeNodePrerequisite> Prerequisites =>
         prerequisites ?? Array.Empty<SkillTreeNodePrerequisite>();
     public int MaxRank => ranks?.Length ?? 0;
+
+    public SkillTreeNodeDefinition(
+        string id,
+        string name,
+        string nodeDescription,
+        SkillTreeNodePrerequisite[] nodePrerequisites,
+        SkillTreeRankDefinition[] nodeRanks)
+    {
+        nodeId = id;
+        displayName = name;
+        description = nodeDescription;
+        prerequisites = nodePrerequisites ?? Array.Empty<SkillTreeNodePrerequisite>();
+        ranks = nodeRanks ?? Array.Empty<SkillTreeRankDefinition>();
+    }
 
     public SkillTreeRankDefinition GetRank(int zeroBasedRankIndex) =>
         ranks != null && zeroBasedRankIndex >= 0 && zeroBasedRankIndex < ranks.Length
@@ -89,6 +118,12 @@ public sealed class SkillTreeNodePrerequisite
 
     public string NodeId => nodeId;
     public int RequiredRank => requiredRank;
+
+    public SkillTreeNodePrerequisite(string prerequisiteNodeId, int rank)
+    {
+        nodeId = prerequisiteNodeId;
+        requiredRank = Math.Max(1, rank);
+    }
 }
 
 [Serializable]
@@ -103,6 +138,16 @@ public sealed class SkillTreeRankDefinition
     public SkillTreeRankUnlockCondition UnlockCondition => unlockCondition;
     public IReadOnlyList<SkillTreeBalanceEffect> BalanceEffects =>
         balanceEffects ?? Array.Empty<SkillTreeBalanceEffect>();
+
+    public SkillTreeRankDefinition(
+        int cost,
+        SkillTreeRankUnlockCondition condition,
+        params SkillTreeBalanceEffect[] effects)
+    {
+        masteryPointCost = Math.Max(1, cost);
+        unlockCondition = condition;
+        balanceEffects = effects ?? Array.Empty<SkillTreeBalanceEffect>();
+    }
 }
 
 [Serializable]
@@ -112,6 +157,23 @@ public struct SkillTreeRankUnlockCondition
     [Min(0)] [SerializeField] private int minimumArea;
     [SerializeField] private bool requiresMiniBossClear;
     [SerializeField] private bool requiresBossClear;
+
+    public int MinimumPlayerLevel => minimumPlayerLevel;
+    public int MinimumArea => minimumArea;
+    public bool RequiresMiniBossClear => requiresMiniBossClear;
+    public bool RequiresBossClear => requiresBossClear;
+
+    public SkillTreeRankUnlockCondition(
+        int playerLevel,
+        int area = 1,
+        bool miniBossClear = false,
+        bool bossClear = false)
+    {
+        minimumPlayerLevel = Math.Max(0, playerLevel);
+        minimumArea = Math.Max(0, area);
+        requiresMiniBossClear = miniBossClear;
+        requiresBossClear = bossClear;
+    }
 
     public bool IsMet(SkillTreeProgressionContext context) =>
         context.PlayerLevel >= minimumPlayerLevel &&
@@ -128,6 +190,12 @@ public sealed class SkillTreeBalanceEffect
 
     public string EffectId => effectId;
     public float Value => value;
+
+    public SkillTreeBalanceEffect(string id, float effectValue)
+    {
+        effectId = id;
+        value = effectValue;
+    }
 }
 
 public readonly struct SkillTreeProgressionContext
