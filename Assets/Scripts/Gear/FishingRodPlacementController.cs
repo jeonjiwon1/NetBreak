@@ -19,10 +19,6 @@ public class FishingRodPlacementController : MonoBehaviour
     [SerializeField] private float placementCostGrowthMultiplier = 1.5f;
     [SerializeField] private int maxActiveRods = 2;
 
-    [Header("Fishing Specialist Balance")]
-    [Min(1)] [SerializeField] private int anglerMaxActiveRods = 12;
-    [Min(0f)] [SerializeField] private float anglerPlacementCostMultiplier = 0.7f;
-
     private Camera mainCamera;
 
     private readonly List<FishingRodController>
@@ -323,14 +319,18 @@ public class FishingRodPlacementController : MonoBehaviour
         maxActiveRods += amount;
     }
 
+    public void MultiplyPlacementCost(
+        float multiplier)
+    {
+        if (multiplier > 0f)
+        {
+            costMultiplier *= multiplier;
+        }
+    }
+
     public void EnableAnglerJob()
     {
-        maxActiveRods =
-            Mathf.Max(
-                maxActiveRods,
-                anglerMaxActiveRods
-            );
-
-        costMultiplier *= anglerPlacementCostMultiplier;
+        // G4-A transition: legacy Job selection remains, but its gameplay
+        // modifiers are now purchased from the Fishing Rod skill tree.
     }
 }

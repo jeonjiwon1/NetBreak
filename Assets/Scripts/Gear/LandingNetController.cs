@@ -272,19 +272,8 @@ public class LandingNetController : MonoBehaviour
 
     public void EnableLandingNetFisherJob()
     {
-        captureRadius *= 2f;
-
-        maxTargets =
-            Mathf.Max(
-                maxTargets,
-                8
-            );
-
-        autoUseEnabled = true;
-
-        nextAttackTime =
-            Time.time;
-
-        UpdateRangeVisual();
+        // G4-A transition: Landing Net has no Core/Partner tree. Keep the
+        // legacy Job API for the existing UI flow, but do not apply it on top
+        // of the new growth system.
     }
 }

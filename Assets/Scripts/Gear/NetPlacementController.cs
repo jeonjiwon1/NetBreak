@@ -345,30 +345,37 @@ public class NetPlacementController : MonoBehaviour
         maxActiveNets += amount;
     }
 
-    public void EnableNetFisherJob()
+    public void MultiplyPlacementCost(
+        float multiplier)
     {
-        maxActiveNets =
-            Mathf.Max(
-                maxActiveNets,
-                10
-            );
+        if (multiplier > 0f)
+        {
+            costMultiplier *= multiplier;
+        }
+    }
 
-        costMultiplier *= 0.7f;
+    public void MultiplyCaptureDamage(
+        float multiplier)
+    {
+        if (multiplier <= 0f)
+        {
+            return;
+        }
 
-        float newDamageMultiplier = 3f;
+        netDamageMultiplier *= multiplier;
 
-        netDamageMultiplier *=
-            newDamageMultiplier;
-
-        foreach (NetController net
-                 in activeNets)
+        foreach (NetController net in activeNets)
         {
             if (net != null)
             {
-                net.MultiplyCaptureDamage(
-                    newDamageMultiplier
-                );
+                net.MultiplyCaptureDamage(multiplier);
             }
         }
+    }
+
+    public void EnableNetFisherJob()
+    {
+        // G4-A transition: legacy Job selection remains, but its gameplay
+        // modifiers are now purchased from the Net skill tree.
     }
 }

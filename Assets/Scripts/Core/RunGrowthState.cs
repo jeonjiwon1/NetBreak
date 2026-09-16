@@ -13,6 +13,12 @@ public enum GrowthAbilitySlot
     SignatureR = 1
 }
 
+public enum RunMilestoneType
+{
+    MiniBoss = 0,
+    Boss = 1
+}
+
 // Run data only. G2+ systems will connect this state to rewards and the active loadout.
 public sealed class RunGrowthState
 {
@@ -22,6 +28,8 @@ public sealed class RunGrowthState
         new(GrowthToolRole.Partner);
     private readonly RunGrowthAbilityState tacticalAbility = new();
     private readonly RunGrowthAbilityState signatureAbility = new();
+    private readonly HashSet<int> rewardedMiniBossAreas = new();
+    private readonly HashSet<int> rewardedBossAreas = new();
 
     public RunSkillTreeProgress CoreTree => coreTree;
     public RunSkillTreeProgress PartnerTree => partnerTree;
@@ -29,6 +37,11 @@ public sealed class RunGrowthState
     public ToolId SelectedPartnerTool => partnerTree.Tool;
     public int AvailableMasteryPoints { get; private set; }
     public int SpentMasteryPoints { get; private set; }
+    public int CurrentArea { get; private set; } = 1;
+    public bool HasClearedCurrentAreaMiniBoss =>
+        rewardedMiniBossAreas.Contains(CurrentArea);
+    public bool HasClearedCurrentAreaBoss =>
+        rewardedBossAreas.Contains(CurrentArea);
     public event Action<int> AvailableMasteryPointsChanged;
 
     public RunSkillTreeProgress GetTree(GrowthToolRole role) => role switch
@@ -116,6 +129,62 @@ public sealed class RunGrowthState
 
         AvailableMasteryPoints += amount;
         AvailableMasteryPointsChanged?.Invoke(AvailableMasteryPoints);
+        return true;
+    }
+
+    public bool TryGrantMilestoneMasteryPoints(
+        RunMilestoneType milestone,
+        int area,
+        int amount)
+    {
+        if (!Enum.IsDefined(typeof(RunMilestoneType), milestone) ||
+            area <= 0 ||
+            amount <= 0)
+        {
+            return false;
+        }
+
+        HashSet<int> rewardedAreas = milestone == RunMilestoneType.MiniBoss
+            ? rewardedMiniBossAreas
+            : rewardedBossAreas;
+
+        if (rewardedAreas.Contains(area))
+        {
+            return false;
+        }
+
+        rewardedAreas.Add(area);
+        if (TryGrantMasteryPoints(amount))
+        {
+            return true;
+        }
+
+        rewardedAreas.Remove(area);
+        return false;
+    }
+
+    public bool HasClearedMilestone(
+        RunMilestoneType milestone,
+        int area)
+    {
+        if (!Enum.IsDefined(typeof(RunMilestoneType), milestone) || area <= 0)
+        {
+            return false;
+        }
+
+        return milestone == RunMilestoneType.MiniBoss
+            ? rewardedMiniBossAreas.Contains(area)
+            : rewardedBossAreas.Contains(area);
+    }
+
+    public bool TrySetCurrentArea(int area)
+    {
+        if (area <= 0 || area < CurrentArea)
+        {
+            return false;
+        }
+
+        CurrentArea = area;
         return true;
     }
 

@@ -412,15 +412,21 @@ public class CastNetController : MonoBehaviour
         massCatchRefundEnabled = true;
     }
 
-    public void EnableCastNetFisherJob()
+    public void IncreaseMaxCharges(
+        int amount)
     {
-        if (maxCharges >= 3)
+        if (amount <= 0)
         {
             return;
         }
 
-        maxCharges = 3;
-        currentCharges = 3;
-        rechargeTimer = 0f;
+        maxCharges += amount;
+        currentCharges = Mathf.Min(maxCharges, currentCharges + amount);
+    }
+
+    public void EnableCastNetFisherJob()
+    {
+        // G4-A transition: legacy Job selection remains, but its gameplay
+        // modifier is now purchased from the Cast Net skill tree.
     }
 }

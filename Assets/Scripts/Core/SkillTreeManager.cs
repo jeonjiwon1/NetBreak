@@ -360,15 +360,27 @@ public sealed class SkillTreeManager : MonoBehaviour
             {
                 SkillTreeEffectIds.FishingRodPower => "낚싯대 포획력",
                 SkillTreeEffectIds.FishingRodRange => "낚싯대 범위",
+                SkillTreeEffectIds.FishingRodCapacity => "낚싯대 설치 상한",
                 SkillTreeEffectIds.NetLength => "그물 최대 길이",
                 SkillTreeEffectIds.NetCount => "그물 설치 상한",
                 SkillTreeEffectIds.CastNetPower => "투망 포획력",
                 SkillTreeEffectIds.CastNetRadius => "투망 반경",
+                SkillTreeEffectIds.CastNetCharges => "투망 최대 충전",
                 SkillTreeEffectIds.BaitRadius => "미끼 유인 반경",
                 SkillTreeEffectIds.BaitDuration => "미끼 지속시간",
                 _ => "효과"
             };
-            descriptions.Add($"{label} +{effect.Value:0.##}");
+
+            string valueText = effect.EffectId switch
+            {
+                SkillTreeEffectIds.FishingRodCostMultiplier or
+                SkillTreeEffectIds.NetCostMultiplier =>
+                    $"비용 {(1f - effect.Value) * 100f:0.#}% 감소",
+                SkillTreeEffectIds.NetPowerMultiplier =>
+                    $"포획력 ×{effect.Value:0.##}",
+                _ => $"{label} +{effect.Value:0.##}"
+            };
+            descriptions.Add(valueText);
         }
 
         return string.Join(", ", descriptions);
@@ -491,17 +503,32 @@ public sealed class SkillTreeManager : MonoBehaviour
                 case SkillTreeEffectIds.FishingRodRange:
                     fishingRodPlacement?.IncreaseRodRange(effect.Value);
                     break;
+                case SkillTreeEffectIds.FishingRodCapacity:
+                    fishingRodPlacement?.IncreaseMaxActiveRods(Mathf.RoundToInt(effect.Value));
+                    break;
+                case SkillTreeEffectIds.FishingRodCostMultiplier:
+                    fishingRodPlacement?.MultiplyPlacementCost(effect.Value);
+                    break;
                 case SkillTreeEffectIds.NetLength:
                     netPlacement?.IncreaseMaxLength(effect.Value);
                     break;
                 case SkillTreeEffectIds.NetCount:
                     netPlacement?.IncreaseMaxActiveNets(Mathf.RoundToInt(effect.Value));
                     break;
+                case SkillTreeEffectIds.NetCostMultiplier:
+                    netPlacement?.MultiplyPlacementCost(effect.Value);
+                    break;
+                case SkillTreeEffectIds.NetPowerMultiplier:
+                    netPlacement?.MultiplyCaptureDamage(effect.Value);
+                    break;
                 case SkillTreeEffectIds.CastNetPower:
                     castNet?.IncreaseCapturePower(effect.Value);
                     break;
                 case SkillTreeEffectIds.CastNetRadius:
                     castNet?.IncreaseCaptureRadius(effect.Value);
+                    break;
+                case SkillTreeEffectIds.CastNetCharges:
+                    castNet?.IncreaseMaxCharges(Mathf.RoundToInt(effect.Value));
                     break;
                 case SkillTreeEffectIds.BaitRadius:
                     bait?.IncreaseAttractionRadius(effect.Value);
@@ -541,10 +568,18 @@ public sealed class SkillTreeManager : MonoBehaviour
             {
                 SkillTreeEffectIds.FishingRodPower => fishingRodPlacement != null,
                 SkillTreeEffectIds.FishingRodRange => fishingRodPlacement != null,
+                SkillTreeEffectIds.FishingRodCapacity => fishingRodPlacement != null,
+                SkillTreeEffectIds.FishingRodCostMultiplier =>
+                    fishingRodPlacement != null && effect.Value > 0f,
                 SkillTreeEffectIds.NetLength => netPlacement != null,
                 SkillTreeEffectIds.NetCount => netPlacement != null,
+                SkillTreeEffectIds.NetCostMultiplier =>
+                    netPlacement != null && effect.Value > 0f,
+                SkillTreeEffectIds.NetPowerMultiplier =>
+                    netPlacement != null && effect.Value > 0f,
                 SkillTreeEffectIds.CastNetPower => castNet != null,
                 SkillTreeEffectIds.CastNetRadius => castNet != null,
+                SkillTreeEffectIds.CastNetCharges => castNet != null,
                 SkillTreeEffectIds.BaitRadius => bait != null,
                 SkillTreeEffectIds.BaitDuration => bait != null,
                 _ => false
@@ -574,12 +609,11 @@ public sealed class SkillTreeManager : MonoBehaviour
     private SkillTreeProgressionContext GetProgressionContext()
     {
         int level = RunManager.Instance != null ? RunManager.Instance.CurrentLevel : 0;
-        bool miniBoss = PrototypeJobManager.Instance != null &&
-            PrototypeJobManager.Instance.HasAdvanced;
-        bool boss = PrototypeGameFlowManager.Instance != null &&
-            PrototypeGameFlowManager.Instance.IsGameEnded &&
-            PrototypeGameFlowManager.Instance.IsSuccess;
-        return new SkillTreeProgressionContext(level, 1, miniBoss, boss);
+        RunGrowthState growth = GetGrowthState();
+        int area = growth != null ? growth.CurrentArea : 1;
+        bool miniBoss = growth != null && growth.HasClearedCurrentAreaMiniBoss;
+        bool boss = growth != null && growth.HasClearedCurrentAreaBoss;
+        return new SkillTreeProgressionContext(level, area, miniBoss, boss);
     }
 
     private static SkillTreeDefinition FindDefinition(

@@ -28,6 +28,8 @@ public class RunManager : MonoBehaviour
 
     [Header("Growth Rewards")]
     [Min(1)] [SerializeField] private int masteryPointsPerLevel = 1;
+    [Min(1)] [SerializeField] private int miniBossMasteryReward = 1;
+    [Min(1)] [SerializeField] private int bossMasteryReward = 2;
 
     private int currentGold;
     private int capturedFishCount;
@@ -144,6 +146,18 @@ public class RunManager : MonoBehaviour
         currentExp +=
             fishData.ExpReward;
 
+        switch (fishData.SpecialType)
+        {
+            case FishSpecialType.MiniBoss:
+                TryGrantMiniBossMasteryReward();
+                break;
+            case FishSpecialType.Boss:
+                // Fish capture is registered before the Boss result flow ends
+                // the Run, so the final reward is retained in RunGrowthState.
+                TryGrantBossMasteryReward();
+                break;
+        }
+
         CheckLevelUp();
     }
 
@@ -194,6 +208,20 @@ public class RunManager : MonoBehaviour
             CheckLevelUp();
         }
     }
+
+    public bool TryGrantMiniBossMasteryReward() =>
+        GrowthState != null &&
+        GrowthState.TryGrantMilestoneMasteryPoints(
+            RunMilestoneType.MiniBoss,
+            GrowthState.CurrentArea,
+            miniBossMasteryReward);
+
+    public bool TryGrantBossMasteryReward() =>
+        GrowthState != null &&
+        GrowthState.TryGrantMilestoneMasteryPoints(
+            RunMilestoneType.Boss,
+            GrowthState.CurrentArea,
+            bossMasteryReward);
 
     // =========================================================
     // GOLD
