@@ -59,6 +59,7 @@ public class FishMovement : MonoBehaviour
     // -------------------------
 
     private float specialSpeedMultiplier = 1f;
+    private float signatureNetSpeedMultiplier = 1f;
 
     public FishRoute ActiveRoute =>
         activeRoute;
@@ -153,6 +154,7 @@ public class FishMovement : MonoBehaviour
         netSpeedMultiplier = 1f;
 
         specialSpeedMultiplier = 1f;
+        signatureNetSpeedMultiplier = 1f;
     }
 
     // =========================================================
@@ -454,7 +456,9 @@ public class FishMovement : MonoBehaviour
             *
             netSpeedMultiplier
             *
-            specialSpeedMultiplier;
+            specialSpeedMultiplier
+            *
+            signatureNetSpeedMultiplier;
 
         transform.position +=
             (Vector3)(
@@ -477,6 +481,16 @@ public class FishMovement : MonoBehaviour
     // =========================================================
     // NET
     // =========================================================
+
+    public void SetSignatureNetSpeedMultiplier(float multiplier)
+    {
+        signatureNetSpeedMultiplier = Mathf.Clamp01(multiplier);
+    }
+
+    public void ClearSignatureNetSpeedMultiplier()
+    {
+        signatureNetSpeedMultiplier = 1f;
+    }
 
     public void EnterNet(
         NetController source,
@@ -593,6 +607,7 @@ public class FishMovement : MonoBehaviour
 
         netSpeedMultiplier = 1f;
         specialSpeedMultiplier = 1f;
+        signatureNetSpeedMultiplier = 1f;
 
         activeRoute = null;
         routeTargetIndex = 0;

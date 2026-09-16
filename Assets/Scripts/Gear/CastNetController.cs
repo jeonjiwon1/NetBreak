@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -378,6 +379,42 @@ public class CastNetController : MonoBehaviour
         }
 
         return true;
+    }
+
+    public int ApplySignatureCast(
+        Vector2 castPosition,
+        float radius,
+        float damageMultiplier)
+    {
+        if (radius <= 0f || damageMultiplier <= 0f)
+        {
+            return 0;
+        }
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(
+            castPosition,
+            radius);
+        HashSet<FishController> damagedFish = new();
+        int capturedCount = 0;
+
+        foreach (Collider2D hit in hits)
+        {
+            FishController fish = hit.GetComponent<FishController>();
+            if (fish == null || !damagedFish.Add(fish))
+            {
+                continue;
+            }
+
+            if (fish.TakeCaptureDamage(capturePower * damageMultiplier))
+            {
+                capturedCount++;
+            }
+        }
+
+        lastCapturedCount = capturedCount;
+        lastCastPosition = castPosition;
+        catchFeedbackTimer = 1.2f;
+        return capturedCount;
     }
 
     public void UpdateTacticalAim()

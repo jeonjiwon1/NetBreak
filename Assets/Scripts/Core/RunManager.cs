@@ -8,6 +8,7 @@ public class RunManager : MonoBehaviour
     public ToolSlotInput ToolInput { get; private set; }
     public SkillTreeManager SkillTree { get; private set; }
     public TacticalSkillManager TacticalSkills { get; private set; }
+    public SignatureSkillManager SignatureSkills { get; private set; }
     // Legacy manager reads this guard. Random level-up Augments are retired by G3.
     public bool AreAugmentsUnlocked => false;
 
@@ -104,6 +105,12 @@ public class RunManager : MonoBehaviour
         if (TacticalSkills == null)
         {
             TacticalSkills = gameObject.AddComponent<TacticalSkillManager>();
+        }
+
+        SignatureSkills = GetComponent<SignatureSkillManager>();
+        if (SignatureSkills == null)
+        {
+            SignatureSkills = gameObject.AddComponent<SignatureSkillManager>();
         }
 
         currentGold =
@@ -223,12 +230,20 @@ public class RunManager : MonoBehaviour
             GrowthState.CurrentArea,
             miniBossMasteryReward);
 
-    public bool TryGrantBossMasteryReward() =>
-        GrowthState != null &&
-        GrowthState.TryGrantMilestoneMasteryPoints(
-            RunMilestoneType.Boss,
-            GrowthState.CurrentArea,
-            bossMasteryReward);
+    public bool TryGrantBossMasteryReward()
+    {
+        if (GrowthState == null ||
+            !GrowthState.TryGrantMilestoneMasteryPoints(
+                RunMilestoneType.Boss,
+                GrowthState.CurrentArea,
+                bossMasteryReward))
+        {
+            return false;
+        }
+
+        SignatureSkills?.UnlockForBossReward();
+        return true;
+    }
 
     // =========================================================
     // GOLD

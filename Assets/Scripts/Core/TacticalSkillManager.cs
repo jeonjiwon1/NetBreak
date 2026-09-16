@@ -417,6 +417,7 @@ public sealed class TacticalSkillManager : MonoBehaviour
     {
         PrototypeGameFlowManager flow = PrototypeGameFlowManager.Instance;
         return !ToolSlotInput.IsSelectionOrEndBlocked &&
+            !SignatureSkillManager.IsTargeting &&
             flow != null && flow.IsFishingStarted && !flow.IsPreparation && !flow.IsGameEnded;
     }
 

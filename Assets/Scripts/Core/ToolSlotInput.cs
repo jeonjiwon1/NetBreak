@@ -40,10 +40,12 @@ public sealed class ToolSlotInput
         (PrototypeAugmentManager.Instance != null && PrototypeAugmentManager.Instance.IsChoosingAugment) ||
         (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob) ||
         TacticalSkillManager.IsSelectionPendingOrActive ||
-        (PrototypeGameFlowManager.Instance != null && PrototypeGameFlowManager.Instance.IsGameEnded);
+        (PrototypeGameFlowManager.Instance != null &&
+            (PrototypeGameFlowManager.Instance.IsGameEnded ||
+             PrototypeGameFlowManager.Instance.IsBossRewardPending));
 
     public static bool IsWorldPointerReserved =>
-        TacticalSkillManager.IsTargeting ||
+        TacticalSkillManager.IsTargeting || SignatureSkillManager.IsTargeting ||
         RunManager.Instance == null || RunManager.Instance.ToolInput.PointerReserved;
 
     private bool PointerReserved => sampledFrame != Time.frameCount || blocked ||
@@ -64,7 +66,7 @@ public sealed class ToolSlotInput
         int slot = loadout.FindSlot(tool);
         if (slot < 0 || sampledFrame != Time.frameCount ||
             revision != loadout.Revision || IsSelectionOrEndBlocked ||
-            TacticalSkillManager.IsTargeting)
+            (TacticalSkillManager.IsTargeting || SignatureSkillManager.IsTargeting))
         {
             return new ToolInputState(false, false, true);
         }
@@ -85,14 +87,15 @@ public sealed class ToolSlotInput
             (mouse != null && mouse.rightButton.wasPressedThisFrame);
         bool reposition = GearRepositionController.IsRepositioning ||
             GearRepositionController.IsRepositionModifierHeld;
-        bool tacticalTargeting = TacticalSkillManager.IsTargeting;
+        bool tacticalTargeting = TacticalSkillManager.IsTargeting ||
+            SignatureSkillManager.IsTargeting;
         bool netMode = NetPlacementController.IsNetModeActive;
         bool rodMode = FishingRodPlacementController.IsRodModeActive;
         bool preparation = PrototypeGameFlowManager.Instance != null &&
             PrototypeGameFlowManager.Instance.IsPreparation;
 
         worldPointerReserved = netMode || rodMode || reposition || cancel ||
-            TacticalSkillManager.IsTargeting;
+            TacticalSkillManager.IsTargeting || SignatureSkillManager.IsTargeting;
         bool pressAccepted = false;
         bool placementPressed = false;
         for (int i = 0; i < RunToolLoadout.SlotCount; i++)

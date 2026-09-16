@@ -1432,7 +1432,7 @@ public class FishSpawner : MonoBehaviour
             phaseName;
     }
 
-    private void ShowAnnouncement(
+    public void ShowAnnouncement(
         string text,
         float duration)
     {
@@ -1447,6 +1447,12 @@ public class FishSpawner : MonoBehaviour
     // =========================================================
     // POOL
     // =========================================================
+
+    public void ClearAnnouncement()
+    {
+        announcementText = string.Empty;
+        announcementEndTime = 0f;
+    }
 
     private void CreatePool()
     {

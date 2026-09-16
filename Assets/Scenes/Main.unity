@@ -17785,6 +17785,7 @@ GameObject:
   - component: {fileID: 1986760357}
   - component: {fileID: 1986760359}
   - component: {fileID: 1986760360}
+  - component: {fileID: 1986760361}
   m_Layer: 0
   m_Name: RunManager
   m_TagString: Untagged
@@ -17879,6 +17880,56 @@ MonoBehaviour:
   netPlacement: {fileID: 2057654402}
   castNet: {fileID: 821204956}
   bait: {fileID: 1763526207}
+--- !u!114 &1986760361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1986760356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d5e3a9c7f58486f89f1d6d2b8b3c0a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SignatureSkillManager
+  cooldown: 90
+  gameplayViewport:
+    serializedVersion: 2
+    x: 0
+    y: 0.12
+    width: 1
+    height: 0.72
+  fishingLaneCount: 9
+  fishingTraversalDuration: 2.5
+  fishingFloatRadius: 0.35
+  fishingTraversalCount: 1
+  fishingInterTraversalDelay: 0.35
+  fishingDamage:
+    normal: 25
+    pufferfish: 18
+    squid: 24
+    miniBoss: 55
+    boss: 70
+  crossLockdownDuration: 6
+  crossArmThickness: 0.55
+  crossResistanceDps:
+    normal: 0.03
+    pufferfish: 0.03
+    squid: 0.03
+    miniBoss: 0.015
+    boss: 0.0075
+  crossSpeedMultipliers:
+    normal: 0
+    pufferfish: 0
+    squid: 0
+    miniBoss: 0.5
+    boss: 0.65
+  heavenlyNetDiameterMultiplier: 1
+  heavenlyNetDamageMultiplier: 1
+  heavenlyNetCastCount: 1
+  heavenlyNetCastInterval: 0.6
+  heavenlyNetVisualDuration: 0.45
+  castNet: {fileID: 821204956}
 --- !u!1 &2037015099
 GameObject:
   m_ObjectHideFlags: 0

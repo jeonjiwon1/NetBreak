@@ -349,8 +349,12 @@ public class PrototypeHUDCanvas : MonoBehaviour
             3,
             tactical != null ? tactical.CooldownNormalized : 0f);
 
-        hotbarSlotTexts[4].text = "[R]\n잠김\n보스 보상";
-        SetCooldownOverlay(4, 0f);
+        SignatureSkillManager signature = SignatureSkillManager.Instance;
+        hotbarSlotTexts[4].text =
+            $"[R]\n{(signature != null ? signature.HotbarStatus : "잠김\n보스 보상")}";
+        SetCooldownOverlay(
+            4,
+            signature != null ? signature.CooldownNormalized : 0f);
     }
 
     private string GetSlotText(

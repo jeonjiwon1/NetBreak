@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 public class PrototypeGameFlowManager : MonoBehaviour
 {
@@ -34,6 +35,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
     private string failureDescription;
     private float activeRunTime;
     private float currentTestSpeedMultiplier = 1f;
+    private bool isBossRewardPending;
 
     public bool IsBossEncounter =>
         isBossEncounter;
@@ -50,6 +52,9 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
     public bool IsFishingStarted =>
         isFishingStarted;
+
+    public bool IsBossRewardPending =>
+        isBossRewardPending;
 
     public float ActiveRunTime =>
         activeRunTime;
@@ -205,7 +210,8 @@ public class PrototypeGameFlowManager : MonoBehaviour
             (ToolAcquisitionManager.Instance != null && ToolAcquisitionManager.Instance.IsAcquisitionPending) ||
             (PrototypeAugmentManager.Instance != null && PrototypeAugmentManager.Instance.IsShowingChoices) ||
             (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob) ||
-            TacticalSkillManager.IsSelectionPendingOrActive)
+            TacticalSkillManager.IsSelectionPendingOrActive ||
+            isBossRewardPending)
         {
             return;
         }
@@ -266,9 +272,33 @@ public class PrototypeGameFlowManager : MonoBehaviour
         ResolveUnfinishedFishForResult();
 
         isBossEncounter = false;
+
+        SignatureSkillManager signature = SignatureSkillManager.Instance;
+        if (bossCaptured && signature != null &&
+            signature.TryConsumeUnlockNotification(out string notification))
+        {
+            isBossRewardPending = true;
+            Time.timeScale = 0f;
+            fishSpawner?.ShowAnnouncement(notification, 2f);
+            StartCoroutine(CompleteBossRewardAfterDelay());
+            return;
+        }
+
+        FinalizeBossResult(bossCaptured);
+    }
+
+    private IEnumerator CompleteBossRewardAfterDelay()
+    {
+        yield return new WaitForSecondsRealtime(2f);
+        isBossRewardPending = false;
+        fishSpawner?.ClearAnnouncement();
+        FinalizeBossResult(true);
+    }
+
+    private void FinalizeBossResult(bool bossCaptured)
+    {
         isGameEnded = true;
         isSuccess = bossCaptured;
-
         Time.timeScale = 0f;
     }
 

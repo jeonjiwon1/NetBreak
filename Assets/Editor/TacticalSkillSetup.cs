@@ -32,6 +32,19 @@ public static class TacticalSkillSetup
             return;
         }
 
+        SignatureSkillManager[] signatureManagers =
+            Object.FindObjectsByType<SignatureSkillManager>(
+                FindObjectsInactive.Include,
+                FindObjectsSortMode.None);
+        if (signatureManagers.Length > 1 ||
+            (signatureManagers.Length == 1 &&
+             signatureManagers[0].gameObject != runManager.gameObject))
+        {
+            Debug.LogError(
+                "A SignatureSkillManager already exists outside the RunManager object. No objects were changed.");
+            return;
+        }
+
         Undo.IncrementCurrentGroup();
         int undoGroup = Undo.GetCurrentGroup();
         Undo.SetCurrentGroupName("Setup Tactical Skill Manager");
@@ -61,13 +74,27 @@ public static class TacticalSkillSetup
             Object.FindFirstObjectByType<BaitController>(FindObjectsInactive.Include));
         serialized.ApplyModifiedProperties();
 
+        SignatureSkillManager signature = runManager.GetComponent<SignatureSkillManager>();
+        if (signature == null)
+        {
+            signature = Undo.AddComponent<SignatureSkillManager>(runManager.gameObject);
+        }
+
+        SerializedObject signatureSerialized = new SerializedObject(signature);
+        AssignIfEmpty(
+            signatureSerialized,
+            "castNet",
+            Object.FindFirstObjectByType<CastNetController>(FindObjectsInactive.Include));
+        signatureSerialized.ApplyModifiedProperties();
+
         EditorUtility.SetDirty(manager);
+        EditorUtility.SetDirty(signature);
         EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
         Undo.CollapseUndoOperations(undoGroup);
         Selection.activeObject = manager;
 
         Debug.Log(
-            "TacticalSkillManager is ready on RunManager. Existing UI and user-created objects were preserved.");
+            "TacticalSkillManager and SignatureSkillManager are ready on RunManager. Existing UI and user-created objects were preserved.");
     }
 
     private static void AssignIfEmpty(
