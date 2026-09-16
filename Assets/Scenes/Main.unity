@@ -2619,8 +2619,6 @@ MonoBehaviour:
   basePlacementCost: 30
   placementCostGrowthMultiplier: 1.5
   maxActiveRods: 3
-  anglerMaxActiveRods: 12
-  anglerPlacementCostMultiplier: 0.9
 --- !u!4 &241344188
 Transform:
   m_ObjectHideFlags: 0
@@ -17786,6 +17784,7 @@ GameObject:
   - component: {fileID: 1986760358}
   - component: {fileID: 1986760357}
   - component: {fileID: 1986760359}
+  - component: {fileID: 1986760360}
   m_Layer: 0
   m_Name: RunManager
   m_TagString: Untagged
@@ -17812,6 +17811,8 @@ MonoBehaviour:
   level4PlusBaseExpRequirement: 120
   level4PlusGrowthMultiplier: 1.3
   masteryPointsPerLevel: 1
+  miniBossMasteryReward: 1
+  bossMasteryReward: 2
 --- !u!4 &1986760358
 Transform:
   m_ObjectHideFlags: 0
@@ -17843,6 +17844,37 @@ MonoBehaviour:
   acquisitionCandidateCount: 3
   acquisitionMasteryCost: 1
   inputUnlockDelay: 0.25
+  fishingRodPlacement: {fileID: 241344187}
+  netPlacement: {fileID: 2057654402}
+  castNet: {fileID: 821204956}
+  bait: {fileID: 1763526207}
+--- !u!114 &1986760360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1986760356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b46b603905794f9fb94b87acdc1d0267, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TacticalSkillManager
+  selectionInputDelay: 0.25
+  rapidReelingCooldown: 24
+  rapidReelingDuration: 6
+  rapidReelingSpeedMultiplier: 2
+  emergencyLockdownCooldown: 28
+  emergencyLockdownDuration: 6
+  emergencyLockdownEffectMultiplier: 1.75
+  emergencyCastNetCooldown: 18
+  overbaitingCooldown: 22
+  overbaitingDuration: 7
+  overbaitingAttractionMultiplier: 1.75
+  focusedOperationCooldown: 26
+  focusedOperationDuration: 6
+  focusedOperationRadius: 2.5
+  focusedOperationDamageMultiplier: 1.5
   fishingRodPlacement: {fileID: 241344187}
   netPlacement: {fileID: 2057654402}
   castNet: {fileID: 821204956}

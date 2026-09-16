@@ -13,6 +13,7 @@ public class FishingRodController : MonoBehaviour
     [SerializeField] private LineRenderer targetLine;
 
     private float attackTimer;
+    private float tacticalAttackSpeedMultiplier = 1f;
 
     private FishController currentTarget;
 
@@ -96,7 +97,7 @@ public class FishingRodController : MonoBehaviour
             Attack();
 
             attackTimer =
-                attackInterval;
+                GetEffectiveAttackInterval();
         }
 
         UpdateTargetLine();
@@ -437,6 +438,15 @@ public class FishingRodController : MonoBehaviour
                 normalRodColor;
         }
     }
+
+    public void SetTacticalAttackSpeedMultiplier(float multiplier)
+    {
+        tacticalAttackSpeedMultiplier = Mathf.Max(1f, multiplier);
+        attackTimer = Mathf.Min(attackTimer, GetEffectiveAttackInterval());
+    }
+
+    private float GetEffectiveAttackInterval() =>
+        attackInterval / tacticalAttackSpeedMultiplier;
 
     public void IncreaseCapturePower(
         float amount)

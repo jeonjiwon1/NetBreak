@@ -18,11 +18,13 @@ public class BaitController : MonoBehaviour
 
     private float activeTimer;
     private float cooldownTimer;
+    private float tacticalAttractionMultiplier = 1f;
 
     public bool IsActive { get; private set; }
 
     public Vector2 Position => transform.position;
-    public float AttractionRadius => attractionRadius;
+    public float AttractionRadius =>
+        attractionRadius * tacticalAttractionMultiplier;
     public float RemainingCooldown =>
         Mathf.Max(0f, cooldownTimer);
     public float CooldownNormalized =>
@@ -110,9 +112,22 @@ public class BaitController : MonoBehaviour
     {
         attractionRadius += amount;
 
+        UpdateRangeVisualScale();
+    }
+
+    public void SetTacticalAttractionMultiplier(float multiplier)
+    {
+        tacticalAttractionMultiplier = Mathf.Max(1f, multiplier);
+
+        UpdateRangeVisualScale();
+    }
+
+    private void UpdateRangeVisualScale()
+    {
+
         if (rangeVisual != null)
         {
-            float diameter = attractionRadius * 2f;
+            float diameter = AttractionRadius * 2f;
 
             rangeVisual.transform.localScale =
                 new Vector3(diameter, diameter, 1f);

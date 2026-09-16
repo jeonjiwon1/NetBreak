@@ -42,9 +42,9 @@ public class PrototypeHUDCanvas : MonoBehaviour
     [SerializeField] private CastNetController castNet;
 
     private readonly TMP_Text[] hotbarSlotTexts =
-        new TMP_Text[RunToolLoadout.SlotCount + 1];
+        new TMP_Text[ActiveSlotBindings.Length + 1];
     private readonly Image[] hotbarCooldownOverlays =
-        new Image[RunToolLoadout.SlotCount + 1];
+        new Image[ActiveSlotBindings.Length + 1];
     private RectTransform hotbarRoot;
     private LandingNetController landingNet;
     private BaitController bait;
@@ -341,6 +341,16 @@ public class PrototypeHUDCanvas : MonoBehaviour
                 GetCooldownNormalized(tool)
             );
         }
+
+        TacticalSkillManager tactical = TacticalSkillManager.Instance;
+        hotbarSlotTexts[3].text =
+            $"[E]\n{(tactical != null ? tactical.HotbarStatus : "잠김\n미니보스 보상")}";
+        SetCooldownOverlay(
+            3,
+            tactical != null ? tactical.CooldownNormalized : 0f);
+
+        hotbarSlotTexts[4].text = "[R]\n잠김\n보스 보상";
+        SetCooldownOverlay(4, 0f);
     }
 
     private string GetSlotText(
@@ -449,19 +459,10 @@ public class PrototypeHUDCanvas : MonoBehaviour
             return;
         }
 
-        PrototypeJobManager jobManager =
-            PrototypeJobManager.Instance;
-
-        if (jobManager == null)
+        if (jobText.gameObject.activeSelf)
         {
-            jobText.text =
-                "전직: 초보 어부";
-
-            return;
+            jobText.gameObject.SetActive(false);
         }
-
-        jobText.text =
-            $"전직: {jobManager.CurrentJobName}";
     }
 
     // =========================================================

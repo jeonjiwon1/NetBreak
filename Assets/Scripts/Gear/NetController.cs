@@ -17,6 +17,8 @@ public class NetController : MonoBehaviour
         contactedFish = new();
 
     private float currentDamageMultiplier = 1f;
+    private float tacticalDamageMultiplier = 1f;
+    private float tacticalSlowStrengthMultiplier = 1f;
 
     private bool isBeingRepositioned;
     private float repositionBlockedUntil;
@@ -148,6 +150,11 @@ public class NetController : MonoBehaviour
             return;
         }
 
+        if (TryTriggerPufferfishDisruption(other))
+        {
+            return;
+        }
+
         RegisterFish(other);
 
         RecalculateNetDisruption();
@@ -160,6 +167,7 @@ public class NetController : MonoBehaviour
             fish.TakeCaptureDamage(
                 captureDamagePerSecond
                 * currentDamageMultiplier
+                * tacticalDamageMultiplier
                 * Time.fixedDeltaTime
             );
         }
@@ -206,7 +214,7 @@ public class NetController : MonoBehaviour
 
         movement.EnterNet(
             this,
-            slowMultiplier
+            GetEffectiveSlowMultiplier()
         );
     }
 
@@ -427,6 +435,32 @@ public class NetController : MonoBehaviour
                 multiplier
             );
     }
+
+    public void SetTacticalEffectiveness(
+        float damageMultiplier,
+        float slowStrengthMultiplier,
+        bool reactivate)
+    {
+        tacticalDamageMultiplier = Mathf.Max(1f, damageMultiplier);
+        tacticalSlowStrengthMultiplier = Mathf.Max(1f, slowStrengthMultiplier);
+
+        if (reactivate && !isBeingRepositioned)
+        {
+            specialDisabledUntil = Time.time;
+            RefreshOperationalState();
+        }
+
+        foreach (FishMovement movement in contactedFish)
+        {
+            if (movement != null)
+            {
+                movement.EnterNet(this, GetEffectiveSlowMultiplier());
+            }
+        }
+    }
+
+    private float GetEffectiveSlowMultiplier() =>
+        Mathf.Clamp01(slowMultiplier / tacticalSlowStrengthMultiplier);
 
     private void OnDisable()
     {

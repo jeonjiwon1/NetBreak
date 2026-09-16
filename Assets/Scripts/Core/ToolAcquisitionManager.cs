@@ -159,7 +159,8 @@ public sealed class ToolAcquisitionManager : MonoBehaviour
     private static bool IsAnotherSelectionOpen()
     {
         return (PrototypeAugmentManager.Instance != null && PrototypeAugmentManager.Instance.IsShowingChoices) ||
-            (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob);
+            (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob) ||
+            TacticalSkillManager.IsSelectionPendingOrActive;
     }
 
     private void UpdateSelectionLock()

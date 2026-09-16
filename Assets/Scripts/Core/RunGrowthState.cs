@@ -266,6 +266,12 @@ public sealed class RunGrowthState
         Enum.IsDefined(typeof(GrowthAbilitySlot), slot) &&
         GetAbility(slot).TryEquip(abilityId);
 
+    public bool TryUnlockAndEquipAbility(
+        GrowthAbilitySlot slot,
+        string abilityId) =>
+        Enum.IsDefined(typeof(GrowthAbilitySlot), slot) &&
+        GetAbility(slot).TryUnlockAndEquip(abilityId);
+
     private static bool ArePrerequisitesMet(
         RunSkillTreeProgress progress,
         SkillTreeNodeDefinition node)
@@ -357,6 +363,18 @@ public sealed class RunGrowthAbilityState
             return false;
         }
 
+        EquippedAbilityId = abilityId;
+        return true;
+    }
+
+    internal bool TryUnlockAndEquip(string abilityId)
+    {
+        if (IsUnlocked || string.IsNullOrWhiteSpace(abilityId))
+        {
+            return false;
+        }
+
+        IsUnlocked = true;
         EquippedAbilityId = abilityId;
         return true;
     }

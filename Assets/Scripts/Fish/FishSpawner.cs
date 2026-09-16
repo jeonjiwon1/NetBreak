@@ -633,18 +633,20 @@ public class FishSpawner : MonoBehaviour
             yield break;
         }
 
-        if (PrototypeJobManager.Instance != null)
-        {
-            PrototypeJobManager.Instance
-                .RequestJobSelection();
+        TacticalSkillManager tacticalSkills =
+            RunManager.Instance != null
+                ? RunManager.Instance.TacticalSkills
+                : TacticalSkillManager.Instance;
 
-            yield return new WaitUntil(
-                () =>
-                    PrototypeJobManager.Instance == null
-                    ||
-                    PrototypeJobManager.Instance.HasAdvanced
-            );
+        if (tacticalSkills == null || !tacticalSkills.RequestSelection())
+        {
+            Debug.LogError("MiniBoss reward could not open the required Tactical E selection.");
+            yield break;
         }
+
+        yield return new WaitUntil(
+            () => tacticalSkills == null || tacticalSkills.HasEquippedSkill
+        );
     }
 
     // =========================================================

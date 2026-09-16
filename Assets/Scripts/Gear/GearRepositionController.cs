@@ -53,6 +53,7 @@ public class GearRepositionController : MonoBehaviour
 
         bool inputBlocked =
             ToolSlotInput.IsSelectionOrEndBlocked
+            || TacticalSkillManager.IsTargeting
             ||
             NetPlacementController.IsNetModeActive
             ||

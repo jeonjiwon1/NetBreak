@@ -209,6 +209,9 @@ public class PrototypeSelectionCanvas : MonoBehaviour
 
     private void UpdateAugmentSelection()
     {
+        TacticalSkillManager tactical =
+            TacticalSkillManager.Instance;
+
         PrototypeAugmentManager manager =
             PrototypeAugmentManager.Instance;
 
@@ -219,8 +222,11 @@ public class PrototypeSelectionCanvas : MonoBehaviour
             acquisition != null &&
             acquisition.IsChoosingTool;
 
+        bool showingTactical =
+            tactical != null && tactical.IsChoosing;
+
         bool shouldShow =
-            showingTools ||
+            showingTactical || showingTools ||
             (manager != null &&
              manager.IsShowingChoices);
 
@@ -235,6 +241,25 @@ public class PrototypeSelectionCanvas : MonoBehaviour
 
         if (!shouldShow)
         {
+            return;
+        }
+
+        if (showingTactical)
+        {
+            if (selectionTitleText != null)
+            {
+                selectionTitleText.text = "전술 스킬을 선택하세요";
+            }
+
+            UpdateTacticalChoice(tactical, 0, augmentButton1, augmentText1);
+            UpdateTacticalChoice(tactical, 1, augmentButton2, augmentText2);
+            UpdateTacticalChoice(tactical, 2, augmentButton3, augmentText3);
+
+            if (rerollButton != null)
+            {
+                rerollButton.gameObject.SetActive(false);
+            }
+
             return;
         }
 
@@ -379,9 +404,39 @@ public class PrototypeSelectionCanvas : MonoBehaviour
         }
     }
 
+    private void UpdateTacticalChoice(
+        TacticalSkillManager manager,
+        int index,
+        Button button,
+        TMP_Text text)
+    {
+        string name = manager.GetChoiceName(index);
+        string description = manager.GetChoiceDescription(index);
+        bool hasChoice = !string.IsNullOrEmpty(name);
+
+        if (button != null)
+        {
+            button.interactable = hasChoice && manager.CanSelect;
+        }
+
+        if (text != null)
+        {
+            text.text = hasChoice
+                ? $"{name}\n\n{description}"
+                : string.Empty;
+        }
+    }
+
     private void SelectPrimaryChoice(
         int index)
     {
+        TacticalSkillManager tactical = TacticalSkillManager.Instance;
+        if (tactical != null && tactical.IsChoosing)
+        {
+            tactical.SelectChoiceFromUI(index);
+            return;
+        }
+
         ToolAcquisitionManager acquisition =
             ToolAcquisitionManager.Instance;
 
@@ -398,7 +453,6 @@ public class PrototypeSelectionCanvas : MonoBehaviour
             index
         );
     }
-
     private void SelectAugment(
         int index)
     {

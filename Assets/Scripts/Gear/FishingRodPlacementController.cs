@@ -30,6 +30,7 @@ public class FishingRodPlacementController : MonoBehaviour
     private float rodRangeBonus;
     private float rodAttackIntervalReduction;
     private int rodAdditionalTargets;
+    private float tacticalAttackSpeedMultiplier = 1f;
 
     public int ActiveRodCount =>
         activeRods.Count;
@@ -243,6 +244,10 @@ public class FishingRodPlacementController : MonoBehaviour
                 rodAdditionalTargets
             );
         }
+
+        rod.SetTacticalAttackSpeedMultiplier(
+            tacticalAttackSpeedMultiplier
+        );
     }
 
     public void IncreaseRodCapturePower(
@@ -325,6 +330,21 @@ public class FishingRodPlacementController : MonoBehaviour
         if (multiplier > 0f)
         {
             costMultiplier *= multiplier;
+        }
+    }
+
+    public void SetTacticalAttackSpeedMultiplier(float multiplier)
+    {
+        tacticalAttackSpeedMultiplier = Mathf.Max(1f, multiplier);
+
+        foreach (FishingRodController rod in activeRods)
+        {
+            if (rod != null)
+            {
+                rod.SetTacticalAttackSpeedMultiplier(
+                    tacticalAttackSpeedMultiplier
+                );
+            }
         }
     }
 

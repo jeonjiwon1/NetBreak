@@ -39,6 +39,7 @@ public class NetPlacementController : MonoBehaviour
 
     private float costMultiplier = 1f;
     private float netDamageMultiplier = 1f;
+    private float tacticalEffectMultiplier = 1f;
 
     public bool IsDragging =>
         isDragging;
@@ -254,6 +255,12 @@ public class NetPlacementController : MonoBehaviour
             );
         }
 
+        net.SetTacticalEffectiveness(
+            tacticalEffectMultiplier,
+            tacticalEffectMultiplier,
+            false
+        );
+
         activeNets.Add(net);
 
         IsNetModeActive = false;
@@ -369,6 +376,36 @@ public class NetPlacementController : MonoBehaviour
             if (net != null)
             {
                 net.MultiplyCaptureDamage(multiplier);
+            }
+        }
+    }
+
+    public void ActivateTacticalLockdown(float effectMultiplier)
+    {
+        tacticalEffectMultiplier = Mathf.Max(1f, effectMultiplier);
+
+        foreach (NetController net in activeNets)
+        {
+            if (net != null)
+            {
+                net.SetTacticalEffectiveness(
+                    tacticalEffectMultiplier,
+                    tacticalEffectMultiplier,
+                    true
+                );
+            }
+        }
+    }
+
+    public void ClearTacticalLockdown()
+    {
+        tacticalEffectMultiplier = 1f;
+
+        foreach (NetController net in activeNets)
+        {
+            if (net != null)
+            {
+                net.SetTacticalEffectiveness(1f, 1f, false);
             }
         }
     }

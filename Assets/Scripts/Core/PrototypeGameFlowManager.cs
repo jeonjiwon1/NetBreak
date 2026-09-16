@@ -200,7 +200,12 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
     public void ResumeGameplayTimeScale()
     {
-        if (isGameEnded)
+        if (isGameEnded ||
+            (SkillTreeManager.Instance != null && SkillTreeManager.Instance.IsOpen) ||
+            (ToolAcquisitionManager.Instance != null && ToolAcquisitionManager.Instance.IsAcquisitionPending) ||
+            (PrototypeAugmentManager.Instance != null && PrototypeAugmentManager.Instance.IsShowingChoices) ||
+            (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob) ||
+            TacticalSkillManager.IsSelectionPendingOrActive)
         {
             return;
         }

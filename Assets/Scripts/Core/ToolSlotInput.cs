@@ -39,9 +39,11 @@ public sealed class ToolSlotInput
         (ToolAcquisitionManager.Instance != null && ToolAcquisitionManager.Instance.IsChoosingTool) ||
         (PrototypeAugmentManager.Instance != null && PrototypeAugmentManager.Instance.IsChoosingAugment) ||
         (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob) ||
+        TacticalSkillManager.IsSelectionPendingOrActive ||
         (PrototypeGameFlowManager.Instance != null && PrototypeGameFlowManager.Instance.IsGameEnded);
 
     public static bool IsWorldPointerReserved =>
+        TacticalSkillManager.IsTargeting ||
         RunManager.Instance == null || RunManager.Instance.ToolInput.PointerReserved;
 
     private bool PointerReserved => sampledFrame != Time.frameCount || blocked ||
@@ -61,7 +63,8 @@ public sealed class ToolSlotInput
     {
         int slot = loadout.FindSlot(tool);
         if (slot < 0 || sampledFrame != Time.frameCount ||
-            revision != loadout.Revision || IsSelectionOrEndBlocked)
+            revision != loadout.Revision || IsSelectionOrEndBlocked ||
+            TacticalSkillManager.IsTargeting)
         {
             return new ToolInputState(false, false, true);
         }
@@ -82,19 +85,21 @@ public sealed class ToolSlotInput
             (mouse != null && mouse.rightButton.wasPressedThisFrame);
         bool reposition = GearRepositionController.IsRepositioning ||
             GearRepositionController.IsRepositionModifierHeld;
+        bool tacticalTargeting = TacticalSkillManager.IsTargeting;
         bool netMode = NetPlacementController.IsNetModeActive;
         bool rodMode = FishingRodPlacementController.IsRodModeActive;
         bool preparation = PrototypeGameFlowManager.Instance != null &&
             PrototypeGameFlowManager.Instance.IsPreparation;
 
-        worldPointerReserved = netMode || rodMode || reposition || cancel;
+        worldPointerReserved = netMode || rodMode || reposition || cancel ||
+            TacticalSkillManager.IsTargeting;
         bool pressAccepted = false;
         bool placementPressed = false;
         for (int i = 0; i < RunToolLoadout.SlotCount; i++)
         {
             ToolId tool = loadout.GetSlot(i);
             ButtonControl key = GetSlotKey(keyboard, i);
-            bool toolBlocked = cancel || reposition || tool == ToolId.None ||
+            bool toolBlocked = cancel || reposition || tacticalTargeting || tool == ToolId.None ||
                 (netMode && tool != ToolId.Net) || (rodMode && tool != ToolId.FishingRod) ||
                 (preparation && tool != ToolId.Net && tool != ToolId.FishingRod);
             bool pressed = !toolBlocked && !pressAccepted && key != null && key.wasPressedThisFrame;
@@ -126,8 +131,6 @@ public sealed class ToolSlotInput
         {
             case 0: return keyboard.qKey;
             case 1: return keyboard.wKey;
-            case 2: return keyboard.eKey;
-            case 3: return keyboard.rKey;
             default: return null;
         }
     }
@@ -140,8 +143,6 @@ public sealed class ToolSlotInput
         {
             case 0: return "Q";
             case 1: return "W";
-            case 2: return "E";
-            case 3: return "R";
             default: return "미배치";
         }
     }

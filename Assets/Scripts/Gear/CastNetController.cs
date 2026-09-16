@@ -24,6 +24,7 @@ public class CastNetController : MonoBehaviour
     private float rechargeTimer;
 
     private bool isAiming;
+    private bool isTacticalAiming;
 
     private Vector2 currentAimPosition;
     private int currentTargetCount;
@@ -34,7 +35,7 @@ public class CastNetController : MonoBehaviour
 
     private bool massCatchRefundEnabled;
 
-    public bool IsAiming => isAiming;
+    public bool IsAiming => isAiming || isTacticalAiming;
 
     public bool IsReady =>
         currentCharges > 0;
@@ -90,6 +91,12 @@ public class CastNetController : MonoBehaviour
         {
             catchFeedbackTimer -=
                 Time.deltaTime;
+        }
+
+        if (isTacticalAiming)
+        {
+            UpdateAimPosition();
+            return;
         }
 
         ToolInputState input = ToolSlotInput.Read(ToolId.CastNet);
@@ -152,9 +159,7 @@ public class CastNetController : MonoBehaviour
 
         if (input.Released)
         {
-            UseCastNet(
-                currentAimPosition
-            );
+            UseCastNet(currentAimPosition, true);
 
             isAiming = false;
 
@@ -226,22 +231,25 @@ public class CastNetController : MonoBehaviour
         currentTargetCount = count;
     }
 
-    private void UseCastNet(
-        Vector2 castPosition)
+    private bool UseCastNet(
+        Vector2 castPosition,
+        bool consumeCharge)
     {
-        if (currentCharges <= 0)
+        if (consumeCharge && currentCharges <= 0)
         {
-            return;
+            return false;
         }
 
-        bool wasFull =
-            currentCharges == maxCharges;
-
-        currentCharges--;
-
-        if (wasFull)
+        if (consumeCharge)
         {
-            rechargeTimer = cooldown;
+            bool wasFull = currentCharges == maxCharges;
+
+            currentCharges--;
+
+            if (wasFull)
+            {
+                rechargeTimer = cooldown;
+            }
         }
 
         Collider2D[] hits =
@@ -273,7 +281,7 @@ public class CastNetController : MonoBehaviour
             }
         }
 
-        if (massCatchRefundEnabled &&
+        if (consumeCharge && massCatchRefundEnabled &&
             capturedCount >= refundThreshold)
         {
             ReduceCurrentRecharge(
@@ -300,6 +308,8 @@ public class CastNetController : MonoBehaviour
                 )
             );
         }
+
+        return true;
     }
 
     private void ReduceCurrentRecharge(
@@ -347,11 +357,59 @@ public class CastNetController : MonoBehaviour
     private void CancelAiming()
     {
         isAiming = false;
+        isTacticalAiming = false;
         currentTargetCount = 0;
 
         if (castVisual != null)
         {
             castVisual.gameObject.SetActive(false);
+        }
+    }
+
+    public bool BeginTacticalAim()
+    {
+        CancelAiming();
+        isTacticalAiming = true;
+        UpdateAimPosition();
+
+        if (castVisual != null)
+        {
+            castVisual.gameObject.SetActive(true);
+        }
+
+        return true;
+    }
+
+    public void UpdateTacticalAim()
+    {
+        if (isTacticalAiming)
+        {
+            UpdateAimPosition();
+        }
+    }
+
+    public bool ConfirmTacticalCast()
+    {
+        if (!isTacticalAiming)
+        {
+            return false;
+        }
+
+        Vector2 position = currentAimPosition;
+        isTacticalAiming = false;
+        if (castVisual != null)
+        {
+            castVisual.gameObject.SetActive(false);
+        }
+
+        return UseCastNet(position, false);
+    }
+
+    public void CancelTacticalAim()
+    {
+        if (isTacticalAiming)
+        {
+            CancelAiming();
         }
     }
 

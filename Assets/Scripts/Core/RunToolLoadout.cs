@@ -4,7 +4,8 @@ using System.Collections.Generic;
 // Run data only: no scene objects, area rules, or meta unlocks.
 public sealed class RunToolLoadout
 {
-    public const int SlotCount = 4;
+    // G4-B: active Tools occupy Q/W only. E and R are independent ability slots.
+    public const int SlotCount = 2;
     private readonly ToolId[] slots = new ToolId[SlotCount];
     private readonly HashSet<ToolId> ownedTools = new() { ToolId.LandingNet };
 

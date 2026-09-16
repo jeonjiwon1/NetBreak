@@ -116,8 +116,11 @@ public class FishController : MonoBehaviour
             return false;
         }
 
-        currentResistance -=
-            amount;
+        float multiplier = TacticalSkillManager.Instance != null
+            ? TacticalSkillManager.Instance.GetCaptureDamageMultiplier(transform.position)
+            : 1f;
+
+        currentResistance -= amount * multiplier;
 
         if (currentResistance <= 0f)
         {
