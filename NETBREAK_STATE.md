@@ -224,3 +224,10 @@ FULL RUN #2 수동 검증 및 실측.
 - Hotbar R은 잠금/스킬명/조준/준비/남은 쿨다운을 표시한다. R 조준 중 월드 포인터와 Q/W/LMB 충돌을 막고, Skill Tree·선택 모달·Boss 보상 공지·결과/실패 및 기존 차단 상태에서는 활성화하지 않는다.
 - 기존 `NETBREAK/Growth/Setup Tactical Skill Manager`가 같은 RunManager에 `SignatureSkillManager`를 안전하게 추가하고 기존 Cast Net 참조만 연결하도록 확장됐다. 중복/외부 R 매니저가 있으면 변경 전 중단한다. 메뉴 미실행 시 RunManager 런타임 fallback이 컴포넌트를 추가한다. 개발 검증은 Editor/Development Build Play Mode에서 Core 선택 뒤 컴포넌트 Context Menu `Development/Unlock Core Signature R`을 사용하며 출시 빌드에서는 변경하지 않는다.
 - Scene/Prefab/YAML, 기존 FishData/도구/EXP/Gold/Tree 수치, E 동작, Boss 다중 회유는 수정하지 않았다. Unity/Computer Use/Play Mode/Console/commit/push는 수행하지 않았다. 기존 Bee 응답 파일을 복사한 임시 Roslyn runtime/editor 소스 컴파일은 오류 없이 통과했다. 실제 Unity compile/Console, Setup 메뉴 저장, 세 Core별 개발 해금·입력·시각/판정·취소·Pause/x1/x2/x3·Boss 공지→결과·새 Run 초기화는 사용자 검증이 필요하다. E/R 강화 노드와 구매는 G4-C2로 연기한다.
+
+## 최근 수정 — Fish Pool 고갈 방지
+
+- G4-C1 수동 검증 중 반복된 `FishSpawner: 비활성 Fish가 부족합니다.`는 Editor.log 스택상 Rush/Final Ambient와 최종 대어군의 `SpawnSchoolMembers → SpawnFish`에서 고정 200개 풀이 모두 활성일 때 발생했다. 기존 처리는 재시도나 지연 없이 해당 개체를 즉시 누락했고, 같은 어군의 남은 개체마다 경고를 반복했다.
+- 초기 풀 200은 유지하고, 부족할 때 20개 단위로 최대 320까지 확장하는 bounded pool을 `FishSpawner`에 추가했다. 무제한 Instantiate는 하지 않으며 상한 도달 뒤에는 기존처럼 스폰을 누락하되 경고는 프레임당 한 번으로 합쳐 현재/최대 크기를 표시한다. 세 값은 기존 FishSpawner Inspector의 Pool 구역에서 조절한다.
+- Fish는 포획(`FishController.Capture`) 또는 경로 Destination 도달(`FishMovement.ReachDestination`) 시 `SetActive(false)`되고 같은 풀 항목으로 재사용된다. G4-C1의 세 R도 기존 `TakeCaptureDamage → Capture` 경로를 사용하므로 별도 반환 누수는 확인되지 않았다.
+- 물고기 수, 구간별 스폰 요청량/간격, 경로, 난이도는 변경하지 않았다. Scene/Prefab YAML, Unity 실행, commit/push는 수행하지 않았다. Roslyn 소스 컴파일과 diff 정적 검증 뒤 Unity에서 Rush/Final 동시 활성 수와 경고 재발 여부를 확인해야 한다.

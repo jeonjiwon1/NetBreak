@@ -32,6 +32,8 @@ public class FishSpawner : MonoBehaviour
 
     [Header("Pool")]
     [SerializeField] private int poolSize = 200;
+    [Min(1)] [SerializeField] private int maxPoolSize = 320;
+    [Min(1)] [SerializeField] private int poolGrowthBatchSize = 20;
 
     [Header("Spawn Area")]
     [SerializeField] private float spawnMargin = 0.5f;
@@ -71,6 +73,8 @@ public class FishSpawner : MonoBehaviour
 
     private readonly List<FishController>
         fishPool = new();
+
+    private int lastPoolExhaustionWarningFrame = -1;
 
     private Camera mainCamera;
 
@@ -140,6 +144,7 @@ public class FishSpawner : MonoBehaviour
                 >();
         }
 
+        NormalizePoolSettings();
         CreatePool();
     }
 
@@ -1454,11 +1459,21 @@ public class FishSpawner : MonoBehaviour
         announcementEndTime = 0f;
     }
 
+    private void NormalizePoolSettings()
+    {
+        poolSize = Mathf.Max(1, poolSize);
+        maxPoolSize = Mathf.Max(poolSize, maxPoolSize);
+        poolGrowthBatchSize = Mathf.Max(1, poolGrowthBatchSize);
+    }
+
     private void CreatePool()
     {
-        for (int i = 0;
-             i < poolSize;
-             i++)
+        CreatePoolEntries(poolSize);
+    }
+
+    private void CreatePoolEntries(int count)
+    {
+        for (int i = 0; i < count; i++)
         {
             FishController fish =
                 Instantiate(
@@ -1488,7 +1503,38 @@ public class FishSpawner : MonoBehaviour
             }
         }
 
-        return null;
+        int remainingCapacity =
+            maxPoolSize - fishPool.Count;
+
+        if (remainingCapacity <= 0)
+        {
+            return null;
+        }
+
+        int growthCount =
+            Mathf.Min(
+                poolGrowthBatchSize,
+                remainingCapacity
+            );
+
+        int firstNewIndex = fishPool.Count;
+        CreatePoolEntries(growthCount);
+        return fishPool[firstNewIndex];
+    }
+
+    private void ReportPoolExhaustion()
+    {
+        if (lastPoolExhaustionWarningFrame == Time.frameCount)
+        {
+            return;
+        }
+
+        lastPoolExhaustionWarningFrame = Time.frameCount;
+        Debug.LogWarning(
+            $"FishSpawner: bounded pool exhausted " +
+            $"({fishPool.Count}/{maxPoolSize}). " +
+            "Remaining spawn requests in this frame are omitted."
+        );
     }
 
     // =========================================================
@@ -1842,10 +1888,7 @@ public class FishSpawner : MonoBehaviour
 
         if (fish == null)
         {
-            Debug.LogWarning(
-                "FishSpawner: 비활성 Fish가 부족합니다."
-            );
-
+            ReportPoolExhaustion();
             return null;
         }
 
@@ -1942,10 +1985,7 @@ public class FishSpawner : MonoBehaviour
 
         if (fish == null)
         {
-            Debug.LogWarning(
-                "FishSpawner: 보스를 생성할 비활성 Fish가 없습니다."
-            );
-
+            ReportPoolExhaustion();
             return null;
         }
 
@@ -2163,10 +2203,7 @@ public class FishSpawner : MonoBehaviour
 
         if (fish == null)
         {
-            Debug.LogWarning(
-                "FishSpawner: 보스 지원 어군을 생성할 비활성 Fish가 없습니다."
-            );
-
+            ReportPoolExhaustion();
             return null;
         }
 
@@ -2279,4 +2316,9 @@ public class FishSpawner : MonoBehaviour
             -
             verticalPadding;
     }
+    private void OnValidate()
+    {
+        NormalizePoolSettings();
+    }
+
 }
