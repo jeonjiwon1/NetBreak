@@ -157,3 +157,14 @@ FULL RUN #2 수동 검증 및 실측.
 - 실제 Run Failure는 어획률 통계 계산과 표시는 유지하되 결과 등급을 항상 F로 표시한다. 성공 Run은 기존 어획률 등급 계산을 유지한다.
 - 뜰채는 LMB를 누르고 있는 동안 기존 실제 쿨다운이 준비될 때마다 현재 커서 위치에 다시 사용된다. 기존 단일 클릭, 선택/결과/배치·재배치 포인터 예약 차단과 직업 자동 사용 구조는 유지하며 별도 쿨다운이나 완전 자동화는 추가하지 않았다.
 - 입력 피로도를 낮추는 보조 변경이며 Unity 수동 검증이 필요하다. 다음 단계는 Full Run #4다. Codex는 Unity 실행, Computer Use, validation, commit/push를 수행하지 않았다.
+
+## 최근 변경 — G1 Growth Foundation
+- `RunManager`가 Run마다 하나의 `RunGrowthState`를 생성해 소유한다. 상태는 기존 `ToolId`를 재사용하며 Core/Partner에 서로 다른 Active Tool만 한 번씩 선택할 수 있고, 두 역할의 Tree 진행과 구매 노드 Rank를 분리해 보관한다.
+- 공용 숙련 포인트의 미사용/사용 합계를 분리해 기록한다. 양수 지급, 잔액 확인, 부족 잔액 및 정수 오버플로를 거부하는 지출 API를 추가했다. 새 포인트는 기존 Level Up 흐름에 연결하지 않았으므로 G1 플레이 중에는 지급되지 않는다.
+- `SkillTreeDefinition` ScriptableObject C# 타입과 Node/Rank/선행 노드/랭크별 비용/진행 조건/효과 식별 데이터 타입을 추가했다. 정적 Definition과 Run Rank 상태는 분리되며, Player Level·현재 Area·MiniBoss/Boss 완료 조건으로 현재 허용 Rank Cap을 계산할 수 있다. 실제 Definition `.asset`, 샘플 Tree, 노드 효과 적용은 만들지 않았다.
+- 노드 Rank 구매 API는 선택 Tool·Core/Partner 역할·Tree ID·선행 Rank·Max Rank·현재 허용 Rank·포인트 잔액을 모두 확인한 뒤 포인트 지출과 Rank 증가를 한 번에 처리한다. 실패 시 포인트와 Rank를 변경하지 않는다.
+- 미래 E/R은 `TacticalE`/`SignatureR` 슬롯별 해금 여부와 장착 Ability ID만 기록한다. Ability 정의·효과·쿨다운·입력·UI는 추가하지 않았다.
+- 기존 `RunToolLoadout`은 현재 플레이의 Tool 소유/QWER 배치 source of truth로 그대로 유지된다. 새 Growth State는 G2 전까지 미선택·미연결 상태이며 Tool Acquisition, Dynamic Q/W/E/R, Augment, Job, EXP, Landing Net Hold, Pause/Test Speed, FishSpawner/MiniBoss/Boss 코드를 변경하지 않는다.
+- 변경 파일: `Assets/Scripts/Core/RunGrowthState.cs`, `Assets/Scripts/Core/SkillTreeDefinition.cs`, `Assets/Scripts/Core/RunManager.cs`, `NETBREAK_STATE.md`. Scene/Prefab/기존 `.asset`/밸런스/Inspector 값은 변경하지 않았고 실제 Skill Tree asset도 생성하지 않았다.
+- 정적 점검으로 `ToolId` 정의가 기존 한 곳뿐임, 기존 Level Up 보상 호출이 Lv2/Lv3 `ToolAcquisition` 및 Lv4+ `PrototypeAugmentManager`를 계속 사용함, 새 Growth API가 기존 Gameplay 코드에서 호출되지 않음을 확인했다. Unity 실행, 컴파일, Console, Play Mode, Computer Use는 요청에 따라 수행하지 않았다. commit/push하지 않았다.
+- 다음 성장 단계는 G2 Core/Partner Acquisition 연결이다. G2 전까지 Lv2/Lv3 숙련 포인트 지급, Core/Partner 루트 비용 지출, Q/W 배정 전환은 의도적으로 미구현이다.

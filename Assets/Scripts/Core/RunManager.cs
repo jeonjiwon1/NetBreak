@@ -4,6 +4,7 @@ using UnityEngine;
 public class RunManager : MonoBehaviour
 {
     public RunToolLoadout ToolSlots { get; private set; }
+    public RunGrowthState GrowthState { get; private set; }
     public ToolSlotInput ToolInput { get; private set; }
     public ToolAcquisitionManager ToolAcquisition { get; private set; }
     public bool AreAugmentsUnlocked =>
@@ -87,6 +88,7 @@ public class RunManager : MonoBehaviour
         Instance = this;
 
         ToolSlots = new RunToolLoadout();
+        GrowthState = new RunGrowthState();
         ToolInput = new ToolSlotInput(ToolSlots);
         ToolAcquisition = GetComponent<ToolAcquisitionManager>();
         if (ToolAcquisition == null)
