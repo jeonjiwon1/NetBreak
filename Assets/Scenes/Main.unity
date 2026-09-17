@@ -19457,8 +19457,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 72210a83dafc70a41ac08ca92b9c672a, type: 2}
   activeRoute: {fileID: 506839061}
   bossEncounterController: {fileID: 33066316}
-  bossTestMode: 1
-  miniBossTestMode: 0
+  bossTestMode: 0
+  miniBossTestMode: 1
   poolSize: 200
   maxPoolSize: 320
   poolGrowthBatchSize: 20
