@@ -849,6 +849,7 @@ public sealed class SkillTreeManager : MonoBehaviour
         (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob) ||
         TacticalSkillManager.IsSelectionPendingOrActive ||
         TacticalSkillManager.IsTargeting ||
+        ItemRewardManager.IsSelectionPendingOrActive ||
         (PrototypeGameFlowManager.Instance != null && PrototypeGameFlowManager.Instance.IsGameEnded);
 
     private static void RestoreGameplaySpeed()

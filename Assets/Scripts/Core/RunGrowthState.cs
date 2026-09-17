@@ -30,9 +30,11 @@ public sealed class RunGrowthState
     private readonly RunGrowthAbilityState signatureAbility = new();
     private readonly HashSet<int> rewardedMiniBossAreas = new();
     private readonly HashSet<int> rewardedBossAreas = new();
+    private readonly RunItemInventory itemInventory = new();
 
     public RunSkillTreeProgress CoreTree => coreTree;
     public RunSkillTreeProgress PartnerTree => partnerTree;
+    public RunItemInventory ItemInventory => itemInventory;
     public ToolId SelectedCoreTool => coreTree.Tool;
     public ToolId SelectedPartnerTool => partnerTree.Tool;
     public int AvailableMasteryPoints { get; private set; }

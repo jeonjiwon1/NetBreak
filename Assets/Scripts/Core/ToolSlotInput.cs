@@ -40,6 +40,7 @@ public sealed class ToolSlotInput
         (PrototypeAugmentManager.Instance != null && PrototypeAugmentManager.Instance.IsChoosingAugment) ||
         (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob) ||
         TacticalSkillManager.IsSelectionPendingOrActive ||
+        ItemRewardManager.IsSelectionPendingOrActive ||
         (PrototypeGameFlowManager.Instance != null &&
             (PrototypeGameFlowManager.Instance.IsGameEnded ||
              PrototypeGameFlowManager.Instance.IsBossRewardPending));

@@ -651,6 +651,7 @@ public sealed class TacticalSkillManager : MonoBehaviour
         (ToolAcquisitionManager.Instance != null && ToolAcquisitionManager.Instance.IsAcquisitionPending) ||
         (PrototypeAugmentManager.Instance != null && PrototypeAugmentManager.Instance.IsShowingChoices) ||
         (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob) ||
+        ItemRewardManager.IsSelectionPendingOrActive ||
         (PrototypeGameFlowManager.Instance != null && PrototypeGameFlowManager.Instance.IsGameEnded);
 
     private static void ResumeGameplaySpeed()

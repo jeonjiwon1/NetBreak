@@ -93,7 +93,8 @@ public sealed class SkillTreeCanvas : MonoBehaviour
             (TacticalSkillManager.Instance != null && TacticalSkillManager.Instance.IsChoosing) ||
             (ToolAcquisitionManager.Instance != null && ToolAcquisitionManager.Instance.IsChoosingTool) ||
             (PrototypeAugmentManager.Instance != null && PrototypeAugmentManager.Instance.IsShowingChoices) ||
-            (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob);
+            (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob) ||
+            ItemRewardManager.IsSelectionPendingOrActive;
 
         if (externalModal && !movedBehindExternalModal)
         {
