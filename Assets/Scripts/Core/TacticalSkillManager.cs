@@ -66,6 +66,8 @@ public sealed class TacticalSkillManager : MonoBehaviour
     private bool isTargeting;
     private Vector2 targetPosition;
     private Vector2 focusedZonePosition;
+    private float activeFocusedDamageMultiplier = 1f;
+    private float targetingCastRadiusMultiplier = 1f;
     private LineRenderer focusedZoneVisual;
     private Material focusedZoneMaterial;
 
@@ -89,6 +91,25 @@ public sealed class TacticalSkillManager : MonoBehaviour
     }
 
     public string EquippedSkillName => GetSkillName(equippedSkill);
+    public string DescribeUpgrade(string effectId, float modifier)
+    {
+        if (effectId == SkillTreeEffectIds.TacticalCooldownMultiplier)
+            return $"재사용 대기시간 {GetBaselineCooldown(equippedSkill) * modifier:0.#}초";
+        if (effectId != SkillTreeEffectIds.TacticalEffectMultiplier) return string.Empty;
+        return equippedSkill switch
+        {
+            TacticalSkillId.RapidReeling =>
+                $"공격 속도 ×{rapidReelingSpeedMultiplier * modifier:0.##}",
+            TacticalSkillId.EmergencyLockdown =>
+                $"포획력·감속 강화 ×{emergencyLockdownEffectMultiplier * modifier:0.##}",
+            TacticalSkillId.EmergencyCastNet => $"투망 반경 ×{modifier:0.##}",
+            TacticalSkillId.Overbaiting =>
+                $"유인 반경 ×{overbaitingAttractionMultiplier * modifier:0.##}",
+            TacticalSkillId.FocusedOperation =>
+                $"Resistance 피해 ×{focusedOperationDamageMultiplier * modifier:0.##}",
+            _ => string.Empty
+        };
+    }
     public string HotbarStatus
     {
         get
@@ -249,7 +270,7 @@ public sealed class TacticalSkillManager : MonoBehaviour
 
         return Vector2.SqrMagnitude(fishPosition - focusedZonePosition) <=
             focusedOperationRadius * focusedOperationRadius
-                ? focusedOperationDamageMultiplier
+                ? activeFocusedDamageMultiplier
                 : 1f;
     }
 
@@ -315,25 +336,27 @@ public sealed class TacticalSkillManager : MonoBehaviour
                 if (fishingRodPlacement == null) return;
                 BeginTimedEffect(equippedSkill, rapidReelingDuration);
                 fishingRodPlacement.SetTacticalAttackSpeedMultiplier(
-                    rapidReelingSpeedMultiplier);
-                StartCooldown(rapidReelingCooldown);
+                    rapidReelingSpeedMultiplier * GetEffectUpgradeMultiplier());
+                StartCooldown(GetEffectiveCooldown(rapidReelingCooldown));
                 break;
             case TacticalSkillId.EmergencyLockdown:
                 if (netPlacement == null) return;
                 BeginTimedEffect(equippedSkill, emergencyLockdownDuration);
                 netPlacement.ActivateTacticalLockdown(
-                    emergencyLockdownEffectMultiplier);
-                StartCooldown(emergencyLockdownCooldown);
+                    emergencyLockdownEffectMultiplier * GetEffectUpgradeMultiplier());
+                StartCooldown(GetEffectiveCooldown(emergencyLockdownCooldown));
                 break;
             case TacticalSkillId.EmergencyCastNet:
                 if (castNet == null || !CanBeginTargeting()) return;
-                isTargeting = castNet.BeginTacticalAim();
+                targetingCastRadiusMultiplier = GetEffectUpgradeMultiplier();
+                isTargeting = castNet.BeginTacticalAim(targetingCastRadiusMultiplier);
                 break;
             case TacticalSkillId.Overbaiting:
                 if (bait == null) return;
                 BeginTimedEffect(equippedSkill, overbaitingDuration);
-                bait.SetTacticalAttractionMultiplier(overbaitingAttractionMultiplier);
-                StartCooldown(overbaitingCooldown);
+                bait.SetTacticalAttractionMultiplier(
+                    overbaitingAttractionMultiplier * GetEffectUpgradeMultiplier());
+                StartCooldown(GetEffectiveCooldown(overbaitingCooldown));
                 break;
             case TacticalSkillId.FocusedOperation:
                 if (!CanBeginTargeting()) return;
@@ -370,9 +393,10 @@ public sealed class TacticalSkillManager : MonoBehaviour
                 return;
             }
 
-            if (castNet == null || !castNet.ConfirmTacticalCast()) return;
+            if (castNet == null || !castNet.ConfirmTacticalCast(
+                    targetingCastRadiusMultiplier)) return;
             isTargeting = false;
-            StartCooldown(emergencyCastNetCooldown);
+            StartCooldown(GetEffectiveCooldown(emergencyCastNetCooldown));
             return;
         }
 
@@ -385,10 +409,12 @@ public sealed class TacticalSkillManager : MonoBehaviour
         }
 
         focusedZonePosition = targetPosition;
+        activeFocusedDamageMultiplier =
+            focusedOperationDamageMultiplier * GetEffectUpgradeMultiplier();
         isTargeting = false;
         BeginTimedEffect(TacticalSkillId.FocusedOperation, focusedOperationDuration);
         ShowFocusedZoneVisual(focusedZonePosition, focusedOperationRadius, false);
-        StartCooldown(focusedOperationCooldown);
+        StartCooldown(GetEffectiveCooldown(focusedOperationCooldown));
     }
 
     private void CancelTargeting()
@@ -446,6 +472,7 @@ public sealed class TacticalSkillManager : MonoBehaviour
                 bait?.SetTacticalAttractionMultiplier(1f);
                 break;
             case TacticalSkillId.FocusedOperation:
+                activeFocusedDamageMultiplier = 1f;
                 HideFocusedZoneVisual();
                 break;
         }
@@ -548,6 +575,16 @@ public sealed class TacticalSkillManager : MonoBehaviour
 
     private float GetCooldown(TacticalSkillId skill) => skill switch
     {
+        TacticalSkillId.RapidReeling => GetEffectiveCooldown(rapidReelingCooldown),
+        TacticalSkillId.EmergencyLockdown => GetEffectiveCooldown(emergencyLockdownCooldown),
+        TacticalSkillId.EmergencyCastNet => GetEffectiveCooldown(emergencyCastNetCooldown),
+        TacticalSkillId.Overbaiting => GetEffectiveCooldown(overbaitingCooldown),
+        TacticalSkillId.FocusedOperation => GetEffectiveCooldown(focusedOperationCooldown),
+        _ => 0f
+    };
+
+    private float GetBaselineCooldown(TacticalSkillId skill) => skill switch
+    {
         TacticalSkillId.RapidReeling => rapidReelingCooldown,
         TacticalSkillId.EmergencyLockdown => emergencyLockdownCooldown,
         TacticalSkillId.EmergencyCastNet => emergencyCastNetCooldown,
@@ -555,6 +592,20 @@ public sealed class TacticalSkillManager : MonoBehaviour
         TacticalSkillId.FocusedOperation => focusedOperationCooldown,
         _ => 0f
     };
+
+    private float GetEffectUpgradeMultiplier() =>
+        SkillTreeManager.Instance != null
+            ? SkillTreeManager.Instance.GetAbilityEffectValue(
+                GrowthAbilitySlot.TacticalE,
+                SkillTreeEffectIds.TacticalEffectMultiplier)
+            : 1f;
+
+    private float GetEffectiveCooldown(float baseline) => baseline *
+        (SkillTreeManager.Instance != null
+            ? SkillTreeManager.Instance.GetAbilityEffectValue(
+                GrowthAbilitySlot.TacticalE,
+                SkillTreeEffectIds.TacticalCooldownMultiplier)
+            : 1f);
 
     private static TacticalSkillId GetToolSkill(ToolId tool) => tool switch
     {

@@ -15,6 +15,8 @@ public static class SkillTreeUIGenerator
 {
     private const string MenuPath = "NETBREAK/UI/Generate Skill Tree UI";
     private const string PolishMenuPath = "NETBREAK/UI/Apply Skill Tree UI Polish";
+    private const string CompactMigrationMenuPath =
+        "NETBREAK/UI/Migrate Skill Tree UI To Compact Graph";
     private const string CanvasName = "GameCanvas";
     private const string RootName = "SkillTreeUI";
     private const string FontName = "NanumGothic-Bold SDF";
@@ -251,6 +253,310 @@ public static class SkillTreeUIGenerator
                 "변경을 Undo로 되돌렸습니다. Console을 확인하세요.",
                 "확인");
         }
+    }
+
+    [MenuItem(CompactMigrationMenuPath)]
+    private static void MigrateToCompactGraph()
+    {
+        if (EditorApplication.isPlayingOrWillChangePlaymode)
+        {
+            StopWithWarning("Play Mode에서는 Skill Tree UI를 마이그레이션할 수 없습니다.");
+            return;
+        }
+
+        SkillTreeCanvas[] controllers = Object.FindObjectsByType<SkillTreeCanvas>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+        if (controllers.Length != 1)
+        {
+            StopWithWarning("활성 Scene에서 유일한 SkillTreeCanvas를 찾을 수 없습니다.");
+            return;
+        }
+
+        SkillTreeCanvas controller = controllers[0];
+        GameObject treePanel = GetObjectReference<GameObject>(controller, "treePanel");
+        SkillTreeBranchView core = GetObjectReference<SkillTreeBranchView>(controller, "coreBranch");
+        SkillTreeBranchView partner = GetObjectReference<SkillTreeBranchView>(controller, "partnerBranch");
+        GameObject acquisitionPanel = GetObjectReference<GameObject>(controller, "acquisitionPanel");
+        if (treePanel == null || core == null || partner == null ||
+            acquisitionPanel == null ||
+            core.transform.parent != treePanel.transform ||
+            partner.transform.parent != treePanel.transform)
+        {
+            StopWithWarning("기존 SkillTreeUI의 Panel/Core/Partner 참조가 예상 구조와 달라 안전하게 이관할 수 없습니다.");
+            return;
+        }
+
+        SkillTreeBranchView tactical = GetObjectReference<SkillTreeBranchView>(
+            controller, "tacticalBranch");
+        SkillTreeBranchView signature = GetObjectReference<SkillTreeBranchView>(
+            controller, "signatureBranch");
+        Transform namedTactical = treePanel.transform.Find("TacticalViewport");
+        Transform namedSignature = treePanel.transform.Find("SignatureViewport");
+        if ((tactical == null) != (namedTactical == null) ||
+            (signature == null) != (namedSignature == null))
+        {
+            StopWithWarning("E/R Branch가 부분 생성된 상태입니다. 사용자 UI 보호를 위해 중단했습니다.");
+            return;
+        }
+
+        SkillTreeTooltip[] tooltips = controller.GetComponentsInChildren<SkillTreeTooltip>(true);
+        if (tooltips.Length > 1)
+        {
+            StopWithWarning("Skill Tree Tooltip이 중복되어 있어 이관을 중단했습니다.");
+            return;
+        }
+
+        Undo.IncrementCurrentGroup();
+        int undoGroup = Undo.GetCurrentGroup();
+        Undo.SetCurrentGroupName("Migrate NETBREAK Skill Tree Compact Graph");
+        try
+        {
+            SetRegion(core.transform as RectTransform,
+                new Vector2(0.025f, 0.47f), new Vector2(0.495f, 0.815f));
+            SetRegion(partner.transform as RectTransform,
+                new Vector2(0.505f, 0.47f), new Vector2(0.975f, 0.815f));
+
+            if (tactical == null)
+            {
+                GameObject clone = Object.Instantiate(core.gameObject, treePanel.transform);
+                clone.name = "TacticalViewport";
+                Undo.RegisterCreatedObjectUndo(clone, "Create Tactical Skill Tree Region");
+                tactical = clone.GetComponent<SkillTreeBranchView>();
+                SetObjectReference(controller, "tacticalBranch", tactical);
+            }
+            if (signature == null)
+            {
+                GameObject clone = Object.Instantiate(partner.gameObject, treePanel.transform);
+                clone.name = "SignatureViewport";
+                Undo.RegisterCreatedObjectUndo(clone, "Create Signature Skill Tree Region");
+                signature = clone.GetComponent<SkillTreeBranchView>();
+                SetObjectReference(controller, "signatureBranch", signature);
+            }
+            SetRegion(tactical.transform as RectTransform,
+                new Vector2(0.025f, 0.08f), new Vector2(0.495f, 0.455f));
+            SetRegion(signature.transform as RectTransform,
+                new Vector2(0.505f, 0.08f), new Vector2(0.975f, 0.455f));
+
+            SkillTreeBranchView[] branches = { core, partner, tactical, signature };
+            foreach (SkillTreeBranchView branch in branches)
+            {
+                ApplyCompactRoot(branch);
+                if (branch.GetComponent<CanvasGroup>() == null)
+                    Undo.AddComponent<CanvasGroup>(branch.gameObject);
+            }
+
+            SkillTreeNodeView template = GetObjectReference<SkillTreeNodeView>(core, "nodePrefab");
+            if (template == null || EditorUtility.IsPersistent(template))
+                throw new InvalidOperationException("Scene 내부 Node Template을 찾을 수 없습니다.");
+            ApplyCompactNodeTemplate(template);
+
+            if (tooltips.Length == 0)
+                CreateSharedTooltip(treePanel.transform, FindFont());
+
+            SkillTreeTooltip tooltip = controller.GetComponentInChildren<SkillTreeTooltip>(true);
+            if (tooltip == null)
+                throw new InvalidOperationException("공용 Skill Tree Tooltip을 준비할 수 없습니다.");
+            ConfigureSharedTooltip(tooltip, FindFont(), treePanel.transform as RectTransform);
+
+            Transform blockerTransform = treePanel.transform.Find("AcquisitionModalBlocker");
+            GameObject blocker;
+            if (blockerTransform == null)
+            {
+                blocker = CreateRect("AcquisitionModalBlocker", treePanel.transform,
+                    Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+                Undo.RegisterCreatedObjectUndo(blocker, "Create Skill Tree Acquisition Blocker");
+                Image blockerImage = blocker.AddComponent<Image>();
+                blockerImage.color = new Color(0f, 0f, 0f, 0.45f);
+                blockerImage.raycastTarget = true;
+            }
+            else
+            {
+                blocker = blockerTransform.gameObject;
+                Image blockerImage = blocker.GetComponent<Image>();
+                if (blockerImage == null)
+                    blockerImage = Undo.AddComponent<Image>(blocker);
+                Undo.RecordObject(blockerImage, "Configure Skill Tree Acquisition Blocker");
+                blockerImage.color = new Color(0f, 0f, 0f, 0.45f);
+                blockerImage.raycastTarget = true;
+            }
+            SetObjectReference(controller, "acquisitionBlocker", blocker);
+            blocker.SetActive(false);
+            tooltip.transform.SetAsLastSibling();
+            blocker.transform.SetAsLastSibling();
+            acquisitionPanel.transform.SetAsLastSibling();
+
+            EditorUtility.SetDirty(controller);
+            EditorSceneManager.MarkSceneDirty(controller.gameObject.scene);
+            Undo.CollapseUndoOperations(undoGroup);
+            Selection.activeGameObject = controller.gameObject;
+            Debug.Log(
+                "SkillTreeUIGenerator: 기존 SkillTreeUI를 Q/W/E/R Compact Graph로 이관했습니다. " +
+                "재실행 시 기존 Branch와 Tooltip을 재사용합니다.", controller);
+        }
+        catch (Exception exception)
+        {
+            Undo.RevertAllDownToGroup(undoGroup);
+            Debug.LogError("SkillTreeUI Compact Graph 이관 실패:\n" + exception);
+            EditorUtility.DisplayDialog("Skill Tree UI 이관 실패",
+                "변경을 Undo로 되돌렸습니다. Console을 확인하세요.", "확인");
+        }
+    }
+
+    private static void SetRegion(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax)
+    {
+        if (rect == null) throw new InvalidOperationException("Branch RectTransform이 없습니다.");
+        Undo.RecordObject(rect, "Resize Skill Tree Region");
+        rect.anchorMin = anchorMin;
+        rect.anchorMax = anchorMax;
+        rect.offsetMin = new Vector2(8f, 8f);
+        rect.offsetMax = new Vector2(-8f, -8f);
+    }
+
+    private static void ApplyCompactNodeTemplate(SkillTreeNodeView template)
+    {
+        Undo.RecordObject(template.gameObject, "Compact Skill Tree Node Template");
+        RectTransform rect = template.transform as RectTransform;
+        rect.sizeDelta = new Vector2(112f, 112f);
+        LayoutElement element = template.GetComponent<LayoutElement>();
+        if (element != null)
+        {
+            Undo.RecordObject(element, "Compact Skill Tree Node Layout");
+            element.preferredWidth = 112f;
+            element.preferredHeight = 112f;
+            element.minHeight = 96f;
+        }
+        VerticalLayoutGroup layout = template.GetComponent<VerticalLayoutGroup>();
+        if (layout != null)
+        {
+            Undo.RecordObject(layout, "Compact Skill Tree Node Layout");
+            layout.padding = new RectOffset(7, 7, 7, 7);
+            layout.spacing = 1f;
+            layout.childAlignment = TextAnchor.MiddleCenter;
+        }
+
+        TMP_Text title = GetObjectReference<TMP_Text>(template, "titleText");
+        TMP_Text description = GetObjectReference<TMP_Text>(template, "descriptionText");
+        TMP_Text rank = GetObjectReference<TMP_Text>(template, "rankText");
+        TMP_Text cost = GetObjectReference<TMP_Text>(template, "costText");
+        TMP_Text locked = GetObjectReference<TMP_Text>(template, "lockText");
+        if (title != null) { title.fontSize = 17f; title.alignment = TextAlignmentOptions.Center; }
+        if (rank != null) { rank.fontSize = 14f; rank.alignment = TextAlignmentOptions.Center; }
+        if (locked != null) { locked.fontSize = 13f; locked.alignment = TextAlignmentOptions.Center; }
+        if (description != null) description.gameObject.SetActive(false);
+        if (cost != null) cost.gameObject.SetActive(false);
+    }
+
+    private static void ApplyCompactRoot(SkillTreeBranchView branch)
+    {
+        Button rootButton = GetObjectReference<Button>(branch, "rootButton");
+        TMP_Text rootTitle = GetObjectReference<TMP_Text>(branch, "rootTitleText");
+        TMP_Text rootStatus = GetObjectReference<TMP_Text>(branch, "rootStatusText");
+        if (rootButton == null || rootTitle == null || rootStatus == null)
+            throw new InvalidOperationException($"{branch.name}의 잠금 Root 참조가 비어 있습니다.");
+
+        RectTransform rect = rootButton.transform as RectTransform;
+        Undo.RecordObject(rect, "Compact Skill Tree Lock Node");
+        rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 1f);
+        rect.pivot = new Vector2(0.5f, 1f);
+        rect.sizeDelta = new Vector2(112f, 88f);
+        LayoutElement element = rootButton.GetComponent<LayoutElement>();
+        if (element == null) element = Undo.AddComponent<LayoutElement>(rootButton.gameObject);
+        Undo.RecordObject(element, "Compact Skill Tree Lock Node Layout");
+        element.preferredWidth = 112f;
+        element.preferredHeight = 88f;
+        element.minWidth = 96f;
+        element.minHeight = 80f;
+        element.flexibleWidth = 0f;
+        element.flexibleHeight = 0f;
+
+        Undo.RecordObject(rootTitle, "Compact Skill Tree Lock Node Text");
+        rootTitle.fontSize = 20f;
+        rootTitle.enableAutoSizing = false;
+        rootTitle.alignment = TextAlignmentOptions.Center;
+        Undo.RecordObject(rootStatus, "Compact Skill Tree Lock Node Status");
+        rootStatus.fontSize = 13f;
+        rootStatus.enableAutoSizing = false;
+        rootStatus.alignment = TextAlignmentOptions.Center;
+
+        VerticalLayoutGroup parentLayout = rootButton.transform.parent != null
+            ? rootButton.transform.parent.GetComponent<VerticalLayoutGroup>()
+            : null;
+        if (parentLayout != null)
+        {
+            Undo.RecordObject(parentLayout, "Compact Skill Tree Branch Layout");
+            parentLayout.childForceExpandWidth = false;
+            parentLayout.childAlignment = TextAnchor.UpperCenter;
+        }
+    }
+
+    private static void CreateSharedTooltip(Transform parent, TMP_FontAsset font)
+    {
+        GameObject panel = CreateRect("SharedNodeTooltip", parent,
+            new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+            new Vector2(-170f, -135f), new Vector2(170f, 135f));
+        Undo.RegisterCreatedObjectUndo(panel, "Create Skill Tree Tooltip");
+        Image image = panel.AddComponent<Image>();
+        image.color = new Color(0.025f, 0.055f, 0.075f, 0.98f);
+        image.raycastTarget = false;
+        TextMeshProUGUI label = CreateLayoutText("TooltipText", panel.transform,
+            "", font, 16f, FontStyles.Normal, TextAlignmentOptions.TopLeft, 0f, true);
+        RectTransform labelRect = label.rectTransform;
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = new Vector2(16f, 14f);
+        labelRect.offsetMax = new Vector2(-16f, -14f);
+        label.raycastTarget = false;
+        SkillTreeTooltip tooltip = panel.AddComponent<SkillTreeTooltip>();
+        SetObjectReference(tooltip, "panel", panel.transform as RectTransform);
+        SetObjectReference(tooltip, "label", label);
+        SetObjectReference(tooltip, "visibleBounds", parent as RectTransform);
+        panel.SetActive(false);
+    }
+
+    private static void ConfigureSharedTooltip(
+        SkillTreeTooltip tooltip,
+        TMP_FontAsset font,
+        RectTransform visibleBounds)
+    {
+        RectTransform panel = tooltip.transform as RectTransform;
+        TMP_Text label = GetObjectReference<TMP_Text>(tooltip, "label") ??
+            tooltip.GetComponentInChildren<TMP_Text>(true);
+        if (panel == null || label == null)
+            throw new InvalidOperationException("Tooltip Panel 또는 Text 참조가 비어 있습니다.");
+
+        Undo.RecordObject(panel, "Configure Skill Tree Tooltip Panel");
+        panel.anchorMin = panel.anchorMax = new Vector2(0.5f, 0.5f);
+        panel.pivot = new Vector2(0f, 1f);
+        panel.sizeDelta = new Vector2(430f, 300f);
+
+        Undo.RecordObject(label, "Configure Skill Tree Tooltip Text");
+        if (font != null) label.font = font;
+        label.fontSize = 17f;
+        label.enableAutoSizing = false;
+        label.textWrappingMode = TextWrappingModes.Normal;
+        label.overflowMode = TextOverflowModes.Overflow;
+        label.alignment = TextAlignmentOptions.TopLeft;
+        label.lineSpacing = 4f;
+        label.richText = true;
+        label.raycastTarget = false;
+
+        SerializedObject serialized = new(tooltip);
+        serialized.FindProperty("panel").objectReferenceValue = panel;
+        serialized.FindProperty("label").objectReferenceValue = label;
+        serialized.FindProperty("visibleBounds").objectReferenceValue = visibleBounds;
+        serialized.FindProperty("offset").vector2Value = new Vector2(22f, -14f);
+        serialized.FindProperty("tooltipWidth").floatValue = 430f;
+        serialized.FindProperty("minimumHeight").floatValue = 220f;
+        serialized.FindProperty("maximumHeight").floatValue = 430f;
+        serialized.FindProperty("horizontalPadding").floatValue = 22f;
+        serialized.FindProperty("verticalPadding").floatValue = 18f;
+        serialized.ApplyModifiedProperties();
+
+        CanvasGroup group = tooltip.GetComponent<CanvasGroup>();
+        if (group == null) group = Undo.AddComponent<CanvasGroup>(tooltip.gameObject);
+        Undo.RecordObject(group, "Configure Skill Tree Tooltip Raycast");
+        group.interactable = false;
+        group.blocksRaycasts = false;
     }
 
     private static bool ValidateExistingState(Scene scene, Canvas gameCanvas)

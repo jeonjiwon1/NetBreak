@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 public sealed class SkillTreePanZoom : MonoBehaviour,
     IBeginDragHandler,
     IDragHandler,
+    IEndDragHandler,
     IScrollHandler
 {
     [SerializeField] private RectTransform content;
@@ -16,6 +17,7 @@ public sealed class SkillTreePanZoom : MonoBehaviour,
 
     private Vector2 startPointerPosition;
     private Vector2 startAnchoredPosition;
+    public static bool IsDragging { get; private set; }
 
     private void Awake()
     {
@@ -36,6 +38,7 @@ public sealed class SkillTreePanZoom : MonoBehaviour,
 
         startPointerPosition = eventData.position;
         startAnchoredPosition = content.anchoredPosition;
+        IsDragging = true;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -48,6 +51,16 @@ public sealed class SkillTreePanZoom : MonoBehaviour,
         float scaleFactor = canvas != null ? Mathf.Max(0.01f, canvas.scaleFactor) : 1f;
         Vector2 delta = (eventData.position - startPointerPosition) / scaleFactor;
         content.anchoredPosition = startAnchoredPosition + delta * panSensitivity;
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        IsDragging = false;
+    }
+
+    private void OnDisable()
+    {
+        IsDragging = false;
     }
 
     public void OnScroll(PointerEventData eventData)

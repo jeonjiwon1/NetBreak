@@ -48,17 +48,23 @@ public sealed class SkillTreeCanvas : MonoBehaviour
     [Header("Branches")]
     [SerializeField] private SkillTreeBranchView coreBranch;
     [SerializeField] private SkillTreeBranchView partnerBranch;
+    [SerializeField] private SkillTreeBranchView tacticalBranch;
+    [SerializeField] private SkillTreeBranchView signatureBranch;
 
     [Header("Acquisition")]
+    [SerializeField] private GameObject acquisitionBlocker;
     [SerializeField] private GameObject acquisitionPanel;
     [SerializeField] private TMP_Text acquisitionTitleText;
     [SerializeField] private AcquisitionChoiceView[] acquisitionChoices =
         Array.Empty<AcquisitionChoiceView>();
 
     private SkillTreeManager manager;
+    private int originalSiblingIndex;
+    private bool movedBehindExternalModal;
 
     private void Start()
     {
+        originalSiblingIndex = transform.GetSiblingIndex();
         manager = SkillTreeManager.Instance;
         if (closeButton != null)
         {
@@ -77,7 +83,30 @@ public sealed class SkillTreeCanvas : MonoBehaviour
             BindChoiceButtons();
         }
 
+        UpdateExternalModalSorting();
         Refresh();
+    }
+
+    private void UpdateExternalModalSorting()
+    {
+        bool externalModal =
+            (TacticalSkillManager.Instance != null && TacticalSkillManager.Instance.IsChoosing) ||
+            (ToolAcquisitionManager.Instance != null && ToolAcquisitionManager.Instance.IsChoosingTool) ||
+            (PrototypeAugmentManager.Instance != null && PrototypeAugmentManager.Instance.IsShowingChoices) ||
+            (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob);
+
+        if (externalModal && !movedBehindExternalModal)
+        {
+            transform.SetAsFirstSibling();
+            movedBehindExternalModal = true;
+        }
+        else if (!externalModal && movedBehindExternalModal)
+        {
+            transform.SetSiblingIndex(Mathf.Min(
+                originalSiblingIndex,
+                transform.parent != null ? transform.parent.childCount - 1 : 0));
+            movedBehindExternalModal = false;
+        }
     }
 
     public void ToggleTreeFromUI()
@@ -113,6 +142,7 @@ public sealed class SkillTreeCanvas : MonoBehaviour
 
         if (!show || manager == null)
         {
+            SkillTreeTooltip.HideShared();
             return;
         }
 
@@ -138,21 +168,32 @@ public sealed class SkillTreeCanvas : MonoBehaviour
 
         coreBranch?.Refresh(manager, GrowthToolRole.Core);
         partnerBranch?.Refresh(manager, GrowthToolRole.Partner);
+        tacticalBranch?.RefreshAbility(manager, GrowthAbilitySlot.TacticalE);
+        signatureBranch?.RefreshAbility(manager, GrowthAbilitySlot.SignatureR);
         RefreshAcquisition();
     }
 
     private void RefreshAcquisition()
     {
         bool show = manager.IsMandatoryAcquisition;
+        if (acquisitionBlocker != null && acquisitionBlocker.activeSelf != show)
+        {
+            acquisitionBlocker.SetActive(show);
+        }
         if (acquisitionPanel != null && acquisitionPanel.activeSelf != show)
         {
             acquisitionPanel.SetActive(show);
         }
 
+        SetBranchInteraction(!show);
         if (!show)
         {
             return;
         }
+
+        SkillTreeTooltip.HideShared();
+        acquisitionBlocker?.transform.SetAsLastSibling();
+        acquisitionPanel?.transform.SetAsLastSibling();
 
         if (acquisitionTitleText != null)
         {
@@ -165,5 +206,27 @@ public sealed class SkillTreeCanvas : MonoBehaviour
         {
             acquisitionChoices[i]?.Refresh(i, manager);
         }
+    }
+
+    private void SetBranchInteraction(bool enabled)
+    {
+        SetInteraction(coreBranch, enabled);
+        SetInteraction(partnerBranch, enabled);
+        SetInteraction(tacticalBranch, enabled);
+        SetInteraction(signatureBranch, enabled);
+    }
+
+    private static void SetInteraction(SkillTreeBranchView branch, bool enabled)
+    {
+        if (branch == null) return;
+        CanvasGroup group = branch.GetComponent<CanvasGroup>() ??
+            branch.gameObject.AddComponent<CanvasGroup>();
+        group.interactable = enabled;
+        group.blocksRaycasts = enabled;
+    }
+
+    private void OnDisable()
+    {
+        SkillTreeTooltip.HideShared();
     }
 }

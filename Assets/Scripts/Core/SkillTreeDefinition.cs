@@ -7,13 +7,17 @@ using UnityEngine;
     menuName = "NETBREAK/Growth/Skill Tree Definition")]
 public sealed class SkillTreeDefinition : ScriptableObject
 {
+    [SerializeField] private GrowthTreeCategory category;
     [SerializeField] private string treeId;
+    [SerializeField] private string abilityId;
     [SerializeField] private ToolId tool;
     [SerializeField] private GrowthToolRole role;
     [SerializeField] private SkillTreeNodeDefinition[] nodes =
         Array.Empty<SkillTreeNodeDefinition>();
 
+    public GrowthTreeCategory Category => category;
     public string TreeId => treeId;
+    public string AbilityId => abilityId;
     public ToolId Tool => tool;
     public GrowthToolRole Role => role;
     public IReadOnlyList<SkillTreeNodeDefinition> Nodes =>
@@ -48,11 +52,35 @@ public sealed class SkillTreeDefinition : ScriptableObject
         SkillTreeDefinition definition = CreateInstance<SkillTreeDefinition>();
         definition.hideFlags = HideFlags.HideAndDontSave;
         definition.treeId = id;
+        definition.category = GrowthTreeCategory.Tool;
         definition.tool = definitionTool;
         definition.role = definitionRole;
         definition.nodes = definitionNodes ?? Array.Empty<SkillTreeNodeDefinition>();
         return definition;
     }
+
+    public static SkillTreeDefinition CreateAbilityRuntime(
+        string id,
+        GrowthTreeCategory definitionCategory,
+        string definitionAbilityId,
+        params SkillTreeNodeDefinition[] definitionNodes)
+    {
+        SkillTreeDefinition definition = CreateInstance<SkillTreeDefinition>();
+        definition.hideFlags = HideFlags.HideAndDontSave;
+        definition.category = definitionCategory;
+        definition.treeId = id;
+        definition.abilityId = definitionAbilityId;
+        definition.tool = ToolId.None;
+        definition.nodes = definitionNodes ?? Array.Empty<SkillTreeNodeDefinition>();
+        return definition;
+    }
+}
+
+public enum GrowthTreeCategory
+{
+    Tool = 0,
+    TacticalE = 1,
+    SignatureR = 2
 }
 
 [Serializable]
@@ -65,6 +93,7 @@ public sealed class SkillTreeNodeDefinition
         Array.Empty<SkillTreeNodePrerequisite>();
     [SerializeField] private SkillTreeRankDefinition[] ranks =
         Array.Empty<SkillTreeRankDefinition>();
+    [SerializeField] private Vector2 graphPosition;
 
     public string NodeId => nodeId;
     public string DisplayName => displayName;
@@ -72,19 +101,22 @@ public sealed class SkillTreeNodeDefinition
     public IReadOnlyList<SkillTreeNodePrerequisite> Prerequisites =>
         prerequisites ?? Array.Empty<SkillTreeNodePrerequisite>();
     public int MaxRank => ranks?.Length ?? 0;
+    public Vector2 GraphPosition => graphPosition;
 
     public SkillTreeNodeDefinition(
         string id,
         string name,
         string nodeDescription,
         SkillTreeNodePrerequisite[] nodePrerequisites,
-        SkillTreeRankDefinition[] nodeRanks)
+        SkillTreeRankDefinition[] nodeRanks,
+        Vector2 nodeGraphPosition = default)
     {
         nodeId = id;
         displayName = name;
         description = nodeDescription;
         prerequisites = nodePrerequisites ?? Array.Empty<SkillTreeNodePrerequisite>();
         ranks = nodeRanks ?? Array.Empty<SkillTreeRankDefinition>();
+        graphPosition = nodeGraphPosition;
     }
 
     public SkillTreeRankDefinition GetRank(int zeroBasedRankIndex) =>

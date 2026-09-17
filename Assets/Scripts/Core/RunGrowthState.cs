@@ -246,15 +246,70 @@ public sealed class RunGrowthState
         }
 
         int cost = nextRank.MasteryPointCost;
-        if (!TrySpendMasteryPoints(cost))
+        if (!CanSpendMasteryPoints(cost) ||
+            cost > int.MaxValue - SpentMasteryPoints)
         {
             return false;
         }
 
+        AvailableMasteryPoints -= cost;
+        SpentMasteryPoints += cost;
         progress.SetNodeRank(
             treeDefinition.TreeId,
             node.NodeId,
             currentRank + 1);
+        AvailableMasteryPointsChanged?.Invoke(AvailableMasteryPoints);
+        return true;
+    }
+
+    public bool TryPurchaseAbilityNodeRank(
+        GrowthAbilitySlot slot,
+        SkillTreeDefinition treeDefinition,
+        string nodeId,
+        SkillTreeProgressionContext context)
+    {
+        if (!Enum.IsDefined(typeof(GrowthAbilitySlot), slot) ||
+            treeDefinition == null ||
+            treeDefinition.Category != (slot == GrowthAbilitySlot.TacticalE
+                ? GrowthTreeCategory.TacticalE
+                : GrowthTreeCategory.SignatureR) ||
+            !treeDefinition.TryGetNode(nodeId, out SkillTreeNodeDefinition node))
+        {
+            return false;
+        }
+
+        RunGrowthAbilityState ability = GetAbility(slot);
+        if (!ability.IsUnlocked ||
+            string.IsNullOrWhiteSpace(ability.EquippedAbilityId) ||
+            !string.Equals(ability.EquippedAbilityId, treeDefinition.AbilityId,
+                StringComparison.Ordinal) ||
+            (!string.IsNullOrEmpty(ability.TreeId) &&
+             !string.Equals(ability.TreeId, treeDefinition.TreeId,
+                StringComparison.Ordinal)))
+        {
+            return false;
+        }
+
+        int currentRank = ability.GetNodeRank(node.NodeId);
+        if (currentRank >= node.MaxRank ||
+            currentRank >= node.GetCurrentRankLimit(context) ||
+            !ArePrerequisitesMet(ability, node))
+        {
+            return false;
+        }
+
+        SkillTreeRankDefinition nextRank = node.GetRank(currentRank);
+        int cost = nextRank?.MasteryPointCost ?? 0;
+        if (nextRank == null || !CanSpendMasteryPoints(cost) ||
+            cost > int.MaxValue - SpentMasteryPoints)
+        {
+            return false;
+        }
+
+        AvailableMasteryPoints -= cost;
+        SpentMasteryPoints += cost;
+        ability.SetNodeRank(treeDefinition.TreeId, node.NodeId, currentRank + 1);
+        AvailableMasteryPointsChanged?.Invoke(AvailableMasteryPoints);
         return true;
     }
 
@@ -279,6 +334,26 @@ public sealed class RunGrowthState
         IReadOnlyList<SkillTreeNodePrerequisite> prerequisites =
             node.Prerequisites;
 
+        for (int i = 0; i < prerequisites.Count; i++)
+        {
+            SkillTreeNodePrerequisite prerequisite = prerequisites[i];
+            if (prerequisite == null ||
+                string.IsNullOrWhiteSpace(prerequisite.NodeId) ||
+                prerequisite.RequiredRank <= 0 ||
+                progress.GetNodeRank(prerequisite.NodeId) < prerequisite.RequiredRank)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool ArePrerequisitesMet(
+        RunGrowthAbilityState progress,
+        SkillTreeNodeDefinition node)
+    {
+        IReadOnlyList<SkillTreeNodePrerequisite> prerequisites = node.Prerequisites;
         for (int i = 0; i < prerequisites.Count; i++)
         {
             SkillTreeNodePrerequisite prerequisite = prerequisites[i];
@@ -342,8 +417,25 @@ public sealed class RunSkillTreeProgress
 
 public sealed class RunGrowthAbilityState
 {
+    private readonly Dictionary<string, int> purchasedNodeRanks =
+        new(StringComparer.Ordinal);
+
     public bool IsUnlocked { get; private set; }
     public string EquippedAbilityId { get; private set; } = string.Empty;
+    public string TreeId { get; private set; } = string.Empty;
+    public IReadOnlyDictionary<string, int> PurchasedNodeRanks => purchasedNodeRanks;
+
+    public int GetNodeRank(string nodeId) =>
+        !string.IsNullOrWhiteSpace(nodeId) &&
+        purchasedNodeRanks.TryGetValue(nodeId, out int rank)
+            ? rank
+            : 0;
+
+    internal void SetNodeRank(string treeId, string nodeId, int rank)
+    {
+        TreeId = treeId;
+        purchasedNodeRanks[nodeId] = rank;
+    }
 
     internal bool Unlock()
     {

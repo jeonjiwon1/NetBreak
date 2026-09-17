@@ -16,6 +16,12 @@ public static class SkillTreeEffectIds
     public const string CastNetCharges = "cast_net_charges";
     public const string BaitRadius = "bait_radius";
     public const string BaitDuration = "bait_duration";
+    public const string TacticalEffectMultiplier = "tactical_effect_multiplier";
+    public const string TacticalCooldownMultiplier = "tactical_cooldown_multiplier";
+    public const string SignatureTraversalCount = "signature_traversal_count";
+    public const string SignatureDurationMultiplier = "signature_duration_multiplier";
+    public const string SignatureDamageMultiplier = "signature_damage_multiplier";
+    public const string SignatureCastCount = "signature_cast_count";
 }
 
 public static class VerticalSliceSkillTreeDefaults
@@ -30,8 +36,102 @@ public static class VerticalSliceSkillTreeDefaults
         AddForRole(definitions, ToolId.Net, GrowthToolRole.Partner);
         AddForRole(definitions, ToolId.CastNet, GrowthToolRole.Partner);
         AddForRole(definitions, ToolId.Bait, GrowthToolRole.Partner);
+        AddTacticalDefinitions(definitions);
+        AddSignatureDefinitions(definitions);
         return definitions;
     }
+
+    private static void AddTacticalDefinitions(
+        ICollection<SkillTreeDefinition> definitions)
+    {
+        AddTactical(definitions, TacticalSkillManager.RapidReelingAbilityId,
+            "급속 릴링", 1.25f, 20f / 24f);
+        AddTactical(definitions, TacticalSkillManager.EmergencyLockdownAbilityId,
+            "긴급 봉쇄", 2f / 1.75f, 24f / 28f);
+        AddTactical(definitions, TacticalSkillManager.EmergencyCastNetAbilityId,
+            "비상 투망", 1.2f, 15f / 18f);
+        AddTactical(definitions, TacticalSkillManager.OverbaitingAbilityId,
+            "과잉 집어", 2.1f / 1.75f, 18f / 22f);
+        AddTactical(definitions, TacticalSkillManager.FocusedOperationAbilityId,
+            "집중 조업", 1.8f / 1.5f, 22f / 26f);
+    }
+
+    private static void AddTactical(
+        ICollection<SkillTreeDefinition> definitions,
+        string abilityId,
+        string skillName,
+        float effectMultiplier,
+        float cooldownMultiplier)
+    {
+        string suffix = abilityId.Replace('.', '_');
+        definitions.Add(SkillTreeDefinition.CreateAbilityRuntime(
+            $"vs_e_{suffix}",
+            GrowthTreeCategory.TacticalE,
+            abilityId,
+            new SkillTreeNodeDefinition(
+                $"{suffix}_effect", "효과", $"{skillName}의 효과를 강화합니다.",
+                Array.Empty<SkillTreeNodePrerequisite>(),
+                new[] { AbilityRank(1, SkillTreeEffectIds.TacticalEffectMultiplier, effectMultiplier) },
+                new UnityEngine.Vector2(-90f, 0f)),
+            new SkillTreeNodeDefinition(
+                $"{suffix}_cooldown", "재사용", $"{skillName}의 재사용 대기시간을 줄입니다.",
+                Array.Empty<SkillTreeNodePrerequisite>(),
+                new[] { AbilityRank(2, SkillTreeEffectIds.TacticalCooldownMultiplier, cooldownMultiplier) },
+                new UnityEngine.Vector2(90f, 0f))));
+    }
+
+    private static void AddSignatureDefinitions(
+        ICollection<SkillTreeDefinition> definitions)
+    {
+        definitions.Add(SkillTreeDefinition.CreateAbilityRuntime(
+            "vs_r_fishing_ground_crossing", GrowthTreeCategory.SignatureR,
+            SignatureSkillManager.FishingGroundCrossingAbilityId,
+            new SkillTreeNodeDefinition(
+                "r_traversals", "횡단", "어장 대횡단의 연속 횡단 횟수를 늘립니다.",
+                Array.Empty<SkillTreeNodePrerequisite>(),
+                new[]
+                {
+                    AbilityRank(2, SkillTreeEffectIds.SignatureTraversalCount, 2f),
+                    AbilityRank(3, SkillTreeEffectIds.SignatureTraversalCount, 3f)
+                }, UnityEngine.Vector2.zero)));
+
+        definitions.Add(SkillTreeDefinition.CreateAbilityRuntime(
+            "vs_r_cross_lockdown", GrowthTreeCategory.SignatureR,
+            SignatureSkillManager.CrossLockdownAbilityId,
+            new SkillTreeNodeDefinition(
+                "r_duration", "지속", "교차 봉쇄의 지속시간을 늘립니다.",
+                Array.Empty<SkillTreeNodePrerequisite>(),
+                new[]
+                {
+                    AbilityRank(2, SkillTreeEffectIds.SignatureDurationMultiplier, 8f / 6f),
+                    AbilityRank(3, SkillTreeEffectIds.SignatureDurationMultiplier, 10f / 6f)
+                }, new UnityEngine.Vector2(-90f, 0f)),
+            new SkillTreeNodeDefinition(
+                "r_damage", "저항 피해", "교차 봉쇄의 Resistance 초당 피해를 높입니다.",
+                Array.Empty<SkillTreeNodePrerequisite>(),
+                new[]
+                {
+                    AbilityRank(2, SkillTreeEffectIds.SignatureDamageMultiplier, 1.33f),
+                    AbilityRank(3, SkillTreeEffectIds.SignatureDamageMultiplier, 1.67f)
+                }, new UnityEngine.Vector2(90f, 0f))));
+
+        definitions.Add(SkillTreeDefinition.CreateAbilityRuntime(
+            "vs_r_heavenly_net", GrowthTreeCategory.SignatureR,
+            SignatureSkillManager.HeavenlyNetAbilityId,
+            new SkillTreeNodeDefinition(
+                "r_casts", "연속 투망", "천망의 연속 시전 횟수를 늘립니다.",
+                Array.Empty<SkillTreeNodePrerequisite>(),
+                new[]
+                {
+                    AbilityRank(2, SkillTreeEffectIds.SignatureCastCount, 2f),
+                    AbilityRank(3, SkillTreeEffectIds.SignatureCastCount, 3f)
+                }, UnityEngine.Vector2.zero)));
+    }
+
+    private static SkillTreeRankDefinition AbilityRank(
+        int cost, string effectId, float value) =>
+        new(cost, new SkillTreeRankUnlockCondition(0, 1),
+            new SkillTreeBalanceEffect(effectId, value));
 
     private static void AddForRole(
         ICollection<SkillTreeDefinition> definitions,

@@ -231,3 +231,18 @@ FULL RUN #2 수동 검증 및 실측.
 - 초기 풀 200은 유지하고, 부족할 때 20개 단위로 최대 320까지 확장하는 bounded pool을 `FishSpawner`에 추가했다. 무제한 Instantiate는 하지 않으며 상한 도달 뒤에는 기존처럼 스폰을 누락하되 경고는 프레임당 한 번으로 합쳐 현재/최대 크기를 표시한다. 세 값은 기존 FishSpawner Inspector의 Pool 구역에서 조절한다.
 - Fish는 포획(`FishController.Capture`) 또는 경로 Destination 도달(`FishMovement.ReachDestination`) 시 `SetActive(false)`되고 같은 풀 항목으로 재사용된다. G4-C1의 세 R도 기존 `TakeCaptureDamage → Capture` 경로를 사용하므로 별도 반환 누수는 확인되지 않았다.
 - 물고기 수, 구간별 스폰 요청량/간격, 경로, 난이도는 변경하지 않았다. Scene/Prefab YAML, Unity 실행, commit/push는 수행하지 않았다. Roslyn 소스 컴파일과 diff 정적 검증 뒤 Unity에서 Rush/Final 동시 활성 수와 경고 재발 여부를 확인해야 한다.
+
+## 최근 변경 — G4-C2 E/R 강화와 Compact Skill Tree Graph
+
+- `RunGrowthState`의 기존 E/R 상태에 안정적인 Tree/Node Rank 저장과 원자적 구매를 확장했다. Q/W/E/R은 기존 공용 숙련 포인트 잔액을 사용하며, 장착 Ability ID·해금·Rank Cap·선행 조건·잔액을 모두 통과한 경우에만 한 번 차감하고 한 랭크를 기록한다. UI에는 짧은 실시간 구매 간격 잠금도 있어 더블클릭이 다음 랭크까지 연속 구매하는 것을 막는다. 새 Run은 새 `RunGrowthState`와 함께 E/R 해금·랭크를 초기화한다.
+- E는 선택된 스킬에만 독립 단일 랭크 `효과` 1P와 `재사용` 2P를 제공한다. Main Scene 직렬화 기본값 기준 유효값은 급속 릴링 ×2→×2.5/24→20초, 긴급 봉쇄 ×1.75→×2/28→24초, 비상 투망 반경 ×1→×1.2/18→15초, 과잉 집어 ×1.75→×2.1/22→18초, 집중 조업 피해 ×1.5→×1.8/26→22초다. 비상 투망은 실제 `CastNetController` 판정 반경을 확장하되 일반 충전을 소비하지 않고 기존 Hold/Release/RMB·Escape 취소를 유지한다.
+- R은 Core에 해당하는 정의만 사용한다. 어장 대횡단은 `횡단` 2P/3P로 1→2→3회, 교차 봉쇄는 독립 `지속`과 `저항 피해`가 각각 2P/3P로 기본 지속 ×1→×1.333→×1.667 및 기본 DPS ×1→×1.33→×1.67, 천망은 `연속 투망` 2P/3P로 1→2→3회다. 0.6초 간격, 각 후속 시전의 현재 커서, 횡단별 적중 dedup, 범주별 피해·이동 회복은 기존 경로를 유지한다. 개발용 `Development/Unlock Core Signature R`과 실제 Boss +2/해금 흐름도 유지했다.
+- E/R Manager의 Inspector 값이 authoritative baseline이며 Definition은 상대 조정값과 비용만 가진다. 구매는 직렬화 필드를 변경하지 않는다. E/R 모두 발동 시 유효 횟수·배율·지속시간을 스냅샷하므로 진행 중 쿨다운 및 활성 임시 효과를 Tree 구매가 소급 변경하지 않는다.
+- `SkillTreeUI`는 Q/W/E/R 4영역의 112px Compact Node, Rank Badge/잠금 상태, 실제 prerequisite 선, Pan/Zoom, 공용 Hover Tooltip을 지원한다. Tooltip은 전체 한국어 이름·설명·현재/다음 실제 효과·랭크·비용·선행 조건·잠금/포인트 부족/최대 랭크를 표시하고 Raycast를 차단하지 않으며 화면 경계 안에 고정한다. 노드/선은 Definition 변경 때만 재구성하고 매 프레임은 상태만 갱신한다.
+- 명시적 Editor 메뉴 `NETBREAK/UI/Migrate Skill Tree UI To Compact Graph`가 기존 UI를 보존하며 Q/W를 상단, E/R을 하단으로 재배치하고 E/R Branch·공용 Tooltip을 추가한다. 부분 구조·중복·외부 Template이면 중단하고 Undo·재실행을 지원한다. 별도 Inspector 할당은 없으며 실행 후 Scene 저장은 사용자가 한다.
+- Scene/Prefab/YAML, FishSpawner, 물고기/도구 기본 밸런스, EXP/Gold/보상 수치는 수정하지 않았다. Unity/Computer Use/Play Mode/Console/메뉴 실행/Scene 저장/commit/push는 수행하지 않았다. 기존 Bee 응답 파일을 사용한 외부 Roslyn runtime/editor 컴파일은 오류 없이 통과했으며 source generator 버전 경고만 있었다. 실제 Unity Compile/Console, 마이그레이션 시각 확인, Q/W 획득 회귀, 각 E/R 구매·효과·Pause/취소/새 Run 초기화는 사용자 검증이 필요하다. FishSpawner bounded pool의 Rush/Final 런타임 회귀 확인도 여전히 필요하다.
+
+### G4-C2 첫 UI 검증 보정
+
+- 첫 Unity UI 검증에서 후순위로 추가된 E/R Branch가 기존 Core/Partner `AcquisitionPanel`보다 위에 렌더링되고, 비활성 공용 Tooltip을 첫 Hover로 활성화할 때 `Awake → HideAll`이 `Show`가 설정한 anchor를 지워 `PositionPanel` NullReferenceException이 발생하는 것을 확인했다. Tooltip 초기화를 활성 상태와 분리하고 null 수명 방어를 추가했으며, 제목 21/body 17/정보 15 크기와 430px 가변 높이·화면 경계 보정을 적용했다.
+- 기존 `NETBREAK/UI/Migrate Skill Tree UI To Compact Graph` 메뉴는 이미 이관된 Scene을 재사용해 전면 `AcquisitionModalBlocker`, Branch CanvasGroup 입력 차단, Acquisition 최상위 sibling, Tooltip 가독성 설정과 작은 112×88 잠금 Root를 보정한다. 외부 Tool/E/Job 선택 모달 동안 `SkillTreeUI` 전체를 뒤로 보내 기존 전체 화면 raycast blocker가 항상 우선한다. 성장 데이터·구매·효과·비용은 변경하지 않았으며 Unity 실행과 Scene 저장은 사용자 검증으로 남아 있다.

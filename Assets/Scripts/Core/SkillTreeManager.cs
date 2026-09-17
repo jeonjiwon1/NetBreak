@@ -43,6 +43,7 @@ public sealed class SkillTreeManager : MonoBehaviour
     private bool isOpen;
     private bool canInteract;
     private float unlockTime;
+    private float nextPurchaseTime;
     private string notice = string.Empty;
 
     public static SkillTreeManager Instance { get; private set; }
@@ -226,9 +227,39 @@ public sealed class SkillTreeManager : MonoBehaviour
             : FindDefinition(fallbackDefinitions, role, tool);
     }
 
+    public SkillTreeDefinition GetAbilityDefinition(GrowthAbilitySlot slot)
+    {
+        RunGrowthState growth = GetGrowthState();
+        if (growth == null)
+        {
+            return null;
+        }
+
+        string abilityId = growth.GetAbility(slot).EquippedAbilityId;
+        if (slot == GrowthAbilitySlot.SignatureR && string.IsNullOrEmpty(abilityId))
+        {
+            abilityId = growth.SelectedCoreTool switch
+            {
+                ToolId.FishingRod => SignatureSkillManager.FishingGroundCrossingAbilityId,
+                ToolId.Net => SignatureSkillManager.CrossLockdownAbilityId,
+                ToolId.CastNet => SignatureSkillManager.HeavenlyNetAbilityId,
+                _ => string.Empty
+            };
+        }
+        GrowthTreeCategory category = slot == GrowthAbilitySlot.TacticalE
+            ? GrowthTreeCategory.TacticalE
+            : GrowthTreeCategory.SignatureR;
+        SkillTreeDefinition configured = FindAbilityDefinition(
+            treeDefinitions, category, abilityId);
+        return configured != null
+            ? configured
+            : FindAbilityDefinition(fallbackDefinitions, category, abilityId);
+    }
+
     public bool TryPurchaseNode(GrowthToolRole role, string nodeId)
     {
-        if (!CanInteract || isMandatoryAcquisition || RunManager.Instance == null)
+        if (!CanInteract || isMandatoryAcquisition || RunManager.Instance == null ||
+            Time.realtimeSinceStartup < nextPurchaseTime)
         {
             return false;
         }
@@ -260,7 +291,140 @@ public sealed class SkillTreeManager : MonoBehaviour
 
         ApplyEffects(purchasedRank);
         notice = $"{node.DisplayName} {previousRank + 1}랭크 구매 완료";
+        nextPurchaseTime = Time.realtimeSinceStartup + 0.15f;
         return true;
+    }
+
+    public bool TryPurchaseAbilityNode(GrowthAbilitySlot slot, string nodeId)
+    {
+        if (!CanInteract || isMandatoryAcquisition || RunManager.Instance == null ||
+            Time.realtimeSinceStartup < nextPurchaseTime)
+        {
+            return false;
+        }
+
+        SkillTreeDefinition definition = GetAbilityDefinition(slot);
+        RunGrowthAbilityState progress = RunManager.Instance.GrowthState.GetAbility(slot);
+        if (definition == null ||
+            !definition.TryGetNode(nodeId, out SkillTreeNodeDefinition node))
+        {
+            return false;
+        }
+
+        int previousRank = progress.GetNodeRank(nodeId);
+        if (!RunManager.Instance.GrowthState.TryPurchaseAbilityNodeRank(
+                slot, definition, nodeId, GetProgressionContext()))
+        {
+            return false;
+        }
+
+        notice = $"{node.DisplayName} {previousRank + 1}랭크 구매 완료";
+        nextPurchaseTime = Time.realtimeSinceStartup + 0.15f;
+        return true;
+    }
+
+    public string GetAbilityNodeLockReason(
+        GrowthAbilitySlot slot,
+        SkillTreeDefinition definition,
+        SkillTreeNodeDefinition node)
+    {
+        RunGrowthState growth = GetGrowthState();
+        if (growth == null || definition == null || node == null)
+            return "강화 정보를 확인할 수 없습니다.";
+
+        RunGrowthAbilityState progress = growth.GetAbility(slot);
+        if (!progress.IsUnlocked || string.IsNullOrEmpty(progress.EquippedAbilityId))
+            return slot == GrowthAbilitySlot.TacticalE
+                ? "미니보스 포획 후 전술 스킬을 선택해야 합니다."
+                : "보스 포획 후 주력 도구 궁극기가 해금됩니다.";
+        if (!string.Equals(progress.EquippedAbilityId, definition.AbilityId,
+                StringComparison.Ordinal))
+            return "현재 장착한 스킬의 강화가 아닙니다.";
+
+        int rank = progress.GetNodeRank(node.NodeId);
+        if (rank >= node.MaxRank) return "최대 랭크 달성";
+
+        SkillTreeRankDefinition next = node.GetRank(rank);
+        SkillTreeProgressionContext context = GetProgressionContext();
+        if (rank >= node.GetCurrentRankLimit(context))
+            return GetProgressLockReason(next, context);
+
+        IReadOnlyList<SkillTreeNodePrerequisite> prerequisites = node.Prerequisites;
+        for (int i = 0; i < prerequisites.Count; i++)
+        {
+            SkillTreeNodePrerequisite prerequisite = prerequisites[i];
+            if (prerequisite == null ||
+                progress.GetNodeRank(prerequisite.NodeId) < prerequisite.RequiredRank)
+            {
+                return prerequisite != null && definition.TryGetNode(
+                    prerequisite.NodeId, out SkillTreeNodeDefinition prerequisiteNode)
+                    ? $"{prerequisiteNode.DisplayName} {prerequisite.RequiredRank}랭크 필요"
+                    : "선행 노드 필요";
+            }
+        }
+
+        return growth.CanSpendMasteryPoints(next.MasteryPointCost)
+            ? string.Empty
+            : $"숙련 포인트 {next.MasteryPointCost} 필요";
+    }
+
+    public bool CanPurchaseAbilityNode(
+        GrowthAbilitySlot slot,
+        SkillTreeDefinition definition,
+        SkillTreeNodeDefinition node) =>
+        CanInteract && !isMandatoryAcquisition &&
+        Time.realtimeSinceStartup >= nextPurchaseTime &&
+        string.IsNullOrEmpty(GetAbilityNodeLockReason(slot, definition, node));
+
+    public float GetAbilityEffectValue(
+        GrowthAbilitySlot slot, string effectId, float fallbackValue = 1f)
+    {
+        SkillTreeDefinition definition = GetAbilityDefinition(slot);
+        RunGrowthState growth = GetGrowthState();
+        if (definition == null || growth == null) return fallbackValue;
+
+        RunGrowthAbilityState progress = growth.GetAbility(slot);
+        float value = fallbackValue;
+        IReadOnlyList<SkillTreeNodeDefinition> nodes = definition.Nodes;
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            SkillTreeNodeDefinition node = nodes[i];
+            int rank = progress.GetNodeRank(node.NodeId);
+            for (int rankIndex = 0; rankIndex < rank; rankIndex++)
+            {
+                SkillTreeRankDefinition rankDefinition = node.GetRank(rankIndex);
+                if (rankDefinition == null) continue;
+                IReadOnlyList<SkillTreeBalanceEffect> effects = rankDefinition.BalanceEffects;
+                for (int effectIndex = 0; effectIndex < effects.Count; effectIndex++)
+                {
+                    SkillTreeBalanceEffect effect = effects[effectIndex];
+                    if (effect != null && effect.EffectId == effectId)
+                        value = effect.Value;
+                }
+            }
+        }
+        return value;
+    }
+
+    public string GetAbilityGameplayEffectDescription(
+        GrowthAbilitySlot slot,
+        SkillTreeRankDefinition rank,
+        bool baseline)
+    {
+        if (rank == null || rank.BalanceEffects.Count == 0) return "최대 랭크";
+        SkillTreeBalanceEffect effect = rank.BalanceEffects[0];
+        float value = baseline ? 1f : effect.Value;
+        if (slot == GrowthAbilitySlot.TacticalE && TacticalSkillManager.Instance != null)
+            return TacticalSkillManager.Instance.DescribeUpgrade(effect.EffectId, value);
+        if (slot == GrowthAbilitySlot.SignatureR && SignatureSkillManager.Instance != null)
+        {
+            if (baseline && effect.EffectId == SkillTreeEffectIds.SignatureTraversalCount)
+                value = 1f;
+            if (baseline && effect.EffectId == SkillTreeEffectIds.SignatureCastCount)
+                value = 1f;
+            return SignatureSkillManager.Instance.DescribeUpgrade(effect.EffectId, value);
+        }
+        return GetEffectDescription(rank);
     }
 
     public string GetNodeLockReason(
@@ -368,6 +532,12 @@ public sealed class SkillTreeManager : MonoBehaviour
                 SkillTreeEffectIds.CastNetCharges => "투망 최대 충전",
                 SkillTreeEffectIds.BaitRadius => "미끼 유인 반경",
                 SkillTreeEffectIds.BaitDuration => "미끼 지속시간",
+                SkillTreeEffectIds.TacticalEffectMultiplier => "효과 배율",
+                SkillTreeEffectIds.TacticalCooldownMultiplier => "재사용 대기시간 배율",
+                SkillTreeEffectIds.SignatureTraversalCount => "횡단 횟수",
+                SkillTreeEffectIds.SignatureDurationMultiplier => "지속시간 배율",
+                SkillTreeEffectIds.SignatureDamageMultiplier => "Resistance 피해 배율",
+                SkillTreeEffectIds.SignatureCastCount => "시전 횟수",
                 _ => "효과"
             };
 
@@ -628,13 +798,46 @@ public sealed class SkillTreeManager : MonoBehaviour
 
         foreach (SkillTreeDefinition definition in definitions)
         {
-            if (definition != null && definition.Role == role && definition.Tool == tool)
+            if (definition != null && definition.Category == GrowthTreeCategory.Tool &&
+                definition.Role == role && definition.Tool == tool)
             {
                 return definition;
             }
         }
 
         return null;
+    }
+
+    private static SkillTreeDefinition FindAbilityDefinition(
+        IEnumerable<SkillTreeDefinition> definitions,
+        GrowthTreeCategory category,
+        string abilityId)
+    {
+        if (definitions == null || string.IsNullOrEmpty(abilityId)) return null;
+        foreach (SkillTreeDefinition definition in definitions)
+        {
+            if (definition != null && definition.Category == category &&
+                string.Equals(definition.AbilityId, abilityId, StringComparison.Ordinal))
+                return definition;
+        }
+        return null;
+    }
+
+    private static string GetProgressLockReason(
+        SkillTreeRankDefinition next,
+        SkillTreeProgressionContext context)
+    {
+        if (next == null) return "현재 진행도에서 랭크가 잠겨 있습니다.";
+        SkillTreeRankUnlockCondition condition = next.UnlockCondition;
+        if (context.PlayerLevel < condition.MinimumPlayerLevel)
+            return $"플레이어 Lv{condition.MinimumPlayerLevel} 필요";
+        if (context.CurrentArea < condition.MinimumArea)
+            return $"해역 {condition.MinimumArea} 도달 필요";
+        if (condition.RequiresMiniBossClear && !context.HasClearedMiniBoss)
+            return "미니보스 포획 필요";
+        if (condition.RequiresBossClear && !context.HasClearedBoss)
+            return "보스 포획 필요";
+        return "현재 진행도에서 랭크가 잠겨 있습니다.";
     }
 
     private static RunGrowthState GetGrowthState() =>

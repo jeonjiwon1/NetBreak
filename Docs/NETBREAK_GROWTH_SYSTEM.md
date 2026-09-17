@@ -152,7 +152,14 @@ MiniBoss 포획 실패/도주/타임아웃 → 즉시 Run Failure라는 현재 �
 
 개발 검증은 Editor 또는 Development Build의 Play Mode에서 Core를 먼저 선택한 뒤 RunManager의 `SignatureSkillManager` 컴포넌트 Context Menu `Development/Unlock Core Signature R`을 사용한다. 출시 빌드에서는 이 경로가 상태를 변경하지 않는다. Scene에 튜닝값을 저장하려면 `NETBREAK/Growth/Setup Tactical Skill Manager` 메뉴가 기존 RunManager를 보존하면서 E/R 매니저와 기존 Cast Net 참조를 연결한다. 메뉴를 실행하지 않아도 런타임 fallback은 동작한다.
 
-G4-C1은 R 해금·입력·대표 스킬·임시 시각화만 구현한다. E/R 강화 노드와 구매, Rank 1/2 실제 구매 연결은 G4-C2로 연기한다. 어장 대횡단의 횡단 수 및 천망의 연속 시전 수 필드는 후속 업그레이드를 받을 준비만 하며 현재 정상 보상으로 바뀌지 않는다.
+### G4-C2 E/R 강화와 Compact Graph
+
+- Q/W/E/R은 하나의 Run 전용 숙련 포인트 잔액을 공유한다. E/R 자체 해금은 무료이고 강화만 포인트를 소비한다. E는 실제 선택한 스킬의 노드만 보이며 선택 전에는 잠금 사유를 표시한다. R은 선택 Core의 대표 R 그래프를 해금 전부터 잠금 상태로 보여 주며 실제 `RunGrowthState.SignatureR` 해금 뒤에만 구매할 수 있다.
+- 모든 E는 서로 독립인 단일 랭크 `효과` 1P와 `재사용` 2P를 가진다. 실제 Inspector 기본값을 기준으로 효과 배율과 쿨다운 배율을 적용한다. 기본값이 현재 VS 값일 때 급속 릴링 ×2→×2.5/24→20초, 긴급 봉쇄 ×1.75→×2/28→24초, 비상 투망 반경 ×1→×1.2/18→15초, 과잉 집어 ×1.75→×2.1/22→18초, 집중 조업 피해 ×1.5→×1.8/26→22초다.
+- 낚싯대 R은 `횡단` 2랭크(2P/3P)로 1→2→3회, 그물 R은 독립된 `지속`과 `저항 피해` 2랭크(각 2P/3P)로 Inspector 기본 지속시간 ×1/×1.333/×1.667 및 기본 DPS ×1/×1.33/×1.67, 투망 R은 `연속 투망` 2랭크(2P/3P)로 1→2→3회가 된다. 후속 천망은 기존 0.6초 간격과 매 시전 시점의 커서 위치를 유지한다.
+- `TacticalSkillManager`와 `SignatureSkillManager`의 직렬화 값이 기본값의 단일 출처다. `SkillTreeDefinition`은 비용·랭크·선행 조건과 상대 조정값만 소유하며 구매 시 Inspector 값을 덮어쓰지 않는다. 발동 시 유효값을 스냅샷하므로 진행 중 쿨다운이나 이미 활성화된 임시 효과는 Tree 구매로 소급 변경되지 않는다.
+- Tree UI는 Q/W/E/R 4영역의 작은 노드와 실제 Definition 선행 조건 연결선으로 구성한다. 긴 설명·현재/다음 효과·비용·선행 조건·잠금/포인트 부족/최대 랭크 상태는 마스크 밖 공용 Hover Tooltip에 표시한다. 노드 그래프는 정의 위치 또는 선행 깊이 기반 자동 배치를 사용하고 Pan/Zoom을 유지한다.
+- 기존 Scene UI는 `NETBREAK/UI/Migrate Skill Tree UI To Compact Graph`를 사용해 명시적으로 이관한다. 기존 Core/Partner Branch와 획득 선택은 보존하고 E/R Branch와 공용 Tooltip만 추가하며, 부분 구조·중복을 감지하면 변경 전 중단한다. Undo와 재실행을 지원하고 Scene/Prefab YAML을 직접 수정하지 않는다.
 
 ---
 

@@ -29,6 +29,7 @@ public class CastNetController : MonoBehaviour
 
     private Vector2 currentAimPosition;
     private int currentTargetCount;
+    private float tacticalRadiusMultiplier = 1f;
 
     private int lastCapturedCount;
     private Vector2 lastCastPosition;
@@ -213,7 +214,7 @@ public class CastNetController : MonoBehaviour
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
                 currentAimPosition,
-                captureRadius
+                captureRadius * (isTacticalAiming ? tacticalRadiusMultiplier : 1f)
             );
 
         int count = 0;
@@ -341,10 +342,17 @@ public class CastNetController : MonoBehaviour
     }
 
     private IEnumerator ShowCastEffect(
-        Vector2 position)
+        Vector2 position,
+        float radius = -1f)
     {
         castVisual.position =
             position;
+
+        if (radius > 0f)
+        {
+            float diameter = radius * 2f;
+            castVisual.localScale = new Vector3(diameter, diameter, 1f);
+        }
 
         castVisual.gameObject.SetActive(true);
 
@@ -353,12 +361,14 @@ public class CastNetController : MonoBehaviour
         );
 
         castVisual.gameObject.SetActive(false);
+        UpdateVisualScale();
     }
 
     private void CancelAiming()
     {
         isAiming = false;
         isTacticalAiming = false;
+        tacticalRadiusMultiplier = 1f;
         currentTargetCount = 0;
 
         if (castVisual != null)
@@ -367,15 +377,18 @@ public class CastNetController : MonoBehaviour
         }
     }
 
-    public bool BeginTacticalAim()
+    public bool BeginTacticalAim(float radiusMultiplier = 1f)
     {
         CancelAiming();
         isTacticalAiming = true;
+        tacticalRadiusMultiplier = Mathf.Max(1f, radiusMultiplier);
         UpdateAimPosition();
 
         if (castVisual != null)
         {
             castVisual.gameObject.SetActive(true);
+            float diameter = captureRadius * 2f * tacticalRadiusMultiplier;
+            castVisual.localScale = new Vector3(diameter, diameter, 1f);
         }
 
         return true;
@@ -425,7 +438,7 @@ public class CastNetController : MonoBehaviour
         }
     }
 
-    public bool ConfirmTacticalCast()
+    public bool ConfirmTacticalCast(float radiusMultiplier = 1f)
     {
         if (!isTacticalAiming)
         {
@@ -439,7 +452,18 @@ public class CastNetController : MonoBehaviour
             castVisual.gameObject.SetActive(false);
         }
 
-        return UseCastNet(position, false);
+        float multiplier = Mathf.Max(1f, radiusMultiplier);
+        tacticalRadiusMultiplier = 1f;
+        if (multiplier <= 1f)
+        {
+            return UseCastNet(position, false);
+        }
+
+        ApplySignatureCast(position, captureRadius * multiplier, 1f);
+        if (castVisual != null)
+            StartCoroutine(ShowCastEffect(position, captureRadius * multiplier));
+        currentTargetCount = 0;
+        return true;
     }
 
     public void CancelTacticalAim()

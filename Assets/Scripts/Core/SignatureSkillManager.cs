@@ -101,6 +101,7 @@ public sealed class SignatureSkillManager : MonoBehaviour
     private Vector2 targetPosition;
     private Coroutine activeEffect;
     private float crossRemaining;
+    private float activeCrossDamageMultiplier = 1f;
     private float castVisualRemaining;
     private LineRenderer crossArmA;
     private LineRenderer crossArmB;
@@ -117,6 +118,16 @@ public sealed class SignatureSkillManager : MonoBehaviour
         ? Mathf.Clamp01(RemainingCooldown / cooldown)
         : 0f;
     public string EquippedSkillName => GetSkillName(equippedSkill);
+    public string DescribeUpgrade(string effectId, float value) => effectId switch
+    {
+        SkillTreeEffectIds.SignatureTraversalCount => $"횡단 {Mathf.RoundToInt(value)}회",
+        SkillTreeEffectIds.SignatureDurationMultiplier =>
+            $"지속시간 {crossLockdownDuration * value:0.#}초",
+        SkillTreeEffectIds.SignatureDamageMultiplier =>
+            $"기본 Resistance DPS ×{value:0.##}",
+        SkillTreeEffectIds.SignatureCastCount => $"연속 시전 {Mathf.RoundToInt(value)}회",
+        _ => string.Empty
+    };
     public string HotbarStatus
     {
         get
@@ -285,7 +296,9 @@ public sealed class SignatureSkillManager : MonoBehaviour
         }
 
         EnsureFishingFloatVisuals();
-        int traversals = Mathf.Max(1, fishingTraversalCount);
+        int traversals = Mathf.Max(1, Mathf.RoundToInt(GetUpgradeValue(
+            SkillTreeEffectIds.SignatureTraversalCount,
+            fishingTraversalCount)));
         for (int traversal = 0; traversal < traversals; traversal++)
         {
             damagedThisTraversal.Clear();
@@ -358,7 +371,10 @@ public sealed class SignatureSkillManager : MonoBehaviour
 
     private void BeginCrossLockdown()
     {
-        crossRemaining = crossLockdownDuration;
+        crossRemaining = crossLockdownDuration * GetUpgradeValue(
+            SkillTreeEffectIds.SignatureDurationMultiplier, 1f);
+        activeCrossDamageMultiplier = GetUpgradeValue(
+            SkillTreeEffectIds.SignatureDamageMultiplier, 1f);
         EnsureCrossVisuals();
         UpdateCrossVisualGeometry();
         crossArmA.gameObject.SetActive(true);
@@ -416,7 +432,8 @@ public sealed class SignatureSkillManager : MonoBehaviour
                 crossSpeedMultipliers.Get(fish.Data.SpecialType));
             float dpsRatio = crossResistanceDps.Get(fish.Data.SpecialType);
             fish.TakeCaptureDamage(
-                fish.Data.MaxResistance * dpsRatio * Time.deltaTime);
+                fish.Data.MaxResistance * dpsRatio *
+                activeCrossDamageMultiplier * Time.deltaTime);
         }
 
         RemoveExitedCrossFish();
@@ -456,6 +473,7 @@ public sealed class SignatureSkillManager : MonoBehaviour
     private void EndCrossLockdown()
     {
         crossRemaining = 0f;
+        activeCrossDamageMultiplier = 1f;
         foreach (FishController fish in crossContactFish)
         {
             if (fish != null)
@@ -506,7 +524,9 @@ public sealed class SignatureSkillManager : MonoBehaviour
 
     private IEnumerator RunHeavenlyNetCasts()
     {
-        int count = Mathf.Max(1, heavenlyNetCastCount);
+        int count = Mathf.Max(1, Mathf.RoundToInt(GetUpgradeValue(
+            SkillTreeEffectIds.SignatureCastCount,
+            heavenlyNetCastCount)));
         for (int i = 0; i < count; i++)
         {
             if (i > 0 && heavenlyNetCastInterval > 0f)
@@ -719,6 +739,12 @@ public sealed class SignatureSkillManager : MonoBehaviour
             castNet = FindFirstObjectByType<CastNetController>();
         }
     }
+
+    private float GetUpgradeValue(string effectId, float fallback) =>
+        SkillTreeManager.Instance != null
+            ? SkillTreeManager.Instance.GetAbilityEffectValue(
+                GrowthAbilitySlot.SignatureR, effectId, fallback)
+            : fallback;
 
     private void RestoreEquippedSkillFromRunState()
     {
