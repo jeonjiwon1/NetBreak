@@ -9,6 +9,8 @@ public sealed class ItemHUD : MonoBehaviour
     [SerializeField] private GameObject tooltipPanel;
     [SerializeField] private TMP_Text tooltipText;
 
+    private int hoveredSlotIndex = -1;
+
     private void Start()
     {
         HideTooltip();
@@ -18,9 +20,25 @@ public sealed class ItemHUD : MonoBehaviour
     private void Update()
     {
         Refresh();
+        if (ToolSlotInput.IsSelectionOrEndBlocked)
+        {
+            HideTooltip();
+            return;
+        }
+
+        if (hoveredSlotIndex >= 0)
+        {
+            RefreshTooltip(hoveredSlotIndex);
+        }
     }
 
     public void ShowTooltip(int slotIndex)
+    {
+        hoveredSlotIndex = slotIndex;
+        RefreshTooltip(slotIndex);
+    }
+
+    private void RefreshTooltip(int slotIndex)
     {
         RunItemInventory inventory = GetInventory();
         if (inventory == null || slotIndex < 0 || slotIndex >= inventory.OwnedItems.Count)
@@ -38,11 +56,16 @@ public sealed class ItemHUD : MonoBehaviour
 
         if (tooltipText != null)
         {
+            string status = ItemEffectManager.Instance != null
+                ? ItemEffectManager.Instance.GetStatusText(owned.ItemId)
+                : string.Empty;
             tooltipText.text =
                 $"<b>{definition.DisplayName}</b>\n" +
                 $"속성: {definition.ElementDisplayName} · Lv.{owned.Level}\n\n" +
-                $"{definition.PlannedEffectDescription}\n\n" +
-                "<color=#F2C96D>개발 상태: 패시브 효과는 G5-B에서 구현됩니다.</color>";
+                $"{definition.PlannedEffectDescription}" +
+                (string.IsNullOrEmpty(status)
+                    ? string.Empty
+                    : $"\n\n<color=#9DDEF2>{status}</color>");
         }
 
         if (tooltipPanel != null)
@@ -54,6 +77,7 @@ public sealed class ItemHUD : MonoBehaviour
 
     public void HideTooltip()
     {
+        hoveredSlotIndex = -1;
         if (tooltipPanel != null)
         {
             tooltipPanel.SetActive(false);

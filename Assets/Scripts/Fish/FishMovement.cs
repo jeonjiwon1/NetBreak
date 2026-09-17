@@ -50,7 +50,7 @@ public class FishMovement : MonoBehaviour
 
     private float netSpeedMultiplier = 1f;
 
-    // ±ΈΉφΐό NetController Θ£Θ―Ώλ.
+    // κµ¬λ²„μ „ NetController νΈν™μ©.
     private int legacyNetContactCount;
     private float legacyNetSpeedMultiplier = 1f;
 
@@ -60,6 +60,17 @@ public class FishMovement : MonoBehaviour
 
     private float specialSpeedMultiplier = 1f;
     private float signatureNetSpeedMultiplier = 1f;
+
+    private sealed class TimedSpeedModifier
+    {
+        public float Multiplier;
+        public float ExpiresAt;
+    }
+
+    private readonly Dictionary<string, TimedSpeedModifier>
+        timedSpeedModifiers = new();
+
+    private float timedSpeedMultiplier = 1f;
 
     public FishRoute ActiveRoute =>
         activeRoute;
@@ -155,6 +166,8 @@ public class FishMovement : MonoBehaviour
 
         specialSpeedMultiplier = 1f;
         signatureNetSpeedMultiplier = 1f;
+        timedSpeedModifiers.Clear();
+        timedSpeedMultiplier = 1f;
     }
 
     // =========================================================
@@ -167,6 +180,8 @@ public class FishMovement : MonoBehaviour
         {
             return;
         }
+
+        UpdateTimedSpeedModifiers();
 
         if (activeRoute != null)
         {
@@ -458,7 +473,9 @@ public class FishMovement : MonoBehaviour
             *
             specialSpeedMultiplier
             *
-            signatureNetSpeedMultiplier;
+            signatureNetSpeedMultiplier
+            *
+            timedSpeedMultiplier;
 
         transform.position +=
             (Vector3)(
@@ -490,6 +507,88 @@ public class FishMovement : MonoBehaviour
     public void ClearSignatureNetSpeedMultiplier()
     {
         signatureNetSpeedMultiplier = 1f;
+    }
+
+    public void ApplyTimedSpeedModifier(
+        string modifierId,
+        float multiplier,
+        float duration)
+    {
+        if (string.IsNullOrEmpty(modifierId) || duration <= 0f)
+        {
+            return;
+        }
+
+        if (!timedSpeedModifiers.TryGetValue(
+                modifierId,
+                out TimedSpeedModifier modifier))
+        {
+            modifier = new TimedSpeedModifier();
+            timedSpeedModifiers.Add(modifierId, modifier);
+        }
+
+        modifier.Multiplier = Mathf.Clamp01(multiplier);
+        modifier.ExpiresAt = Time.time + duration;
+        RecalculateTimedSpeedMultiplier();
+    }
+
+    public bool HasTimedSpeedModifier(string modifierId) =>
+        !string.IsNullOrEmpty(modifierId) &&
+        timedSpeedModifiers.TryGetValue(modifierId, out TimedSpeedModifier modifier) &&
+        modifier.ExpiresAt > Time.time;
+
+    public void RemoveTimedSpeedModifier(string modifierId)
+    {
+        if (string.IsNullOrEmpty(modifierId) ||
+            !timedSpeedModifiers.Remove(modifierId))
+        {
+            return;
+        }
+
+        RecalculateTimedSpeedMultiplier();
+    }
+
+    private void UpdateTimedSpeedModifiers()
+    {
+        if (timedSpeedModifiers.Count == 0)
+        {
+            return;
+        }
+
+        List<string> expired = null;
+        foreach (KeyValuePair<string, TimedSpeedModifier> pair in timedSpeedModifiers)
+        {
+            if (pair.Value.ExpiresAt > Time.time)
+            {
+                continue;
+            }
+
+            expired ??= new List<string>();
+            expired.Add(pair.Key);
+        }
+
+        if (expired == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < expired.Count; i++)
+        {
+            timedSpeedModifiers.Remove(expired[i]);
+        }
+
+        RecalculateTimedSpeedMultiplier();
+    }
+
+    private void RecalculateTimedSpeedMultiplier()
+    {
+        float strongestSlow = 1f;
+        foreach (TimedSpeedModifier modifier in timedSpeedModifiers.Values)
+        {
+            strongestSlow = Mathf.Min(strongestSlow, modifier.Multiplier);
+        }
+
+        timedSpeedMultiplier = strongestSlow;
     }
 
     public void EnterNet(
@@ -608,6 +707,8 @@ public class FishMovement : MonoBehaviour
         netSpeedMultiplier = 1f;
         specialSpeedMultiplier = 1f;
         signatureNetSpeedMultiplier = 1f;
+        timedSpeedModifiers.Clear();
+        timedSpeedMultiplier = 1f;
 
         activeRoute = null;
         routeTargetIndex = 0;

@@ -145,13 +145,14 @@ public class LandingNetController : MonoBehaviour
         );
 
         int hitCount = 0;
+        System.Collections.Generic.HashSet<FishController> damagedFish = new();
 
         foreach (Collider2D hit in hits)
         {
             FishController fish =
                 hit.GetComponent<FishController>();
 
-            if (fish == null)
+            if (fish == null || !damagedFish.Add(fish))
             {
                 continue;
             }
@@ -161,7 +162,10 @@ public class LandingNetController : MonoBehaviour
 
             bool captured =
                 fish.TakeCaptureDamage(
-                    capturePower
+                    capturePower,
+                    CombatDamageContext.Tool(
+                        "landing_net",
+                        this)
                 );
 
             if (captured &&
@@ -222,7 +226,10 @@ public class LandingNetController : MonoBehaviour
         if (nearestFish != null)
         {
             nearestFish.TakeCaptureDamage(
-                chainDamage
+                chainDamage,
+                CombatDamageContext.Tool(
+                    "landing_net.chain",
+                    this)
             );
         }
     }

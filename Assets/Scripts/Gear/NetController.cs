@@ -168,7 +168,11 @@ public class NetController : MonoBehaviour
                 captureDamagePerSecond
                 * currentDamageMultiplier
                 * tacticalDamageMultiplier
-                * Time.fixedDeltaTime
+                * Time.fixedDeltaTime,
+                CombatDamageContext.Tool(
+                    "net.damage_over_time",
+                    this,
+                    true)
             );
         }
     }

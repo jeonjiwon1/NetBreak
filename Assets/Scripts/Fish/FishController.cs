@@ -7,6 +7,7 @@ public class FishController : MonoBehaviour
 
     private float currentResistance;
     private bool isCaptured;
+    private int lifecycleVersion;
 
     private SpriteRenderer spriteRenderer;
 
@@ -18,6 +19,9 @@ public class FishController : MonoBehaviour
 
     public bool IsCaptured =>
         isCaptured;
+
+    public int LifecycleVersion =>
+        lifecycleVersion;
 
     public float ResistanceRatio
     {
@@ -47,6 +51,13 @@ public class FishController : MonoBehaviour
     public void Initialize(
         FishData data)
     {
+        ItemEffectManager.Instance?.NotifyFishUnavailable(this);
+
+        unchecked
+        {
+            lifecycleVersion++;
+        }
+
         fishData = data;
 
         if (fishData == null)
@@ -63,8 +74,8 @@ public class FishController : MonoBehaviour
 
         isCaptured = false;
 
-        // Pool¿¡¼­ ÀÌÀü »ç¿ë ½Ã µî·ÏµÈ ÀÌº¥Æ®°¡
-        // ´ÙÀ½ ¹°°í±â¿¡°Ô ³²Áö ¾Êµµ·Ï ÃÊ±âÈ­.
+        // Poolì—ì„œ ì´ì „ ì‚¬ìš© ì‹œ ë“±ë¡ëœ ì´ë²¤íŠ¸ê°€
+        // ë‹¤ìŒ ë¬¼ê³ ê¸°ì—ê²Œ ë‚¨ì§€ ì•Šë„ë¡ ì´ˆê¸°í™”.
         Captured = null;
 
         transform.localScale =
@@ -84,8 +95,8 @@ public class FishController : MonoBehaviour
             $"Fish_{fishData.FishName}";
     }
 
-    // º¸½ºÀÇ ´ÙÀ½ È¸À¯¿¡¼­ ÀÌÀü Resistance¸¦
-    // ÀÏºÎ È¸º¹ÇÑ °ªÀ¸·Î º¹¿øÇÏ±â À§ÇØ »ç¿ëÇÑ´Ù.
+    // ë³´ìŠ¤ì˜ ë‹¤ìŒ íšŒìœ ì—ì„œ ì´ì „ Resistanceë¥¼
+    // ì¼ë¶€ íšŒë³µí•œ ê°’ìœ¼ë¡œ ë³µì›í•˜ê¸° ìœ„í•´ ì‚¬ìš©í•œë‹¤.
     public void SetCurrentResistance(
         float resistance)
     {
@@ -105,6 +116,17 @@ public class FishController : MonoBehaviour
     public bool TakeCaptureDamage(
         float amount)
     {
+        return TakeCaptureDamage(
+            amount,
+            CombatDamageContext.Tool(
+                "legacy.tool",
+                null));
+    }
+
+    public bool TakeCaptureDamage(
+        float amount,
+        CombatDamageContext context)
+    {
         if (fishData == null ||
             isCaptured)
         {
@@ -116,22 +138,35 @@ public class FishController : MonoBehaviour
             return false;
         }
 
-        float multiplier = TacticalSkillManager.Instance != null
+        float multiplier =
+            context.Origin == CombatDamageOrigin.Tool &&
+            TacticalSkillManager.Instance != null
             ? TacticalSkillManager.Instance.GetCaptureDamageMultiplier(transform.position)
             : 1f;
 
-        currentResistance -= amount * multiplier;
+        Vector2 hitPosition = transform.position;
+        float previousResistance = currentResistance;
+        currentResistance = Mathf.Max(
+            0f,
+            currentResistance - amount * multiplier);
+        float appliedDamage = previousResistance - currentResistance;
+        bool capturedByHit = currentResistance <= 0f;
 
-        if (currentResistance <= 0f)
+        if (capturedByHit)
         {
-            currentResistance = 0f;
-
             Capture();
-
-            return true;
         }
 
-        return false;
+        ItemEffectManager.Instance?.QueueCombatDamage(
+            new CombatDamageResult(
+                this,
+                lifecycleVersion,
+                context,
+                appliedDamage,
+                hitPosition,
+                capturedByHit));
+
+        return capturedByHit;
     }
 
     private void Capture()
@@ -158,5 +193,13 @@ public class FishController : MonoBehaviour
         gameObject.SetActive(
             false
         );
+    }
+
+    private void OnDisable()
+    {
+        if (!isCaptured)
+        {
+            ItemEffectManager.Instance?.NotifyFishUnavailable(this);
+        }
     }
 }

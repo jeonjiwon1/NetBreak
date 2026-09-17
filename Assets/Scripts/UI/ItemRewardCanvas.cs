@@ -62,7 +62,7 @@ public sealed class ItemRewardCanvas : MonoBehaviour
             if (i < choiceTexts.Length && choiceTexts[i] != null)
             {
                 choiceTexts[i].text = visible
-                    ? $"<b>{choice.DisplayName}</b>\n<size=80%>[{choice.ElementDisplayName}] · 획득 가능</size>\n\n{choice.PlannedEffectDescription}\n\n<size=72%><color=#F2C96D>개발 상태: 효과는 G5-B 예정</color></size>"
+                    ? $"<b>{choice.DisplayName}</b>\n<size=80%>[{choice.ElementDisplayName}] · 획득 가능</size>\n\n{choice.PlannedEffectDescription}"
                     : string.Empty;
             }
         }

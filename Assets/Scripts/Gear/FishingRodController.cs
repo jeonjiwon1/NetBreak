@@ -133,7 +133,10 @@ public class FishingRodController : MonoBehaviour
             }
 
             target.TakeCaptureDamage(
-                capturePower
+                capturePower,
+                CombatDamageContext.Tool(
+                    "fishing_rod",
+                    this)
             );
         }
 
@@ -170,8 +173,8 @@ public class FishingRodController : MonoBehaviour
                 continue;
             }
 
-            // Collider °¡ÀåÀÚ¸®¸¸ ¹üÀ§¿¡ °ÉÄ£ °æ¿ì¸¦ Á¦¿ÜÇÑ´Ù.
-            // ¹°°í±â Áß½ÉÁ¡ÀÌ ½ÇÁ¦ ³¬½Ë´ë ¹üÀ§ ¾È¿¡ ÀÖ¾î¾ß ÇÑ´Ù.
+            // Collider ê°€ì¥ìë¦¬ë§Œ ë²”ìœ„ì— ê±¸ì¹œ ê²½ìš°ë¥¼ ì œì™¸í•œë‹¤.
+            // ë¬¼ê³ ê¸° ì¤‘ì‹¬ì ì´ ì‹¤ì œ ë‚šì‹¯ëŒ€ ë²”ìœ„ ì•ˆì— ìˆì–´ì•¼ í•œë‹¤.
             float centerDistance =
                 Vector2.Distance(
                     transform.position,

@@ -235,7 +235,8 @@ public class CastNetController : MonoBehaviour
 
     private bool UseCastNet(
         Vector2 castPosition,
-        bool consumeCharge)
+        bool consumeCharge,
+        string attackId = "cast_net")
     {
         if (consumeCharge && currentCharges <= 0)
         {
@@ -260,6 +261,7 @@ public class CastNetController : MonoBehaviour
                 captureRadius
             );
 
+        HashSet<FishController> damagedFish = new();
         int capturedCount = 0;
 
         foreach (Collider2D hit in hits)
@@ -267,14 +269,17 @@ public class CastNetController : MonoBehaviour
             FishController fish =
                 hit.GetComponent<FishController>();
 
-            if (fish == null)
+            if (fish == null || !damagedFish.Add(fish))
             {
                 continue;
             }
 
             bool captured =
                 fish.TakeCaptureDamage(
-                    capturePower
+                    capturePower,
+                    CombatDamageContext.Tool(
+                        attackId,
+                        this)
                 );
 
             if (captured)
@@ -397,7 +402,8 @@ public class CastNetController : MonoBehaviour
     public int ApplySignatureCast(
         Vector2 castPosition,
         float radius,
-        float damageMultiplier)
+        float damageMultiplier,
+        string attackId = "signature.heavenly_net")
     {
         if (radius <= 0f || damageMultiplier <= 0f)
         {
@@ -418,7 +424,11 @@ public class CastNetController : MonoBehaviour
                 continue;
             }
 
-            if (fish.TakeCaptureDamage(capturePower * damageMultiplier))
+            if (fish.TakeCaptureDamage(
+                    capturePower * damageMultiplier,
+                    CombatDamageContext.Tool(
+                        attackId,
+                        this)))
             {
                 capturedCount++;
             }
@@ -456,10 +466,17 @@ public class CastNetController : MonoBehaviour
         tacticalRadiusMultiplier = 1f;
         if (multiplier <= 1f)
         {
-            return UseCastNet(position, false);
+            return UseCastNet(
+                position,
+                false,
+                "tactical.emergency_cast_net");
         }
 
-        ApplySignatureCast(position, captureRadius * multiplier, 1f);
+        ApplySignatureCast(
+            position,
+            captureRadius * multiplier,
+            1f,
+            "tactical.emergency_cast_net");
         if (castVisual != null)
             StartCoroutine(ShowCastEffect(position, captureRadius * multiplier));
         currentTargetCount = 0;

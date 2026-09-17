@@ -57,6 +57,17 @@ public static class ItemSystemUIGenerator
             return;
         }
 
+        ItemEffectManager[] effectManagers = Object.FindObjectsByType<ItemEffectManager>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .Where(candidate => candidate.gameObject.scene == scene)
+            .ToArray();
+        if (effectManagers.Length > 1 ||
+            (effectManagers.Length == 1 && effectManagers[0].gameObject != runManagers[0].gameObject))
+        {
+            Debug.LogError("RunManager 외부에 ItemEffectManager가 있거나 중복되어 설정을 중단했습니다.");
+            return;
+        }
+
         Transform existing = canvases[0].transform.Find(RootName);
         if (existing != null)
         {
@@ -67,7 +78,7 @@ public static class ItemSystemUIGenerator
                 return;
             }
 
-            EnsureManager(runManagers[0]);
+            EnsureManagers(runManagers[0]);
             EditorSceneManager.MarkSceneDirty(scene);
             Selection.activeGameObject = existing.gameObject;
             Debug.Log("Item System UI가 이미 설정되어 있습니다. 기존 UI를 재사용했습니다.", existing.gameObject);
@@ -93,7 +104,7 @@ public static class ItemSystemUIGenerator
 
             WireHUD(hud, slotTexts, tooltipPanel, tooltipText);
             WireRewardCanvas(rewardCanvas, rewardPanel, titleText, buttons, choiceTexts);
-            EnsureManager(runManagers[0]);
+            EnsureManagers(runManagers[0]);
 
             tooltipPanel.SetActive(false);
             rewardPanel.SetActive(false);
@@ -231,10 +242,19 @@ public static class ItemSystemUIGenerator
         }
     }
 
-    private static ItemRewardManager EnsureManager(RunManager runManager)
+    private static void EnsureManagers(RunManager runManager)
     {
         ItemRewardManager manager = runManager.GetComponent<ItemRewardManager>();
-        return manager != null ? manager : Undo.AddComponent<ItemRewardManager>(runManager.gameObject);
+        if (manager == null)
+        {
+            Undo.AddComponent<ItemRewardManager>(runManager.gameObject);
+        }
+
+        ItemEffectManager effectManager = runManager.GetComponent<ItemEffectManager>();
+        if (effectManager == null)
+        {
+            Undo.AddComponent<ItemEffectManager>(runManager.gameObject);
+        }
     }
 
     private static GameObject CreateRect(

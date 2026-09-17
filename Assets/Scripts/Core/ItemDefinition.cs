@@ -56,17 +56,17 @@ public static class ItemCatalog
     private static readonly ItemDefinition[] Definitions =
     {
         new(StormOrbId, ItemElement.Electric, "폭풍 구슬", "폭풍",
-            "8초마다 대상이 될 수 있는 물고기 한 마리를 번개로 자동 공격합니다."),
+            "8초마다 조업 영역에서 커서에 가장 가까운 물고기를 번개로 공격해 저항력 12 피해를 줍니다."),
         new(CapacitorCoilId, ItemElement.Electric, "축전 코일", "축전",
-            "유효한 도구 적중 5회를 모으면 주변 물고기 최대 두 마리에게 연쇄 번개를 일으킵니다."),
+            "유효한 도구 적중 5회마다 마지막 적중 지점 주변의 다른 물고기 최대 두 마리에게 저항력 8 피해를 줍니다."),
         new(SpectralScabbardId, ItemElement.Sword, "유령 검집", "검집",
-            "같은 물고기에 유효한 도구 적중 4회를 기록하면 그 물고기를 검으로 공격합니다."),
+            "같은 물고기에 유효한 도구 적중 4회마다 유령 검으로 저항력 16 피해를 줍니다."),
         new(AutonomousSwordArrayId, ItemElement.Sword, "자동 검진", "검진",
-            "10초마다 남은 저항력이 가장 높은 대상 물고기를 자동 공격합니다."),
+            "10초마다 조업 영역에서 남은 저항력이 가장 높은 물고기를 공격해 저항력 18 피해를 줍니다."),
         new(FrostSigilId, ItemElement.Ice, "서리 인장", "서리",
-            "같은 물고기에 유효한 도구 적중 3회를 기록하면 2초 동안 이동 속도를 40% 낮춥니다."),
+            "같은 물고기에 유효한 도구 적중 3회마다 2초 동안 이동 속도를 40% 낮춥니다."),
         new(FrostCrystalId, ItemElement.Ice, "빙결 결정", "빙결",
-            "12초마다 대상 물고기 최대 두 마리에게 3초 동안 30% 둔화와 소량의 저항력 피해를 줍니다.")
+            "12초마다 커서 반경 안의 가까운 물고기 최대 두 마리에게 저항력 5 피해와 3초간 30% 둔화를 줍니다.")
     };
 
     public static IReadOnlyList<ItemDefinition> All => Definitions;

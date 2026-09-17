@@ -10,6 +10,7 @@ public class RunManager : MonoBehaviour
     public TacticalSkillManager TacticalSkills { get; private set; }
     public SignatureSkillManager SignatureSkills { get; private set; }
     public ItemRewardManager ItemRewards { get; private set; }
+    public ItemEffectManager ItemEffects { get; private set; }
     // Legacy manager reads this guard. Random level-up Augments are retired by G3.
     public bool AreAugmentsUnlocked => false;
 
@@ -118,6 +119,12 @@ public class RunManager : MonoBehaviour
         if (ItemRewards == null)
         {
             ItemRewards = gameObject.AddComponent<ItemRewardManager>();
+        }
+
+        ItemEffects = GetComponent<ItemEffectManager>();
+        if (ItemEffects == null)
+        {
+            ItemEffects = gameObject.AddComponent<ItemEffectManager>();
         }
 
         currentGold =

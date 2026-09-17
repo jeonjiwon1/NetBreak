@@ -19457,7 +19457,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 72210a83dafc70a41ac08ca92b9c672a, type: 2}
   activeRoute: {fileID: 506839061}
   bossEncounterController: {fileID: 33066316}
-  bossTestMode: 0
+  bossTestMode: 1
   miniBossTestMode: 0
   poolSize: 200
   maxPoolSize: 320
@@ -22030,6 +22030,7 @@ GameObject:
   - component: {fileID: 1986760360}
   - component: {fileID: 1986760361}
   - component: {fileID: 1986760362}
+  - component: {fileID: 1986760363}
   m_Layer: 0
   m_Name: RunManager
   m_TagString: Untagged
@@ -22187,6 +22188,49 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemRewardManager
   acquisitionCandidateCount: 3
+--- !u!114 &1986760363
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1986760356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06b59a4a68dd4b87809879616b7f9b12, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemEffectManager
+  gameplayViewport:
+    serializedVersion: 2
+    x: 0
+    y: 0.12
+    width: 1
+    height: 0.72
+  continuousHitCountInterval: 0.5
+  stormOrbAttackInterval: 8
+  stormOrbResistanceDamage: 12
+  stormOrbVisualDuration: 0.35
+  capacitorRequiredHits: 5
+  capacitorChainRadius: 3
+  capacitorMaximumTargets: 2
+  capacitorResistanceDamage: 8
+  capacitorVisualDuration: 0.4
+  scabbardRequiredHits: 4
+  scabbardResistanceDamage: 16
+  scabbardVisualDuration: 0.35
+  swordArrayAttackInterval: 10
+  swordArrayResistanceDamage: 18
+  swordArrayVisualDuration: 0.45
+  frostSigilRequiredHits: 3
+  frostSigilSlowPercentage: 0.4
+  frostSigilSlowDuration: 2
+  frostCrystalAttackInterval: 12
+  frostCrystalMaximumTargets: 2
+  frostCrystalTargetRadius: 3
+  frostCrystalResistanceDamage: 5
+  frostCrystalSlowPercentage: 0.3
+  frostCrystalSlowDuration: 3
+  frostCrystalVisualDuration: 0.5
 --- !u!1 &2023512217
 GameObject:
   m_ObjectHideFlags: 0

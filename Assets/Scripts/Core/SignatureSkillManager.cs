@@ -364,7 +364,11 @@ public sealed class SignatureSkillManager : MonoBehaviour
                     continue;
                 }
 
-                fish.TakeCaptureDamage(fishingDamage.Get(fish.Data.SpecialType));
+                fish.TakeCaptureDamage(
+                    fishingDamage.Get(fish.Data.SpecialType),
+                    CombatDamageContext.Tool(
+                        "signature.fishing_ground_crossing",
+                        this));
             }
         }
     }
@@ -433,7 +437,11 @@ public sealed class SignatureSkillManager : MonoBehaviour
             float dpsRatio = crossResistanceDps.Get(fish.Data.SpecialType);
             fish.TakeCaptureDamage(
                 fish.Data.MaxResistance * dpsRatio *
-                activeCrossDamageMultiplier * Time.deltaTime);
+                activeCrossDamageMultiplier * Time.deltaTime,
+                CombatDamageContext.Tool(
+                    "signature.cross_lockdown",
+                    this,
+                    true));
         }
 
         RemoveExitedCrossFish();
