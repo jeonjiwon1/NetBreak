@@ -3,7 +3,8 @@ using UnityEngine;
 public enum CombatDamageOrigin
 {
     Tool = 0,
-    Item = 1
+    Item = 1,
+    ItemSynergy = 2
 }
 
 public readonly struct CombatDamageContext
@@ -24,6 +25,7 @@ public readonly struct CombatDamageContext
     public string AttackId { get; }
     public int SourceInstanceId { get; }
     public bool IsContinuous { get; }
+    public bool ContributesToItemHitTriggers => Origin == CombatDamageOrigin.Tool;
 
     public static CombatDamageContext Tool(
         string attackId,
@@ -41,6 +43,15 @@ public readonly struct CombatDamageContext
         new(
             CombatDamageOrigin.Item,
             itemId,
+            source != null ? source.GetInstanceID() : 0,
+            false);
+
+    public static CombatDamageContext ItemSynergy(
+        string synergyId,
+        Object source) =>
+        new(
+            CombatDamageOrigin.ItemSynergy,
+            synergyId,
             source != null ? source.GetInstanceID() : 0,
             false);
 }

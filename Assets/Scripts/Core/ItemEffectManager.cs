@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -12,6 +13,18 @@ public sealed class ItemEffectManager : MonoBehaviour
     [Tooltip("Camera pixel viewport 안에서 아이템이 대상으로 삼는 정규화된 실제 조업 영역입니다.")]
     [SerializeField] private Rect gameplayViewport = new(0f, 0.12f, 1f, 0.72f);
     [Min(0.01f)] [SerializeField] private float continuousHitCountInterval = 0.5f;
+
+    [Header("Single-Element Synergy / 단일 속성 시너지")]
+    [Tooltip("모든 단일 속성이 공유하는 누적 활성 문턱입니다.")]
+    [SerializeField] private SingleElementSynergyThresholds singleElementThresholds = new();
+
+    [Header("Synergy Crowd Control / 시너지 군중제어")]
+    [Tooltip("시너지로 추가된 군중제어에만 적용합니다. Resistance 피해에는 적용하지 않습니다.")]
+    [SerializeField] private SynergyCrowdControlPolicy synergyCrowdControl = new();
+
+    [Header("Electric Synergy / 전기 시너지")]
+    [Tooltip("전기 속성 레벨로 해금되는 독립 패시브의 유일한 효과 설정입니다.")]
+    [SerializeField] private ElectricSynergySettings electricSynergy = new();
 
     [Header("Storm Orb / 폭풍 구슬")]
     [Tooltip("이 아이템의 유한 최대 레벨입니다. 무제한 옵션이 켜지면 무시됩니다.")]
@@ -138,6 +151,10 @@ public sealed class ItemEffectManager : MonoBehaviour
 
     public static ItemEffectManager Instance { get; private set; }
 
+    private const string ElectricChainDamageId = "electric_synergy.chain_discharge";
+    private const string ElectricThunderstormDamageId = "electric_synergy.thunderstorm";
+    private const string ElectricStunModifierId = "electric_synergy.stun";
+
     private readonly Dictionary<FishController, int> scabbardHitCounts = new();
     private readonly Dictionary<FishController, int> frostSigilHitCounts = new();
     private readonly HashSet<FishController> frostSigilSlowedFish = new();
@@ -146,6 +163,7 @@ public sealed class ItemEffectManager : MonoBehaviour
     private readonly HashSet<string> knownOwnedItems = new(StringComparer.Ordinal);
     private readonly HashSet<GameObject> activeVisuals = new();
     private readonly List<CombatDamageResult> pendingDamageResults = new();
+    private readonly ElectricSynergyRuntimeState electricSynergyRuntime = new();
 
     private RunItemInventory boundInventory;
     private Material runtimeMaterial;
@@ -218,6 +236,14 @@ public sealed class ItemEffectManager : MonoBehaviour
     public bool CanUpgradeItem(string itemId, out ItemUpgradeResult result)
     {
         RunItemInventory inventory = GetCurrentInventory();
+        return CanUpgradeItem(itemId, inventory, out result);
+    }
+
+    public bool CanUpgradeItem(
+        string itemId,
+        RunItemInventory inventory,
+        out ItemUpgradeResult result)
+    {
         if (inventory == null || !TryGetLevelLimit(itemId, out ItemLevelLimit limit))
         {
             result = ItemCatalog.TryGet(itemId, out _)
@@ -232,6 +258,14 @@ public sealed class ItemEffectManager : MonoBehaviour
     public bool TryUpgradeItem(string itemId, out ItemUpgradeResult result)
     {
         RunItemInventory inventory = GetCurrentInventory();
+        return TryUpgradeItem(itemId, inventory, out result);
+    }
+
+    public bool TryUpgradeItem(
+        string itemId,
+        RunItemInventory inventory,
+        out ItemUpgradeResult result)
+    {
         if (inventory == null || !TryGetLevelLimit(itemId, out ItemLevelLimit limit))
         {
             result = ItemCatalog.TryGet(itemId, out _)
@@ -293,29 +327,152 @@ public sealed class ItemEffectManager : MonoBehaviour
             return 0f;
         }
 
+        return GetEffectivePrimaryValue(itemId, level);
+    }
+
+    public float GetEffectivePrimaryValue(string itemId, int itemLevel)
+    {
+        if (itemLevel < 1)
+        {
+            return 0f;
+        }
+
         return itemId switch
         {
             ItemCatalog.StormOrbId => ItemLevelScaling.CalculateAdditiveDamage(
-                stormOrbResistanceDamage, level, stormOrbDamageBonusPerLevel),
+                stormOrbResistanceDamage, itemLevel, stormOrbDamageBonusPerLevel),
             ItemCatalog.CapacitorCoilId => ItemLevelScaling.CalculateAdditiveDamage(
-                capacitorResistanceDamage, level, capacitorDamageBonusPerLevel),
+                capacitorResistanceDamage, itemLevel, capacitorDamageBonusPerLevel),
             ItemCatalog.SpectralScabbardId => ItemLevelScaling.CalculateAdditiveDamage(
-                scabbardResistanceDamage, level, scabbardDamageBonusPerLevel),
+                scabbardResistanceDamage, itemLevel, scabbardDamageBonusPerLevel),
             ItemCatalog.AutonomousSwordArrayId => ItemLevelScaling.CalculateAdditiveDamage(
-                swordArrayResistanceDamage, level, swordArrayDamageBonusPerLevel),
+                swordArrayResistanceDamage, itemLevel, swordArrayDamageBonusPerLevel),
             ItemCatalog.FrostSigilId => ItemLevelScaling.CalculateAdditiveDuration(
-                frostSigilSlowDuration, level, frostSigilDurationPerLevel),
+                frostSigilSlowDuration, itemLevel, frostSigilDurationPerLevel),
             ItemCatalog.FrostCrystalId => ItemLevelScaling.CalculateAdditiveDuration(
-                frostCrystalSlowDuration, level, frostCrystalDurationPerLevel),
+                frostCrystalSlowDuration, itemLevel, frostCrystalDurationPerLevel),
             _ => 0f
         };
+    }
+
+    public SingleElementSynergyState GetSingleElementSynergyState(
+        ItemElement element,
+        RunItemInventory inventory) =>
+        GetSingleElementThresholds().Evaluate(inventory, element);
+
+    public float GetSynergyCrowdControlDuration(
+        float baseDuration,
+        FishSpecialType specialType) =>
+        GetCrowdControlPolicy().GetAdjustedDuration(baseDuration, specialType);
+
+    public int GetElectricChainTargetCount(SingleElementSynergyState state) =>
+        GetElectricSynergySettings().GetEffectiveChainTargetCount(state);
+
+    public float GetElectricChainDamage(SingleElementSynergyState state) =>
+        GetElectricSynergySettings().GetEffectiveDamage(
+            GetElectricSynergySettings().ChainDamage,
+            state);
+
+    public float GetElectricThunderstormDamage(SingleElementSynergyState state) =>
+        GetElectricSynergySettings().GetEffectiveDamage(
+            GetElectricSynergySettings().ThunderstormDamage,
+            state);
+
+    public float GetElectricDischargeStunDuration(
+        SingleElementSynergyState state,
+        FishSpecialType specialType) =>
+        state.IsLevel6Active
+            ? GetSynergyCrowdControlDuration(
+                GetElectricSynergySettings().StunDuration,
+                specialType)
+            : 0f;
+
+    public bool CanProcessCombatTrigger(
+        CombatDamageResult result,
+        float scaledTime)
+    {
+        if (float.IsNaN(scaledTime) ||
+            !ElectricSynergyTriggerPolicy.IsValidToolDamage(result))
+        {
+            return false;
+        }
+
+        return !result.Context.IsContinuous ||
+            CanCountContinuousHit(result, scaledTime);
+    }
+
+    public string BuildElementSynergyTooltipText(
+        ItemElement element,
+        RunItemInventory inventory)
+    {
+        SingleElementSynergyState state = GetSingleElementSynergyState(
+            element,
+            inventory);
+        StringBuilder builder = new();
+        builder.Append("<size=22><b>");
+        builder.Append(GetElementDisplayName(element));
+        builder.Append(" 시너지 · 현재 Lv.");
+        builder.Append(state.ElementLevel);
+        builder.Append("</b></size>\n\n");
+
+        if (element == ItemElement.Electric)
+        {
+            ElectricSynergySettings settings = GetElectricSynergySettings();
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level2,
+                "연쇄 방전",
+                $"유효한 도구 피해 적중 시 {settings.ChainCooldown:0.##}초마다 적중 위치 반경 {settings.ChainRadius:0.##} 안의 최대 {settings.ChainTargetCount}마리에게 저항력 피해 {settings.ChainDamage:0.##}.",
+                true);
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level4,
+                "전도 확장",
+                $"연쇄 방전 최대 대상 +{settings.ConductiveAdditionalTargets} (총 {Math.Min((long)settings.ChainTargetCount + settings.ConductiveAdditionalTargets, int.MaxValue)}마리).",
+                true);
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level6,
+                "감전 방전",
+                $"연쇄 방전 적중 대상을 {settings.StunDuration:0.##}초 기절. 종료 후 {settings.RestunLockout:0.##}초 재기절 제한. MiniBoss ×{GetCrowdControlPolicy().MiniBossMultiplier:0.##}, Boss ×{GetCrowdControlPolicy().BossMultiplier:0.##}.",
+                true);
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level8,
+                "과충전",
+                $"전기 시너지 피해 ×{settings.OverchargeDamageMultiplier:0.##}. 연쇄 방전 {ElectricSynergyMath.CalculateDamage(settings.ChainDamage, settings.OverchargeDamageMultiplier):0.##}, 천둥 폭풍 {ElectricSynergyMath.CalculateDamage(settings.ThunderstormDamage, settings.OverchargeDamageMultiplier):0.##}.",
+                true);
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level10,
+                "천둥 폭풍",
+                $"{settings.ThunderstormCooldown:0.##}초마다 다음 유효 도구 피해에서 화면 안 최대 {settings.ThunderstormTargetCount}마리에게 기본 저항력 피해 {settings.ThunderstormDamage:0.##}.",
+                true);
+        }
+        else if (element == ItemElement.Sword)
+        {
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level2,
+                "영혼 참격", "유효 도구 적중 6회마다 마지막 유효 대상에게 저항력 피해 14의 영혼 검을 소환.", false);
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level4,
+                "예리한 영혼", "영혼 참격 필요 도구 적중 수를 6회에서 5회로 감소.", false);
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level6,
+                "쌍검 소환", "다른 유효 대상에게 저항력 피해 10의 추가 검 1개를 소환. 대상이 없으면 생략.", false);
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level8,
+                "검기 증폭", "검 시너지 피해 +20%. 개별 검 아이템 피해에는 미적용.", false);
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level10,
+                "검의 비", "원본 영혼 참격 3회마다 유효 물고기 최대 4마리에게 각각 저항력 피해 20.", false);
+        }
+        else
+        {
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level2,
+                "냉기 파동", "도구 피해로 물고기 포획 시 반경 2 안의 다른 물고기 최대 2마리를 2초간 25% 둔화.", false);
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level4,
+                "냉기 확산", "냉기 파동 최대 대상을 2마리에서 3마리로 증가.", false);
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level6,
+                "순간 빙결", "냉기 파동 대상 1초 빙결. 종료 후 4초 재빙결 제한과 보스 군중제어 감쇠 적용.", false);
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level8,
+                "오래가는 한기", "얼음 시너지 둔화 지속시간 +0.5초. 빙결 지속시간에는 미적용.", false);
+            AppendSynergyTier(builder, state, SingleElementSynergyTier.Level10,
+                "서리 폭발", "도구 포획 3회마다 반경 3, 최대 4마리에게 피해 12와 3초간 30% 둔화. 일반 냉기 파동을 대체.", false);
+        }
+
+        return builder.ToString().TrimEnd();
     }
 
     public void HandleCombatDamage(CombatDamageResult result)
     {
         if (!IsRunActive() || boundInventory == null ||
-            result.Target == null || result.AppliedDamage <= 0f ||
-            result.Context.Origin != CombatDamageOrigin.Tool)
+            !CanProcessCombatTrigger(result, Time.time))
         {
             return;
         }
@@ -325,11 +482,7 @@ public sealed class ItemEffectManager : MonoBehaviour
         bool ownsSigil = Owns(ItemCatalog.FrostSigilId);
         if (!ownsCoil && !ownsScabbard && !ownsSigil)
         {
-            return;
-        }
-
-        if (result.Context.IsContinuous && !CanCountContinuousHit(result))
-        {
+            ActivateIndependentElectricSynergy(result);
             return;
         }
 
@@ -389,7 +542,63 @@ public sealed class ItemEffectManager : MonoBehaviour
                 0.65f,
                 GetEffectiveSlowDuration(ItemCatalog.FrostSigilId));
         }
+
+        ActivateIndependentElectricSynergy(result);
     }
+
+    private void AppendSynergyTier(
+        StringBuilder builder,
+        SingleElementSynergyState state,
+        SingleElementSynergyTier tier,
+        string koreanName,
+        string description,
+        bool gameplayImplemented)
+    {
+        bool requirementMet = state.IsActive(tier);
+        string marker;
+        string status;
+        string color;
+        if (gameplayImplemented && requirementMet)
+        {
+            marker = "✓";
+            status = "활성";
+            color = "#F5FBFF";
+        }
+        else if (!gameplayImplemented && requirementMet)
+        {
+            marker = "◇";
+            status = "조건 충족 · 구현 예정";
+            color = "#F2C879";
+        }
+        else
+        {
+            marker = "○";
+            status = gameplayImplemented ? "미해금" : "미해금 · 구현 예정";
+            color = "#8C98A3";
+        }
+
+        builder.Append("<color=");
+        builder.Append(color);
+        builder.Append("><b>");
+        builder.Append(marker);
+        builder.Append(" Lv.");
+        builder.Append(GetSingleElementThresholds().GetThreshold(tier));
+        builder.Append(" — ");
+        builder.Append(koreanName);
+        builder.Append(" [");
+        builder.Append(status);
+        builder.Append("]</b>\n");
+        builder.Append(description);
+        builder.Append("</color>\n\n");
+    }
+
+    private static string GetElementDisplayName(ItemElement element) => element switch
+    {
+        ItemElement.Electric => "전기",
+        ItemElement.Sword => "검",
+        ItemElement.Ice => "얼음",
+        _ => "알 수 없는 속성"
+    };
 
     public void NotifyFishUnavailable(FishController fish)
     {
@@ -402,6 +611,9 @@ public sealed class ItemEffectManager : MonoBehaviour
         frostSigilHitCounts.Remove(fish);
         frostSigilSlowedFish.Remove(fish);
         frostCrystalSlowedFish.Remove(fish);
+        electricSynergyRuntime.ClearTarget(fish.GetInstanceID());
+        fish.GetComponent<FishMovement>()?.RemoveTimedSpeedModifier(
+            ElectricStunModifierId);
 
         int fishId = fish.GetInstanceID();
         List<ContinuousHitKey> staleKeys = null;
@@ -520,13 +732,14 @@ public sealed class ItemEffectManager : MonoBehaviour
 
         FishController target = fish[0];
         Vector2 position = target.transform.position;
+        float effectiveDamage = GetEffectiveDamage(
+            ItemCatalog.StormOrbId,
+            stormOrbResistanceDamage,
+            stormOrbDamageBonusPerLevel);
         DealItemDamage(
             target,
             ItemCatalog.StormOrbId,
-            GetEffectiveDamage(
-                ItemCatalog.StormOrbId,
-                stormOrbResistanceDamage,
-                stormOrbDamageBonusPerLevel));
+            effectiveDamage);
         CreateLightning(
             new[] { position + Vector2.up * 1.8f, position },
             stormOrbVisualDuration);
@@ -540,37 +753,180 @@ public sealed class ItemEffectManager : MonoBehaviour
             return;
         }
 
-        List<FishController> fish = GetEligibleFish(camera);
+        List<FishController> allFish = GetEligibleFish(camera);
+        List<FishController> fish = new(allFish);
         fish.RemoveAll(candidate =>
             candidate == triggeringFish ||
             Vector2.Distance(origin, candidate.transform.position) > capacitorChainRadius);
         fish.Sort((a, b) => CompareByDistanceThenId(a, b, origin));
 
         int targetCount = Mathf.Min(capacitorMaximumTargets, fish.Count);
+        float effectiveDamage = GetEffectiveDamage(
+            ItemCatalog.CapacitorCoilId,
+            capacitorResistanceDamage,
+            capacitorDamageBonusPerLevel);
+
         if (targetCount == 0)
         {
             CreateLightning(
                 new[] { origin, origin + Vector2.up * 0.45f },
                 capacitorVisualDuration);
+        }
+        else
+        {
+            Vector2[] points = new Vector2[targetCount + 1];
+            points[0] = origin;
+            for (int i = 0; i < targetCount; i++)
+            {
+                FishController target = fish[i];
+                points[i + 1] = target.transform.position;
+                DealItemDamage(
+                    target,
+                    ItemCatalog.CapacitorCoilId,
+                    effectiveDamage);
+            }
+
+            CreateLightning(points, capacitorVisualDuration);
+        }
+
+    }
+
+    private void ActivateIndependentElectricSynergy(CombatDamageResult result)
+    {
+        SingleElementSynergyState state = GetElectricSynergyState();
+        if (!state.IsLevel2Active)
+        {
             return;
         }
 
-        Vector2[] points = new Vector2[targetCount + 1];
-        points[0] = origin;
-        for (int i = 0; i < targetCount; i++)
+        Camera camera = Camera.main;
+        if (camera == null)
         {
-            FishController target = fish[i];
-            points[i + 1] = target.transform.position;
-            DealItemDamage(
-                target,
-                ItemCatalog.CapacitorCoilId,
-                GetEffectiveDamage(
-                    ItemCatalog.CapacitorCoilId,
-                    capacitorResistanceDamage,
-                    capacitorDamageBonusPerLevel));
+            return;
         }
 
-        CreateLightning(points, capacitorVisualDuration);
+        ElectricSynergySettings settings = GetElectricSynergySettings();
+        List<FishController> candidates = GetEligibleFish(camera);
+        List<FishController> chainTargets =
+            ElectricSynergyTargeting.SelectDistinctEligibleTargets(
+                candidates,
+                result.HitPosition,
+                settings.ChainRadius,
+                settings.GetEffectiveChainTargetCount(state));
+        List<FishController> thunderstormTargets = state.IsLevel10Active
+            ? ElectricSynergyTargeting.SelectDistinctEligibleTargets(
+                candidates,
+                result.HitPosition,
+                float.PositiveInfinity,
+                settings.ThunderstormTargetCount)
+            : new List<FishController>();
+
+        ElectricSynergyActivation activation =
+            electricSynergyRuntime.TryBeginActivation(
+                state,
+                Time.time,
+                settings.ChainCooldown,
+                settings.ThunderstormCooldown,
+                chainTargets.Count > 0,
+                thunderstormTargets.Count > 0);
+        if (activation == ElectricSynergyActivation.Thunderstorm)
+        {
+            ActivateElectricThunderstorm(thunderstormTargets, state, settings);
+        }
+        else if (activation == ElectricSynergyActivation.ChainDischarge)
+        {
+            ActivateElectricChainDischarge(
+                result.HitPosition,
+                chainTargets,
+                state,
+                settings);
+        }
+    }
+
+    private void ActivateElectricChainDischarge(
+        Vector2 origin,
+        IReadOnlyList<FishController> targets,
+        SingleElementSynergyState state,
+        ElectricSynergySettings settings)
+    {
+        float damage = settings.GetEffectiveDamage(settings.ChainDamage, state);
+        Vector2[] points = new Vector2[targets.Count + 1];
+        points[0] = origin;
+        for (int i = 0; i < targets.Count; i++)
+        {
+            FishController target = targets[i];
+            points[i + 1] = target.transform.position;
+            DealSynergyDamage(target, ElectricChainDamageId, damage);
+            if (state.IsLevel6Active && IsEligibleFish(target))
+            {
+                ApplyElectricDischargeStun(target, state, settings);
+            }
+        }
+
+        CreateLightning(
+            points,
+            settings.ChainVisualDuration,
+            new Color(0.45f, 1f, 0.95f, 1f),
+            0.15f,
+            "ElectricChainDischargeVisual");
+    }
+
+    private void ActivateElectricThunderstorm(
+        IReadOnlyList<FishController> targets,
+        SingleElementSynergyState state,
+        ElectricSynergySettings settings)
+    {
+        float damage = settings.GetEffectiveDamage(settings.ThunderstormDamage, state);
+        for (int i = 0; i < targets.Count; i++)
+        {
+            FishController target = targets[i];
+            Vector2 position = target.transform.position;
+            DealSynergyDamage(target, ElectricThunderstormDamageId, damage);
+            CreateLightning(
+                new[] { position + Vector2.up * 3.2f, position },
+                settings.ThunderstormVisualDuration,
+                new Color(1f, 0.84f, 0.22f, 1f),
+                0.24f,
+                "ElectricThunderstormVisual");
+        }
+    }
+
+    private void ApplyElectricDischargeStun(
+        FishController fish,
+        SingleElementSynergyState state,
+        ElectricSynergySettings settings)
+    {
+        if (!IsEligibleFish(fish) || fish.Data == null)
+        {
+            return;
+        }
+
+        float duration = GetElectricDischargeStunDuration(
+            state,
+            fish.Data.SpecialType);
+        SynergyTargetKey target = new(
+            fish.GetInstanceID(),
+            fish.LifecycleVersion);
+        if (!electricSynergyRuntime.TryBeginStun(
+                target,
+                Time.time,
+                duration,
+                settings.RestunLockout))
+        {
+            return;
+        }
+
+        FishMovement movement = fish.GetComponent<FishMovement>();
+        if (movement == null)
+        {
+            electricSynergyRuntime.ClearTarget(fish.GetInstanceID());
+            return;
+        }
+
+        movement.ApplyTimedSpeedModifier(
+            ElectricStunModifierId,
+            0f,
+            duration);
     }
 
     private void ActivateSpectralScabbard(FishController target, Vector2 position)
@@ -692,6 +1048,42 @@ public sealed class ItemEffectManager : MonoBehaviour
             CombatDamageContext.Item(itemId, this));
     }
 
+    private void DealSynergyDamage(
+        FishController fish,
+        string synergyId,
+        float damage)
+    {
+        if (!IsEligibleFish(fish) || damage <= 0f)
+        {
+            return;
+        }
+
+        fish.TakeCaptureDamage(
+            damage,
+            CombatDamageContext.ItemSynergy(synergyId, this));
+    }
+
+    private SingleElementSynergyState GetElectricSynergyState() =>
+        GetSingleElementSynergyState(ItemElement.Electric, boundInventory);
+
+    private ElectricSynergySettings GetElectricSynergySettings()
+    {
+        electricSynergy ??= new ElectricSynergySettings();
+        return electricSynergy;
+    }
+
+    private SingleElementSynergyThresholds GetSingleElementThresholds()
+    {
+        singleElementThresholds ??= new SingleElementSynergyThresholds();
+        return singleElementThresholds;
+    }
+
+    private SynergyCrowdControlPolicy GetCrowdControlPolicy()
+    {
+        synergyCrowdControl ??= new SynergyCrowdControlPolicy();
+        return synergyCrowdControl;
+    }
+
     private float GetEffectiveDamage(
         string itemId,
         float baseline,
@@ -760,7 +1152,9 @@ public sealed class ItemEffectManager : MonoBehaviour
         }
     }
 
-    private bool CanCountContinuousHit(CombatDamageResult result)
+    private bool CanCountContinuousHit(
+        CombatDamageResult result,
+        float scaledTime)
     {
         if (result.Target.LifecycleVersion != result.TargetLifecycleVersion)
         {
@@ -772,12 +1166,12 @@ public sealed class ItemEffectManager : MonoBehaviour
             result.Context.SourceInstanceId,
             result.Context.AttackId);
         if (continuousHitTimes.TryGetValue(key, out float lastCountedAt) &&
-            Time.time - lastCountedAt < continuousHitCountInterval)
+            scaledTime - lastCountedAt < continuousHitCountInterval)
         {
             return false;
         }
 
-        continuousHitTimes[key] = Time.time;
+        continuousHitTimes[key] = scaledTime;
         return true;
     }
 
@@ -874,6 +1268,12 @@ public sealed class ItemEffectManager : MonoBehaviour
             return;
         }
 
+        if (ItemRewardManager.IsSelectionPendingOrActive)
+        {
+            Debug.LogWarning("필수 아이템 보상이 진행 중일 때는 직접 업그레이드할 수 없습니다.");
+            return;
+        }
+
         RunItemInventory inventory = GetCurrentInventory();
         if (inventory == null || inventory.Count == 0)
         {
@@ -904,6 +1304,57 @@ public sealed class ItemEffectManager : MonoBehaviour
         Debug.LogWarning($"업그레이드 가능한 소유 아이템이 없습니다: {GetUpgradeDiagnostic(lastResult)}");
 #else
         Debug.LogWarning("아이템 업그레이드 테스트는 Editor 또는 Development Build에서만 사용할 수 있습니다.");
+#endif
+    }
+
+    [ContextMenu("Development/Upgrade Owned Electric Items To Level 5")]
+    private void DevelopmentUpgradeOwnedElectricItemsToLevelFive()
+    {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (!Application.isPlaying || !IsRunActive())
+        {
+            Debug.LogWarning("전기 레벨 10 테스트는 Play Mode의 진행 중인 Run에서만 사용할 수 있습니다.");
+            return;
+        }
+
+        if (ItemRewardManager.IsSelectionPendingOrActive)
+        {
+            Debug.LogWarning("필수 아이템 보상이 진행 중일 때는 전기 아이템을 직접 업그레이드할 수 없습니다.");
+            return;
+        }
+
+        RunItemInventory inventory = GetCurrentInventory();
+        if (inventory == null)
+        {
+            Debug.LogWarning("진행 중인 Run의 아이템 인벤토리를 찾을 수 없습니다.");
+            return;
+        }
+
+        int upgradeCount = 0;
+        IReadOnlyList<RunItemInstance> items = inventory.OwnedItems;
+        for (int i = 0; i < items.Count; i++)
+        {
+            RunItemInstance owned = items[i];
+            if (!ItemCatalog.TryGet(owned.ItemId, out ItemDefinition definition) ||
+                definition.Element != ItemElement.Electric)
+            {
+                continue;
+            }
+
+            while (owned.Level < ItemLevelLimit.DefaultMaximumLevel &&
+                   CanUpgradeItem(owned.ItemId, inventory, out _) &&
+                   TryUpgradeItem(owned.ItemId, inventory, out _))
+            {
+                upgradeCount++;
+            }
+        }
+
+        Debug.Log(
+            $"전기 시너지 테스트 업그레이드 완료: {upgradeCount}회, " +
+            $"전기 속성 Lv.{inventory.GetElementLevel(ItemElement.Electric)}. " +
+            "레벨 10에는 실제로 소유한 폭풍 구슬과 축전 코일이 모두 Lv.5여야 합니다.");
+#else
+        Debug.LogWarning("전기 레벨 10 테스트는 Editor 또는 Development Build에서만 사용할 수 있습니다.");
 #endif
     }
 
@@ -1004,6 +1455,7 @@ public sealed class ItemEffectManager : MonoBehaviour
         frostCrystalSlowedFish.Clear();
         continuousHitTimes.Clear();
         pendingDamageResults.Clear();
+        electricSynergyRuntime.Reset();
         stormOrbRemaining = stormOrbAttackInterval;
         swordArrayRemaining = swordArrayAttackInterval;
         frostCrystalRemaining = frostCrystalAttackInterval;
@@ -1030,6 +1482,7 @@ public sealed class ItemEffectManager : MonoBehaviour
 
             movements[i].RemoveTimedSpeedModifier(ItemCatalog.FrostSigilId);
             movements[i].RemoveTimedSpeedModifier(ItemCatalog.FrostCrystalId);
+            movements[i].RemoveTimedSpeedModifier(ElectricStunModifierId);
         }
 
         if (resetKnownOwnership)
@@ -1076,15 +1529,30 @@ public sealed class ItemEffectManager : MonoBehaviour
 
     private void CreateLightning(IReadOnlyList<Vector2> points, float duration)
     {
+        CreateLightning(
+            points,
+            duration,
+            new Color(0.35f, 0.85f, 1f, 0.95f),
+            0.11f,
+            "ItemElectricVisual");
+    }
+
+    private void CreateLightning(
+        IReadOnlyList<Vector2> points,
+        float duration,
+        Color color,
+        float width,
+        string objectName)
+    {
         if (points == null || points.Count < 2)
         {
             return;
         }
 
         LineRenderer line = CreateLineVisual(
-            "ItemElectricVisual",
-            new Color(0.35f, 0.85f, 1f, 0.95f),
-            0.11f,
+            objectName,
+            color,
+            width,
             points.Count);
         for (int i = 0; i < points.Count; i++)
         {
@@ -1230,6 +1698,9 @@ public sealed class ItemEffectManager : MonoBehaviour
             gameplayViewport.width, 0.01f, 1f - gameplayViewport.x);
         gameplayViewport.height = Mathf.Clamp(
             gameplayViewport.height, 0.01f, 1f - gameplayViewport.y);
+        GetSingleElementThresholds().Normalize();
+        GetCrowdControlPolicy().Normalize();
+        GetElectricSynergySettings().Normalize();
         stormOrbMaximumLevel = Mathf.Max(1, stormOrbMaximumLevel);
         capacitorMaximumLevel = Mathf.Max(1, capacitorMaximumLevel);
         scabbardMaximumLevel = Mathf.Max(1, scabbardMaximumLevel);

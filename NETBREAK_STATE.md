@@ -1,6 +1,6 @@
 # NETBREAK 인수인계
 
-기준일: 2026-09-15. 현재 마일스톤: **STEP 10E Area 1 progression/pacing cleanup 구현·검증 완료**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 장기 개발 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
+기준일: 2026-09-18. 현재 마일스톤: **G6-B1 독립 전기 2/4/6/8/10 시너지·속성 hover 툴팁 소스 구현 완료, Unity 검증 대기**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경
 - 저장소: `C:\game_dev\unity\NetBreak`, 브랜치 `vertical-slice`.
@@ -256,7 +256,7 @@ FULL RUN #2 수동 검증 및 실측.
 - `ItemHUD`는 빈 칸이 구별되는 4슬롯, 짧은 한국어 이름, 전기/검/얼음, Lv1을 표시한다. Hover Tooltip은 전체 이름·속성·레벨·계획 효과와 `G5-B 예정` 개발 상태를 보여준다. `ItemRewardCanvas`는 후보별 이름·속성·계획 효과·획득 가능 여부를 표시한다. `NETBREAK/UI/Setup Item System UI`가 유일한 `GameCanvas`와 `RunManager`를 검사해 `ItemSystemUI`와 `ItemRewardManager`를 Undo 지원으로 만들며, 기존/부분/중복 구성을 안전하게 감지한다. 별도 Inspector 할당은 없고 실행 뒤 Scene 저장은 사용자가 한다.
 - 개발 검증은 Editor/Development Build Play Mode의 진행 중인 Run에서 RunManager의 `ItemRewardManager` Context Menu `Development/Open Item Acquisition Reward`를 호출한다. 실제 3택 모달을 거치며 다른 필수 선택 중에는 거절되고, 네 번까지 서로 다른 아이템을 얻고 다섯 번째는 G6 연기 진단으로 안전하게 거절된다. 자동 지급이나 출시 UI는 없다.
 - 전투 이벤트 정적 감사: 뜰채 `LandingNetController.CaptureFish`와 연쇄 포획, 낚싯대 `FishingRodController.Attack`, 그물 `NetController.OnTriggerStay2D` DoT, 일반 투망 `CastNetController.PerformCast`, E 비상 투망의 `ApplyTacticalCast` 경로, R 어장 대횡단·교차 봉쇄의 직접 호출 및 천망의 `ApplySignatureCast`가 모두 `FishController.TakeCaptureDamage`로 끝난다. 그러나 연속 피해 dedup·Tool/Ability/Item 원천·범위 공격 단위가 현재 호출마다 달라 G5-A에서 이벤트/피해 시그니처를 추측해 넣지 않았다. G5-B에서 양의 실제 피해만 카운트하고 Tool 원천과 Item 원천을 구분하며, 같은 연속 원천/대상 0.5초 제한·한 범위 공격 대상 dedup·비재귀 Item 포획을 이 실제 진입점에 연결한다. `FishController.Initialize`는 포획 구독을, `FishMovement.Initialize*`/`OnDisable`은 이동 modifier를 초기화하므로 미래 물고기별 Item 카운터·상태도 같은 Pool 초기화 경계에서 지워야 한다.
-- 전기/검/얼음 합산 레벨, 2/4/10 단일 속성 문턱, 서로 다른 두 속성 Lv2 이상·Run당 최대 하나·명시 조합만 허용하는 조합 시너지와 비재귀 규칙을 설계에 확정했다. 실제 6개 효과는 G5-B, 아이템 레벨 상승·업그레이드 보상·속성/조합 시너지는 G6로 남겼다.
+- 전기/검/얼음 합산 레벨과 단일 속성/조합 시너지 기반을 설계했다. 당시 3단계 초안은 아래 최신 G6-B1 재설계에서 **2/4/6/8/10 독립 패시브**로 교체되었다. 서로 다른 두 속성 Lv2 이상·Run당 최대 하나·명시 조합만 허용하는 조합 시너지와 비재귀 규칙은 유지한다.
 - Scene/Prefab YAML, Area 1 보상, 기존 Tool/E/R/Tree/EXP/숙련/Gold/FishSpawner/포획 보상/배속은 변경하지 않았다. Unity/Computer Use/Play Mode/Console/메뉴 실행/Scene 저장/commit/push는 수행하지 않았다. Unity 6 참조 어셈블리를 사용한 외부 runtime/editor C# 컴파일은 오류 없이 통과했다(기존 직렬화 필드 경고만 발생). 실제 Unity Compile/Console, UI 배치, 모달 차단, 배속 복원, 새 Run 초기화는 사용자 검증이 필요하다.
 
 ## 최근 변경 — G5-B 6종 패시브 아이템 효과와 전투 이벤트 통합
@@ -271,7 +271,7 @@ FULL RUN #2 수동 검증 및 실측.
 - Item tooltip/reward 문구를 실제 한국어 효과와 피해량으로 갱신하고 G5-B 예정 문구를 제거했다. Hover 중 주기 남은 시간, 축전 코일 전역 적중 수, 대상별 발동 기준, 현재 둔화 수를 갱신한다. 기존 4슬롯, 필수 reward modal의 sorting/raycast/pause, Q/W/E/R Tree UI는 변경하지 않았다.
 - 모든 G5-B 밸런스의 유일한 Inspector 소유자는 RunManager의 `ItemEffectManager`다. 공통 `gameplayViewport=(0, 0.12, 1, 0.72)`와 `continuousHitCountInterval=0.5` 및 각 Item Header의 주기/피해/반경/대상 수/둔화/visual 값을 조절할 수 있다. `NETBREAK/UI/Setup Item System UI`를 다시 실행하면 기존 Item UI와 ItemRewardManager를 보존하고 누락된 ItemEffectManager만 Undo 지원으로 추가한다. 별도 참조 할당은 없다. 실행하지 않아도 RunManager가 런타임 누락 컴포넌트를 한 개만 보완하지만 Inspector 튜닝과 Scene 저장을 위해 메뉴 실행이 권장된다.
 - 정상 Area 1 아이템 0개와 개발용 `ItemRewardManager > Development/Open Item Acquisition Reward`, 4슬롯/중복 방지, MiniBoss/Boss 숙련, E/R, 기존 피해·보상·경제·Spawner 수치는 유지했다. Scene/Prefab YAML, Unity/Computer Use/Play Mode/Console/메뉴 실행/Scene 저장/commit/push는 수행하지 않았다. Unity 6000.3.11f1 참조와 기존 Bee response를 사용한 외부 runtime/editor Roslyn 컴파일은 오류 없이 통과했다. 실제 Unity Compile/Console과 아래 6종 개별/복수 아이템, Pause/배속, capture/escape/pool 회귀는 사용자 검증이 필요하다.
-- G5-B 완료 시점에는 아이템 레벨 업그레이드와 속성 레벨 합산도 미구현이었다. 아래 G6-A1에서 두 기반을 추가했으며, 전기/검/얼음 2/4/10 단일 속성 효과와 조합 시너지는 계속 후속 범위다.
+- G5-B 완료 시점에는 아이템 레벨 업그레이드와 속성 레벨 합산도 미구현이었다. 아래 G6-A1에서 두 기반을 추가했고, 최신 단일 속성 단계는 2/4/6/8/10이다.
 
 ## 최근 변경 — G6-A1 아이템 레벨·실제 스케일링·속성 합산 기반
 
@@ -282,4 +282,36 @@ FULL RUN #2 수동 검증 및 실측.
 - 개발 검증은 Editor/Development Build의 진행 중인 Run에서 실제 아이템 획득 후 `ItemEffectManager > Development/Upgrade First Eligible Owned Item`을 실행한다. 실제 `CanUpgradeItem/TryUpgradeItem`을 사용하고 최대 레벨을 존중하며 정상 플레이 UI나 자동 지급은 추가하지 않았다. Item HUD tooltip 상태에는 현재 유효 피해 또는 둔화 지속시간이 표시된다.
 - `Assets/Editor/Tests/ItemProgressionTests.cs`에 Lv1 획득, 정확한 +1, 미소유 실패, 기본/사용자 최대값, 무제한, 잘못된 최대값, 피해/둔화 가산식, 속성 합산, 새 Run 초기화, 실패 불변, 6종 기본 최대값, Manager가 업그레이드 레벨을 실제 유효값에 사용하는 경우를 다루는 Edit Mode 테스트를 추가했다.
 - Unity와 Test Runner는 요청에 따라 실행하지 않았다. Unity 6000.3.11f1의 기존 Bee 응답과 Roslyn으로 새 runtime/test 소스를 함께 컴파일한 source-level 검사는 오류 없이 통과했다. 이는 Unity Compile, Console 확인, Edit Mode 테스트 실행, Play Mode 수동 검증을 뜻하지 않는다. Scene/Prefab YAML, 기존 Tool/E/R/Tree/Fish/EXP/Gold/Mastery/FishSpawner 밸런스, 정상 Area 1 아이템 0개 정책, commit/push는 변경하거나 수행하지 않았다.
-- 후속 범위: G6-A2 보유 아이템 2택1 업그레이드 보상 UI, G6-B 전기/검/얼음 2/4/10 단일 속성 시너지, G6-C 서로 다른 두 속성 Lv2 이상·명시 조합·Run당 최대 하나의 조합 시너지. 이번 단계에서는 모두 미구현이다.
+- 후속 범위였던 G6-A2는 아래와 같이 소스 구현했다. G6-B 단일 속성 시너지는 최신 2/4/6/8/10 설계를 따르며, G6-C의 서로 다른 두 속성 Lv2 이상·명시 조합·Run당 최대 하나 규칙은 유지한다.
+
+## 최근 변경 — G6-A2 필수 2택1 아이템 업그레이드 보상
+
+- `ItemRewardManager.RequestUpgrade`를 미래 해역 관문용 명시적 보상 진입점으로 추가했다. 기존 획득과 업그레이드 요청 타입을 분리했고, 4칸이 찬 일반 획득 요청은 다섯 번째 아이템을 만들거나 조용히 업그레이드로 전환하지 않는다. 정상 해역 1 MiniBoss/Boss에는 아이템 보상을 연결하지 않았고 숙련 +1/+2 및 E/R 흐름도 변경하지 않았다. 실제 해역 2~6 관문 연결은 G8 범위다.
+- `Upgrade Candidate Count` 기본값 2를 `ItemRewardManager`의 유일한 후보 수 설정으로 추가했다. 후보 생성은 실제 `RunItemInventory.OwnedItems`만 순회하고 `ItemEffectManager.CanUpgradeItem(itemId, inventory, ...)`로 G6-A1 최대 레벨·무제한·overflow·ID·소유 검사를 재사용한다. 적격 풀 Fisher-Yates shuffle 후 필요한 수만 취해 중복·희소 풀 무한 반복이 없다. 2개 이상은 기본 2택, 1개는 가운데 1택, 0개는 모달을 열지 않고 `NoEligibleCandidates`와 한국어 경고를 반환한다. Gold·숙련 대체 보상이나 자동 강화는 없다.
+- `ItemUpgradeRewardState`가 한 보상에 제시된 정확한 후보 ID와 pending/consumed/confirmation 상태를 소유한다. 클릭 시 pending 확인 → 제시 후보 확인 → 현재 소유/자격 재검증 → G6-A1 `TryUpgradeItem` → 성공 후 소비 순서다. 실패는 아이템 레벨과 pending 보상을 유지하고, 더블 클릭·반복 확인·비제시 아이템·한 보상으로 두 번 강화는 차단한다. 완료 뒤 새 `RequestUpgrade`는 새 보상을 정상 생성하며 Run당 1회 제한은 없다. Inventory 참조가 새 Run 상태로 바뀌거나 Manager가 비활성화되면 pending 상태를 초기화한다.
+- 기존 `ItemRewardCanvas`와 카드 3개를 획득/업그레이드가 공유한다. 업그레이드 카드는 실제 한국어 이름·속성·`Lv.N → Lv.N+1`·현재/다음 실제 주 효과값·`속성 레벨 +1`을 표시한다. 실제 값은 Main Scene의 기존 ItemEffectManager 기준값과 G6-A1 레벨 스케일링 API에서 계산하며 예시 숫자를 하드코딩하지 않는다. 2/1개에 맞춰 카드를 가운데 재배치하고 빈 카드는 숨긴다.
+- `ItemHUD`는 Inventory Changed를 구독해 성공 프레임에 슬롯 Lv와 hover tooltip을 갱신한다. `NETBREAK/UI/Setup Item System UI`를 다시 실행하면 기존 `ItemSystemUI`, 획득 UI, Skill Tree/E/R UI를 보존하면서 우상단에 `속성 Lv 전기/검/얼음` TMP 한 줄을 Undo 가능한 방식으로 추가·연결한다. 합계는 `RunItemInventory.GetElementLevel` 조회값이며 별도 mutable 카운터나 활성 시너지 표시는 없다. 별도 Inspector 할당은 필요 없다.
+- 필수 모달은 기존 전체 화면 raycast와 `ToolSlotInput.IsSelectionOrEndBlocked`를 사용해 뜰채·Q/W·E/R·재배치를 막고 Skill Tree보다 위로 정렬한다. Escape/Tab/닫기 경로는 없으며 다른 Core/Partner/E/결과 모달·타기팅이 활성 또는 pending이면 새 Item 모달을 거절한다. 열려 있는 동안 `timeScale=0`을 유지하고 성공 후 기존 `ResumeGameplayTimeScale`로 개발 배속을 복원한다. 실패 선택은 모달을 닫거나 보상을 소비하지 않는다.
+- 개발 메뉴는 진행 중인 Run의 `ItemRewardManager > Development/Open Item Upgrade Reward`다. Editor/Development Build에서만 실제 업그레이드 보상 파이프라인을 호출하며, 4개 보유 상태·1개 후보·전부 최대 레벨·다른 필수 모달 충돌을 같은 코드로 처리한다. G6-A1 직접 업그레이드 메뉴는 Item reward가 pending인 동안 실행을 거절한다.
+- `Assets/Editor/Tests/ItemProgressionTests.cs`에 G6-A2 집중 Edit Mode 테스트 14개를 추가했다: 4개 보유→서로 다른 2후보, 최대 레벨 제외, 기본 최대 초과 무제한, 1후보, 0후보/모달 상태 없음, 미보유 제외, invalid ID 제외, 한 보상 정확히 1회, 반복 확인 차단, 비제시 선택 차단, 실패 상태 보존, 레벨·속성 합계 갱신, 새 Run reset, Area 1 관문 무업그레이드.
+- 요청에 따라 Unity/Computer Use/Test Runner/Play Mode/Console/Editor 메뉴/Scene 저장은 실행하지 않았다. Unity 6000.3.11f1의 기존 Bee response를 사용해 runtime과 Editor/test 어셈블리를 외부 Roslyn으로 컴파일했고 C# 오류 없이 종료 코드 0을 확인했다. Unity Source Generator 버전 불일치 `CS8032` 경고 3종은 외부 Roslyn 실행에서만 발생했으며 이는 Unity Compile 또는 테스트 통과를 의미하지 않는다. `git diff --check`는 통과했다. Scene/Prefab YAML, 밸런스, commit/push는 변경·실행하지 않았다.
+- 사용자 Unity 검증 순서: ① Edit Mode에서 `NETBREAK/UI/Setup Item System UI` 실행 후 Main Scene 저장 ② Console compile error 없음 확인 ③ Test Runner/Edit Mode에서 `ItemProgressionTests` 전체 실행 ④ Play Mode 정상 Run 시작 후 개발용 획득 메뉴로 아이템 4개 확보 ⑤ F2/F3 상태에서 `Development/Open Item Upgrade Reward` 실행, 2개 카드/실제 수치/입력 차단/Tree 차단/배속 복원 확인 ⑥ 한 후보만 남긴 상태와 전부 최대 레벨 상태의 1택/무모달 경고 확인 ⑦ 업그레이드 직후 HUD Lv·tooltip 실제값·속성 합계 +1 및 다음 발동 스케일 확인 ⑧ 새 Run에서 pending/소유/레벨/속성 합계 초기화와 정상 Area 1 무아이템 보상 확인.
+- G6-B1 전기 시너지는 아래와 같이 소스 구현했다. G6-B2 검/얼음 단일 속성 시너지와 G6-C 조합 시너지는 계속 미구현이다. 해역 2~6 gameplay, 관문 reward routing, 상인/보상 대체, 최종 UI art도 후속 범위다.
+
+## 최근 변경 — G6-B1 REWORK 독립 전기 5단계 시너지·속성 hover 툴팁
+
+- 이전 G6-B1의 폭풍 구슬/축전 코일 원본 활성화 종속 경로를 제거했다. 두 Item의 기존 자동 공격·피해·레벨 스케일·축전 타이머/적중 기준은 그대로고 더 이상 시너지 발동이나 감전을 직접 호출하지 않는다. 새 시너지는 `RunItemInventory.GetElementLevel(Electric)`만 평가하므로 폭풍 구슬 단독 Lv6, 축전 코일 단독 Lv6, 미래 Electric Item 합산도 Item ID 분기 없이 같은 2/4/6 단계가 열린다.
+- `SingleElementSynergyThresholds` 기본값을 누적 **2/4/6/8/10**으로 확장했다. Lv2·6·10은 주요 효과, Lv4·8은 수치 강화다. `ItemEffectManager > Single-Element Synergy / 단일 속성 시너지`가 전기/검/얼음 공용 문턱의 유일한 Inspector 소유자이며 별도 mutable 속성 카운터는 없다.
+- 전기 Lv2 `연쇄 방전`: 양의 Resistance 피해가 실제 적용된 Tool 원천 적중에서 자체 쿨다운 기본 7초마다 발동한다. 적중 위치 반경 3의 적격 물고기 최대 2마리를 거리→instance ID 순으로 골라 각각 Resistance 10 피해를 주며 visual은 0.45초다. 비활성·포획·도주·Pool 및 트리거 Tool 피해로 이미 포획된 물고기는 제외한다.
+- Lv4 `전도 확장`은 같은 연쇄 방전 대상만 기본 +1해 총 3마리로 만든다. Lv6 `감전 방전`은 연쇄 방전으로 피해를 받고 생존한 대상에게 일반/특수 1초, MiniBoss/Boss 기본 0.5초 감전을 적용한다. 감전 종료 뒤 기본 3초 lockout이며 `electric_synergy.stun` 키만 제거해 Net/Net R/Item 둔화/특수어 modifier를 보존한다.
+- Lv8 `과충전`은 전기 시너지 피해에만 기본 ×1.25를 정확히 한 번 적용해 연쇄 10→12.5, 천둥 폭풍 18→22.5가 된다. 여섯 Item 기준 피해·Item Level 스케일과 Tool 피해는 변경하지 않는다.
+- Lv10 `천둥 폭풍`은 자체 쿨다운 기본 15초 뒤 다음 유효 Tool 적중에서 gameplay viewport 안의 적격 물고기 최대 5마리에게 각각 기본 Resistance 18 피해를 주며 visual은 0.65초다. 연쇄와 동시에 준비됐으면 천둥 폭풍만 발동하고 연쇄 쿨다운도 다시 시작한다. 두 쿨다운은 scaled `Time.time`으로 Pause에서 정지하며 pending backlog가 없다.
+- 기존 `CombatDamageContext`와 연속 피해의 물고기·source instance·attack ID별 기본 0.5초 dedupe를 공용 진입점에서 한 번 사용한다. 같은 Tool 적중은 기존 Item 카운터와 독립 전기 시너지에 각각 기여한다. Item/ItemSynergy 원천 및 0 피해는 시너지를 발동하지 않으며 추가 피해는 `CombatDamageOrigin.ItemSynergy`라 Item 카운터·다른 시너지·자기 자신을 재귀 발동하지 않는다.
+- 전기 시너지 Resistance 피해는 `FishController.TakeCaptureDamage`를 재사용하고 MiniBoss/Boss에도 100% 적용한다. 보스 피해 multiplier는 없다. `ItemEffectManager > Synergy Crowd Control / 시너지 군중제어`의 기본 MiniBoss ×0.5와 Boss ×0.5는 시너지 추가 CC에만 독립 적용된다.
+- `ElectricSynergySettings`가 RunManager의 `ItemEffectManager > Electric Synergy / 전기 시너지` 아래에서 쿨다운·반경·대상·피해·visual·Lv4 추가 대상·Lv6 감전/lockout·Lv8 배율·Lv10 수치를 한 번만 소유한다. 새 Run/Inventory 재바인딩/Manager 비활성화는 두 쿨다운, 감전 lockout, pending 피해, visual을 초기화하고 포획·도주·Pool 반환은 물고기별 감전 상태를 정리한다.
+- 기존 속성 HUD의 0레벨 숨김·속성별 한 줄·좌측 보정은 유지했다. `ItemElementLevels`의 각 TMP link hover는 공유 `ElementSynergyTooltip`을 열어 실제 공용 문턱 순서와 현재 Manager 수치를 표시한다. 전기 단계는 `활성/미해금`, G6-B2 전 검/얼음은 문턱 충족 시에도 `조건 충족 · 구현 예정`, 미달은 `미해금 · 구현 예정`이다. 체크/원형/다이아 marker와 명시적 한국어 상태를 함께 사용하며 차단 모달 중 숨고 Inventory `Changed`에서 갱신된다.
+- 안전 이관 메뉴는 `NETBREAK/UI/Setup Item System UI`다. 기존 `ItemSystemUI`, 4슬롯, Item tooltip, 획득/업그레이드 모달과 참조를 보존하면서 기존 `ItemElementLevels`에 hover 컴포넌트를 추가하고 화면 안쪽 680×650 고정 패널 하나를 생성·재사용·연결한다. 패널과 텍스트는 raycast를 막지 않고 Auto Size 없이 16.5pt wrap을 사용한다. 중복/외부/부분 구성은 변경 전 중단하며 Undo·재실행을 지원한다. 메뉴 실행과 Scene 저장은 사용자 작업이다.
+- 개발용 Lv10 검증은 실제 획득 메뉴로 두 Electric Item을 소유하고 `ItemEffectManager > Development/Upgrade Owned Electric Items To Level 5`를 실행한다. 두 아이템 Lv5 합계로 Lv10이 된다. 단일 Item Lv6 이상은 해당 Item의 `Unlimited Maximum Level`을 개발 중에 켠 뒤 `Development/Upgrade First Eligible Owned Item`을 반복해 실제 검증 API로 확인한다. 정상 Area 1 아이템 0개 및 경제는 유지한다.
+- `ItemProgressionTests`를 새 설계로 갱신했다. 0/1/2/4/6/8/10 누적 tier, 사용자 문턱, 단일 Storm/Coil Lv6, Lv4 대상 수, bounded distinct 대상, Lv6/보스 감전, lockout·modifier 합성·Pool reset, Lv8 시너지 피해 1회/Item 무변경, 보스 피해 100%, Tool/Item/ItemSynergy 원천, 연속 source별 0.5초, Lv10 우선순위·두 쿨다운·reset, HUD zero 숨김, 툴팁 5단계 순서/실제 값/검·얼음 pending 상태를 다룬다.
+- 승인된 G6-B2 검 5단계(영혼 참격/예리한 영혼/쌍검 소환/검기 증폭/검의 비)와 얼음 5단계(냉기 파동/냉기 확산/순간 빙결/오래가는 한기/서리 폭발)는 문서·툴팁 설명만 추가했고 gameplay는 구현하지 않았다. G6-C combined synergy, 최종 VFX/SFX, 정상 Area 1 Item 보상도 미구현이다.
+- Unity/Computer Use/Test Runner/Play Mode/Console/Editor 메뉴/Scene 저장은 요청대로 실행하지 않았다. Unity 6000.3.11f1 기존 Bee response와 Roslyn으로 runtime 및 Editor/test 어셈블리 source-level 컴파일을 수행했고 오류 없이 통과했다. 이는 Unity 자동 테스트 통과나 수동 Play 검증을 의미하지 않는다. commit/push도 수행하지 않았다.
