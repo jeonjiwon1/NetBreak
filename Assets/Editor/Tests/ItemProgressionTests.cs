@@ -1065,6 +1065,570 @@ public sealed class ItemProgressionTests
         }
     }
 
+    [TestCase(ItemElement.Sword, 0, false, false, false, false, false)]
+    [TestCase(ItemElement.Sword, 1, false, false, false, false, false)]
+    [TestCase(ItemElement.Sword, 2, true, false, false, false, false)]
+    [TestCase(ItemElement.Sword, 4, true, true, false, false, false)]
+    [TestCase(ItemElement.Sword, 6, true, true, true, false, false)]
+    [TestCase(ItemElement.Sword, 8, true, true, true, true, false)]
+    [TestCase(ItemElement.Sword, 10, true, true, true, true, true)]
+    [TestCase(ItemElement.Ice, 0, false, false, false, false, false)]
+    [TestCase(ItemElement.Ice, 1, false, false, false, false, false)]
+    [TestCase(ItemElement.Ice, 2, true, false, false, false, false)]
+    [TestCase(ItemElement.Ice, 4, true, true, false, false, false)]
+    [TestCase(ItemElement.Ice, 6, true, true, true, false, false)]
+    [TestCase(ItemElement.Ice, 8, true, true, true, true, false)]
+    [TestCase(ItemElement.Ice, 10, true, true, true, true, true)]
+    public void SwordAndIceSingleElementTiersAreCumulative(
+        ItemElement element,
+        int elementLevel,
+        bool level2,
+        bool level4,
+        bool level6,
+        bool level8,
+        bool level10)
+    {
+        GameObject owner = CreateEffectManager(out ItemEffectManager manager);
+        try
+        {
+            SingleElementSynergyState state = manager.GetSingleElementSynergyState(
+                element,
+                CreateElementInventoryAtLevel(element, elementLevel));
+
+            Assert.That(state.IsLevel2Active, Is.EqualTo(level2));
+            Assert.That(state.IsLevel4Active, Is.EqualTo(level4));
+            Assert.That(state.IsLevel6Active, Is.EqualTo(level6));
+            Assert.That(state.IsLevel8Active, Is.EqualTo(level8));
+            Assert.That(state.IsLevel10Active, Is.EqualTo(level10));
+        }
+        finally
+        {
+            Object.DestroyImmediate(owner);
+        }
+    }
+
+    [TestCase(ItemCatalog.SpectralScabbardId, ItemElement.Sword)]
+    [TestCase(ItemCatalog.AutonomousSwordArrayId, ItemElement.Sword)]
+    [TestCase(ItemCatalog.FrostSigilId, ItemElement.Ice)]
+    [TestCase(ItemCatalog.FrostCrystalId, ItemElement.Ice)]
+    public void EitherSwordOrIceItemAloneCanUnlockLevelSix(
+        string itemId,
+        ItemElement element)
+    {
+        RunItemInventory inventory = CreateInventoryWith(itemId);
+        UpgradeRepeatedly(inventory, itemId, new ItemLevelLimit(1, true), 5);
+
+        SingleElementSynergyState state = new SingleElementSynergyThresholds()
+            .Evaluate(inventory, element);
+
+        Assert.That(state.ElementLevel, Is.EqualTo(6));
+        Assert.That(state.IsLevel2Active, Is.True);
+        Assert.That(state.IsLevel4Active, Is.True);
+        Assert.That(state.IsLevel6Active, Is.True);
+    }
+
+    [Test]
+    public void SwordLevelFourTriggersExactlyOnceOnFiveRecognizedToolHits()
+    {
+        SwordSynergySettings settings = new();
+        SwordSynergyRuntimeState runtime = new();
+        SingleElementSynergyState state = new SingleElementSynergyThresholds()
+            .Evaluate(CreateElementInventoryAtLevel(ItemElement.Sword, 4), ItemElement.Sword);
+
+        Assert.That(settings.GetEffectiveSoulSlashRequiredHits(state), Is.EqualTo(5));
+        for (int i = 0; i < 4; i++)
+        {
+            Assert.That(runtime.RecordValidToolHit(state, 5), Is.False);
+        }
+
+        Assert.That(runtime.RecordValidToolHit(state, 5), Is.True);
+        Assert.That(runtime.ToolHitCount, Is.Zero);
+        Assert.That(runtime.RecordValidToolHit(state, 5), Is.False);
+    }
+
+    [Test]
+    public void SwordPartialProgressSurvivesLevelFourUnlockWithoutRetroactiveBurst()
+    {
+        SwordSynergyRuntimeState runtime = new();
+        SingleElementSynergyThresholds thresholds = new();
+        SingleElementSynergyState levelTwo = thresholds.Evaluate(
+            CreateElementInventoryAtLevel(ItemElement.Sword, 2),
+            ItemElement.Sword);
+        SingleElementSynergyState levelFour = thresholds.Evaluate(
+            CreateElementInventoryAtLevel(ItemElement.Sword, 4),
+            ItemElement.Sword);
+
+        for (int i = 0; i < 4; i++)
+        {
+            Assert.That(runtime.RecordValidToolHit(levelTwo, 6), Is.False);
+        }
+
+        Assert.That(runtime.ToolHitCount, Is.EqualTo(4));
+        Assert.That(runtime.RecordValidToolHit(levelFour, 5), Is.True);
+        Assert.That(runtime.ToolHitCount, Is.Zero);
+    }
+
+    [Test]
+    public void SwordLevelEightScalesOnlySwordSynergyDamageExactlyOnce()
+    {
+        GameObject owner = CreateEffectManager(out ItemEffectManager manager);
+        try
+        {
+            SingleElementSynergyState levelSix = manager.GetSingleElementSynergyState(
+                ItemElement.Sword,
+                CreateElementInventoryAtLevel(ItemElement.Sword, 6));
+            SingleElementSynergyState levelEight = manager.GetSingleElementSynergyState(
+                ItemElement.Sword,
+                CreateElementInventoryAtLevel(ItemElement.Sword, 8));
+            SingleElementSynergyState levelTen = manager.GetSingleElementSynergyState(
+                ItemElement.Sword,
+                CreateElementInventoryAtLevel(ItemElement.Sword, 10));
+
+            Assert.That(manager.GetSwordSoulSlashDamage(levelSix), Is.EqualTo(14f));
+            Assert.That(manager.GetSwordAdditionalSlashDamage(levelSix), Is.EqualTo(10f));
+            Assert.That(manager.GetSwordSoulSlashDamage(levelEight), Is.EqualTo(16.8f).Within(0.0001f));
+            Assert.That(manager.GetSwordAdditionalSlashDamage(levelEight), Is.EqualTo(12f));
+            Assert.That(manager.GetSwordRainDamage(levelTen), Is.EqualTo(24f));
+            Assert.That(
+                manager.GetEffectivePrimaryValue(ItemCatalog.SpectralScabbardId, 1),
+                Is.EqualTo(16f));
+        }
+        finally
+        {
+            Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void SwordAdditionalTargetIsDistinctAndSkippedWhenUnavailable()
+    {
+        List<Object> cleanup = new();
+        try
+        {
+            FishController primary = CreateFish(FishSpecialType.None, 100f, cleanup);
+            FishController other = CreateFish(FishSpecialType.None, 100f, cleanup);
+            primary.transform.position = Vector2.zero;
+            other.transform.position = Vector2.right;
+            HashSet<FishController> excluded = new() { primary };
+
+            List<FishController> selected =
+                ElectricSynergyTargeting.SelectDistinctEligibleTargets(
+                    new List<FishController> { primary, other, other },
+                    Vector2.zero,
+                    3f,
+                    1,
+                    excluded);
+            List<FishController> unavailable =
+                ElectricSynergyTargeting.SelectDistinctEligibleTargets(
+                    new List<FishController> { primary },
+                    Vector2.zero,
+                    3f,
+                    1,
+                    excluded);
+
+            Assert.That(selected, Has.Count.EqualTo(1));
+            Assert.That(selected[0], Is.SameAs(other));
+            Assert.That(unavailable, Is.Empty);
+        }
+        finally
+        {
+            DestroyAll(cleanup);
+        }
+    }
+
+    [Test]
+    public void SwordRainCountsOnlySuccessfulPrimarySoulSlashes()
+    {
+        SwordSynergyRuntimeState runtime = new();
+        SingleElementSynergyState levelEight = new SingleElementSynergyThresholds()
+            .Evaluate(CreateElementInventoryAtLevel(ItemElement.Sword, 8), ItemElement.Sword);
+        SingleElementSynergyState levelTen = new SingleElementSynergyThresholds()
+            .Evaluate(CreateElementInventoryAtLevel(ItemElement.Sword, 10), ItemElement.Sword);
+
+        Assert.That(runtime.RecordSuccessfulSoulSlash(levelEight, 3), Is.False);
+        Assert.That(runtime.SuccessfulSoulSlashCount, Is.Zero);
+        Assert.That(runtime.RecordSuccessfulSoulSlash(levelTen, 3), Is.False);
+        Assert.That(runtime.RecordSuccessfulSoulSlash(levelTen, 3), Is.False);
+        Assert.That(runtime.RecordSuccessfulSoulSlash(levelTen, 3), Is.True);
+        Assert.That(runtime.SuccessfulSoulSlashCount, Is.Zero);
+
+        runtime.RecordValidToolHit(levelTen, 1);
+        Assert.That(runtime.SuccessfulSoulSlashCount, Is.Zero);
+    }
+
+    [Test]
+    public void IceCapturePolicyAcceptsOnlyOneActualToolOriginCapture()
+    {
+        List<Object> cleanup = new();
+        try
+        {
+            FishController fish = CreateFish(FishSpecialType.None, 100f, cleanup);
+            SingleElementSynergyState state = new SingleElementSynergyThresholds()
+                .Evaluate(CreateElementInventoryAtLevel(ItemElement.Ice, 2), ItemElement.Ice);
+            IceSynergyRuntimeState runtime = new();
+            Vector2 capturePosition = new(7f, -2f);
+            CombatDamageResult toolCapture = CreateDamageResult(
+                fish,
+                CombatDamageContext.Tool("test.capture", null),
+                25f,
+                true,
+                capturePosition);
+
+            Assert.That(
+                runtime.RecordToolCapture(
+                    CreateDamageResult(
+                        fish,
+                        CombatDamageContext.Tool("test.hit", null),
+                        25f),
+                    state,
+                    3),
+                Is.EqualTo(IceSynergyActivation.None));
+            Assert.That(
+                runtime.RecordToolCapture(
+                    CreateDamageResult(
+                        fish,
+                        CombatDamageContext.Item(ItemCatalog.FrostCrystalId, null),
+                        25f,
+                        true),
+                    state,
+                    3),
+                Is.EqualTo(IceSynergyActivation.None));
+            Assert.That(
+                runtime.RecordToolCapture(
+                    CreateDamageResult(
+                        fish,
+                        CombatDamageContext.ItemSynergy("ice.test", null),
+                        25f,
+                        true),
+                    state,
+                    3),
+                Is.EqualTo(IceSynergyActivation.None));
+            Assert.That(
+                runtime.RecordToolCapture(toolCapture, state, 3),
+                Is.EqualTo(IceSynergyActivation.ColdWave));
+            Assert.That(
+                runtime.RecordToolCapture(toolCapture, state, 3),
+                Is.EqualTo(IceSynergyActivation.None));
+            Assert.That(toolCapture.HitPosition, Is.EqualTo(capturePosition));
+            Assert.That(runtime.ToolCaptureCount, Is.EqualTo(1));
+        }
+        finally
+        {
+            DestroyAll(cleanup);
+        }
+    }
+
+    [Test]
+    public void FishControllerQueuesToolCaptureOriginAndPositionBeforeDeactivation()
+    {
+        List<Object> cleanup = new();
+        GameObject managerOwner = CreateEffectManager(out ItemEffectManager manager);
+        System.Reflection.MethodInfo managerAwake = typeof(ItemEffectManager).GetMethod(
+            "Awake",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.NonPublic);
+        System.Reflection.PropertyInfo instanceProperty = typeof(ItemEffectManager).GetProperty(
+            "Instance",
+            System.Reflection.BindingFlags.Static |
+            System.Reflection.BindingFlags.Public);
+        try
+        {
+            // Plain MonoBehaviours do not receive Awake automatically in this Edit Mode test.
+            Assert.That(managerAwake, Is.Not.Null);
+            Assert.That(instanceProperty, Is.Not.Null);
+            Assert.That(ItemEffectManager.Instance, Is.Null);
+            managerAwake.Invoke(manager, null);
+            Assert.That(ItemEffectManager.Instance, Is.SameAs(manager));
+
+            FishController fish = CreateFish(FishSpecialType.None, 10f, cleanup);
+            Vector2 capturePosition = new(4.25f, -1.5f);
+            fish.transform.position = capturePosition;
+
+            Assert.That(
+                fish.TakeCaptureDamage(
+                    10f,
+                    CombatDamageContext.Tool("test.capture.snapshot", manager)),
+                Is.True);
+
+            System.Reflection.FieldInfo pendingField = typeof(ItemEffectManager).GetField(
+                "pendingDamageResults",
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic);
+            Assert.That(pendingField, Is.Not.Null);
+            List<CombatDamageResult> pending =
+                (List<CombatDamageResult>)pendingField.GetValue(manager);
+            Assert.That(pending, Has.Count.EqualTo(1));
+            Assert.That(pending[0].Context.Origin, Is.EqualTo(CombatDamageOrigin.Tool));
+            Assert.That(pending[0].CapturedByHit, Is.True);
+            Assert.That(pending[0].HitPosition, Is.EqualTo(capturePosition));
+            Assert.That(fish.gameObject.activeInHierarchy, Is.False);
+        }
+        finally
+        {
+            DestroyAll(cleanup);
+            if (ItemEffectManager.Instance == manager)
+            {
+                instanceProperty?.SetValue(null, null);
+            }
+            Object.DestroyImmediate(managerOwner);
+        }
+    }
+
+    [Test]
+    public void IceLevelFourAddsOneTargetAndLevelEightExtendsOnlySlowDuration()
+    {
+        GameObject owner = CreateEffectManager(out ItemEffectManager manager);
+        try
+        {
+            SingleElementSynergyState levelTwo = manager.GetSingleElementSynergyState(
+                ItemElement.Ice,
+                CreateElementInventoryAtLevel(ItemElement.Ice, 2));
+            SingleElementSynergyState levelFour = manager.GetSingleElementSynergyState(
+                ItemElement.Ice,
+                CreateElementInventoryAtLevel(ItemElement.Ice, 4));
+            SingleElementSynergyState levelEight = manager.GetSingleElementSynergyState(
+                ItemElement.Ice,
+                CreateElementInventoryAtLevel(ItemElement.Ice, 8));
+
+            Assert.That(manager.GetIceColdWaveTargetCount(levelTwo), Is.EqualTo(2));
+            Assert.That(manager.GetIceColdWaveTargetCount(levelFour), Is.EqualTo(3));
+            Assert.That(manager.GetIceSynergySlowDuration(levelTwo, false), Is.EqualTo(2f));
+            Assert.That(manager.GetIceSynergySlowDuration(levelEight, false), Is.EqualTo(2.5f));
+            Assert.That(manager.GetIceSynergySlowDuration(levelEight, true), Is.EqualTo(3.5f));
+            Assert.That(
+                manager.GetIceFreezeDuration(levelEight, FishSpecialType.None),
+                Is.EqualTo(1f));
+        }
+        finally
+        {
+            Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void IceCrowdControlUsesIndependentBossMultipliersWithoutDamageAttenuation()
+    {
+        List<Object> cleanup = new();
+        GameObject owner = CreateEffectManager(out ItemEffectManager manager);
+        try
+        {
+            SetNestedFloat(manager, "synergyCrowdControl", "miniBossMultiplier", 0.4f);
+            SetNestedFloat(manager, "synergyCrowdControl", "bossMultiplier", 0.65f);
+            SingleElementSynergyState state = manager.GetSingleElementSynergyState(
+                ItemElement.Ice,
+                CreateElementInventoryAtLevel(ItemElement.Ice, 10));
+
+            Assert.That(
+                manager.GetIceFreezeDuration(state, FishSpecialType.MiniBoss),
+                Is.EqualTo(0.4f).Within(0.0001f));
+            Assert.That(
+                manager.GetIceFreezeDuration(state, FishSpecialType.Boss),
+                Is.EqualTo(0.65f).Within(0.0001f));
+            Assert.That(
+                manager.GetIceSynergySlowPercentage(true, FishSpecialType.MiniBoss),
+                Is.EqualTo(0.12f).Within(0.0001f));
+            Assert.That(
+                manager.GetIceSynergySlowPercentage(true, FishSpecialType.Boss),
+                Is.EqualTo(0.195f).Within(0.0001f));
+            Assert.That(manager.GetIceFrostBurstDamage(state), Is.EqualTo(12f));
+
+            FishController miniBoss = CreateFish(FishSpecialType.MiniBoss, 100f, cleanup);
+            FishController boss = CreateFish(FishSpecialType.Boss, 100f, cleanup);
+            miniBoss.TakeCaptureDamage(
+                12f,
+                CombatDamageContext.ItemSynergy("ice_synergy.frost_burst", null));
+            boss.TakeCaptureDamage(
+                12f,
+                CombatDamageContext.ItemSynergy("ice_synergy.frost_burst", null));
+            Assert.That(miniBoss.CurrentResistance, Is.EqualTo(88f));
+            Assert.That(boss.CurrentResistance, Is.EqualTo(88f));
+        }
+        finally
+        {
+            DestroyAll(cleanup);
+            Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void IceEveryThirdToolCaptureReplacesColdWaveWithOneFrostBurst()
+    {
+        List<Object> cleanup = new();
+        try
+        {
+            SingleElementSynergyState state = new SingleElementSynergyThresholds()
+                .Evaluate(CreateElementInventoryAtLevel(ItemElement.Ice, 10), ItemElement.Ice);
+            IceSynergyRuntimeState runtime = new();
+            FishController first = CreateFish(FishSpecialType.None, 100f, cleanup);
+            FishController second = CreateFish(FishSpecialType.None, 100f, cleanup);
+            FishController third = CreateFish(FishSpecialType.None, 100f, cleanup);
+
+            Assert.That(
+                runtime.RecordToolCapture(CreateDamageResult(
+                    first, CombatDamageContext.Tool("capture", null), 100f, true), state, 3),
+                Is.EqualTo(IceSynergyActivation.ColdWave));
+            Assert.That(
+                runtime.RecordToolCapture(CreateDamageResult(
+                    second, CombatDamageContext.Tool("capture", null), 100f, true), state, 3),
+                Is.EqualTo(IceSynergyActivation.ColdWave));
+            Assert.That(
+                runtime.RecordToolCapture(CreateDamageResult(
+                    third, CombatDamageContext.Tool("capture", null), 100f, true), state, 3),
+                Is.EqualTo(IceSynergyActivation.FrostBurst));
+            Assert.That(runtime.ToolCaptureCount, Is.EqualTo(3));
+            Assert.That(runtime.FrostBurstCaptureCount, Is.Zero);
+        }
+        finally
+        {
+            DestroyAll(cleanup);
+        }
+    }
+
+    [Test]
+    public void IceLevelTenStartsItsBurstCounterWithoutReplayingEarlierCaptures()
+    {
+        List<Object> cleanup = new();
+        try
+        {
+            SingleElementSynergyThresholds thresholds = new();
+            SingleElementSynergyState levelEight = thresholds.Evaluate(
+                CreateElementInventoryAtLevel(ItemElement.Ice, 8),
+                ItemElement.Ice);
+            SingleElementSynergyState levelTen = thresholds.Evaluate(
+                CreateElementInventoryAtLevel(ItemElement.Ice, 10),
+                ItemElement.Ice);
+            IceSynergyRuntimeState runtime = new();
+            FishController beforeOne = CreateFish(FishSpecialType.None, 100f, cleanup);
+            FishController beforeTwo = CreateFish(FishSpecialType.None, 100f, cleanup);
+            FishController afterUnlock = CreateFish(FishSpecialType.None, 100f, cleanup);
+
+            runtime.RecordToolCapture(CreateDamageResult(
+                beforeOne, CombatDamageContext.Tool("capture", null), 100f, true), levelEight, 3);
+            runtime.RecordToolCapture(CreateDamageResult(
+                beforeTwo, CombatDamageContext.Tool("capture", null), 100f, true), levelEight, 3);
+
+            Assert.That(runtime.ToolCaptureCount, Is.EqualTo(2));
+            Assert.That(
+                runtime.RecordToolCapture(CreateDamageResult(
+                    afterUnlock, CombatDamageContext.Tool("capture", null), 100f, true), levelTen, 3),
+                Is.EqualTo(IceSynergyActivation.ColdWave));
+            Assert.That(runtime.ToolCaptureCount, Is.EqualTo(3));
+            Assert.That(runtime.FrostBurstCaptureCount, Is.EqualTo(1));
+        }
+        finally
+        {
+            DestroyAll(cleanup);
+        }
+    }
+
+    [Test]
+    public void FrostBurstTargetingExcludesTriggerAndIsDistinctAndBounded()
+    {
+        List<Object> cleanup = new();
+        try
+        {
+            FishController trigger = CreateFish(FishSpecialType.None, 100f, cleanup);
+            FishController first = CreateFish(FishSpecialType.None, 100f, cleanup);
+            FishController second = CreateFish(FishSpecialType.None, 100f, cleanup);
+            FishController third = CreateFish(FishSpecialType.None, 100f, cleanup);
+            trigger.transform.position = Vector2.zero;
+            first.transform.position = Vector2.right;
+            second.transform.position = Vector2.up;
+            third.transform.position = Vector2.one;
+            HashSet<FishController> excluded = new() { trigger };
+
+            List<FishController> selected =
+                ElectricSynergyTargeting.SelectDistinctEligibleTargets(
+                    new List<FishController>
+                    {
+                        trigger,
+                        third,
+                        first,
+                        first,
+                        second
+                    },
+                    Vector2.zero,
+                    3f,
+                    2,
+                    excluded);
+
+            Assert.That(selected, Has.Count.EqualTo(2));
+            Assert.That(selected, Is.Unique);
+            Assert.That(selected.Contains(trigger), Is.False);
+        }
+        finally
+        {
+            DestroyAll(cleanup);
+        }
+    }
+
+    [Test]
+    public void IceFreezeLockoutStartsAfterFreezeEndsAndResetsForNewRun()
+    {
+        IceSynergyRuntimeState runtime = new();
+        SynergyTargetKey key = new(31, 2);
+
+        Assert.That(runtime.TryBeginFreeze(key, 10f, 1f, 4f), Is.True);
+        Assert.That(runtime.TryBeginFreeze(key, 14.99f, 1f, 4f), Is.False);
+        Assert.That(runtime.TryBeginFreeze(key, 15f, 1f, 4f), Is.True);
+
+        runtime.Reset();
+        Assert.That(runtime.FreezeLockoutCount, Is.Zero);
+        Assert.That(runtime.ToolCaptureCount, Is.Zero);
+        Assert.That(runtime.TryBeginFreeze(key, 10f, 1f, 4f), Is.True);
+    }
+
+    [Test]
+    public void NewRunResetClearsSwordAndIceCounters()
+    {
+        SwordSynergyRuntimeState sword = new();
+        IceSynergyRuntimeState ice = new();
+        SingleElementSynergyState swordState = new SingleElementSynergyThresholds()
+            .Evaluate(CreateElementInventoryAtLevel(ItemElement.Sword, 10), ItemElement.Sword);
+        sword.RecordValidToolHit(swordState, 5);
+        sword.RecordSuccessfulSoulSlash(swordState, 3);
+        ice.TryBeginFreeze(new SynergyTargetKey(5, 1), 1f, 1f, 4f);
+
+        sword.Reset();
+        ice.Reset();
+
+        Assert.That(sword.ToolHitCount, Is.Zero);
+        Assert.That(sword.SuccessfulSoulSlashCount, Is.Zero);
+        Assert.That(ice.ToolCaptureCount, Is.Zero);
+        Assert.That(ice.FrostBurstCaptureCount, Is.Zero);
+        Assert.That(ice.FreezeLockoutCount, Is.Zero);
+    }
+
+    [Test]
+    public void ElectricStunIceFreezeAndSlowsExpireIndependentlyAndPoolResetClearsAll()
+    {
+        GameObject owner = new("Multi Synergy Movement Composition Test");
+        try
+        {
+            owner.AddComponent<FishController>();
+            FishMovement movement = owner.AddComponent<FishMovement>();
+            movement.ApplyTimedSpeedModifier(ItemCatalog.FrostSigilId, 0.6f, 10f);
+            movement.ApplyTimedSpeedModifier("ice_synergy.slow", 0.75f, 10f);
+            movement.ApplyTimedSpeedModifier("electric_synergy.stun", 0f, 1f);
+            movement.ApplyTimedSpeedModifier("ice_synergy.freeze", 0f, 1f);
+
+            movement.RemoveTimedSpeedModifier("electric_synergy.stun");
+            Assert.That(movement.HasTimedSpeedModifier("ice_synergy.freeze"), Is.True);
+            Assert.That(movement.HasTimedSpeedModifier(ItemCatalog.FrostSigilId), Is.True);
+            movement.RemoveTimedSpeedModifier("ice_synergy.freeze");
+            Assert.That(movement.HasTimedSpeedModifier("ice_synergy.slow"), Is.True);
+            Assert.That(movement.HasTimedSpeedModifier(ItemCatalog.FrostSigilId), Is.True);
+
+            movement.InitializeSchoolMovement(0f);
+            Assert.That(movement.HasTimedSpeedModifier("ice_synergy.slow"), Is.False);
+            Assert.That(movement.HasTimedSpeedModifier(ItemCatalog.FrostSigilId), Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(owner);
+        }
+    }
+
     [Test]
     public void ElementHudShowsOnlyOwnedElementsOnePerLineAndRefreshesFromInventory()
     {
@@ -1129,12 +1693,13 @@ public sealed class ItemProgressionTests
         }
     }
 
-    [TestCase(ItemElement.Sword, ItemCatalog.SpectralScabbardId, "영혼 참격")]
-    [TestCase(ItemElement.Ice, ItemCatalog.FrostSigilId, "냉기 파동")]
-    public void UnimplementedElementTooltipNeverClaimsActive(
+    [TestCase(ItemElement.Sword, ItemCatalog.SpectralScabbardId, "영혼 참격", "쌍검 소환")]
+    [TestCase(ItemElement.Ice, ItemCatalog.FrostSigilId, "냉기 파동", "순간 빙결")]
+    public void SwordAndIceTooltipShowsImplementedActiveAndLockedStates(
         ItemElement element,
         string itemId,
-        string levelTwoName)
+        string levelTwoName,
+        string levelSixName)
     {
         GameObject owner = CreateEffectManager(out ItemEffectManager manager);
         try
@@ -1145,8 +1710,38 @@ public sealed class ItemProgressionTests
             string tooltip = manager.BuildElementSynergyTooltipText(element, inventory);
 
             Assert.That(tooltip, Does.Contain(levelTwoName));
-            Assert.That(tooltip, Does.Contain("조건 충족 · 구현 예정"));
-            Assert.That(tooltip, Does.Not.Contain("[활성]"));
+            Assert.That(tooltip, Does.Contain($"{levelTwoName} [활성]"));
+            Assert.That(tooltip, Does.Contain($"{levelSixName} [미해금]"));
+            Assert.That(tooltip, Does.Not.Contain("구현 예정"));
+        }
+        finally
+        {
+            Object.DestroyImmediate(owner);
+        }
+    }
+
+    [Test]
+    public void SwordAndIceTooltipReflectsConfiguredGameplayValues()
+    {
+        GameObject owner = CreateEffectManager(out ItemEffectManager manager);
+        try
+        {
+            SetNestedInt(manager, "swordSynergy", "soulSlashRequiredHits", 7);
+            SetNestedFloat(manager, "swordSynergy", "soulSlashDamage", 19f);
+            SetNestedFloat(manager, "iceSynergy", "frostBurstRadius", 4.5f);
+            SetNestedInt(manager, "iceSynergy", "frostBurstTargetCount", 6);
+
+            string swordTooltip = manager.BuildElementSynergyTooltipText(
+                ItemElement.Sword,
+                CreateElementInventoryAtLevel(ItemElement.Sword, 2));
+            string iceTooltip = manager.BuildElementSynergyTooltipText(
+                ItemElement.Ice,
+                CreateElementInventoryAtLevel(ItemElement.Ice, 10));
+
+            Assert.That(swordTooltip, Does.Contain("도구 적중 7회"));
+            Assert.That(swordTooltip, Does.Contain("저항력 피해 19"));
+            Assert.That(iceTooltip, Does.Contain("반경 4.5"));
+            Assert.That(iceTooltip, Does.Contain("최대 6마리"));
         }
         finally
         {
@@ -1191,6 +1786,49 @@ public sealed class ItemProgressionTests
         return inventory;
     }
 
+    private static RunItemInventory CreateElementInventoryAtLevel(
+        ItemElement element,
+        int elementLevel)
+    {
+        if (element == ItemElement.Electric)
+        {
+            return CreateElectricInventoryAtLevel(elementLevel);
+        }
+
+        RunItemInventory inventory = new();
+        if (elementLevel <= 0)
+        {
+            return inventory;
+        }
+
+        string firstItemId = element == ItemElement.Sword
+            ? ItemCatalog.SpectralScabbardId
+            : ItemCatalog.FrostSigilId;
+        string secondItemId = element == ItemElement.Sword
+            ? ItemCatalog.AutonomousSwordArrayId
+            : ItemCatalog.FrostCrystalId;
+        AssertAcquire(inventory, firstItemId);
+        int firstLevel = Mathf.Min(elementLevel, ItemLevelLimit.DefaultMaximumLevel);
+        UpgradeRepeatedly(
+            inventory,
+            firstItemId,
+            ItemLevelLimit.DefaultFinite,
+            firstLevel - 1);
+
+        int remaining = elementLevel - firstLevel;
+        if (remaining > 0)
+        {
+            AssertAcquire(inventory, secondItemId);
+            UpgradeRepeatedly(
+                inventory,
+                secondItemId,
+                ItemLevelLimit.DefaultFinite,
+                remaining - 1);
+        }
+
+        return inventory;
+    }
+
     private static FishController CreateFish(
         FishSpecialType specialType,
         float maximumResistance,
@@ -1213,14 +1851,16 @@ public sealed class ItemProgressionTests
     private static CombatDamageResult CreateDamageResult(
         FishController fish,
         CombatDamageContext context,
-        float appliedDamage) =>
+        float appliedDamage,
+        bool capturedByHit = false,
+        Vector2? hitPosition = null) =>
         new(
             fish,
             fish != null ? fish.LifecycleVersion : 0,
             context,
             appliedDamage,
-            fish != null ? (Vector2)fish.transform.position : Vector2.zero,
-            false);
+            hitPosition ?? (fish != null ? (Vector2)fish.transform.position : Vector2.zero),
+            capturedByHit);
 
     private static void DestroyAll(IReadOnlyList<Object> cleanup)
     {

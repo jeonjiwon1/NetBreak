@@ -297,6 +297,221 @@ public sealed class ElectricSynergySettings
     }
 }
 
+[Serializable]
+public sealed class SwordSynergySettings
+{
+    public const int DefaultSoulSlashRequiredHits = 6;
+    public const float DefaultSoulSlashDamage = 14f;
+    public const float DefaultFallbackRadius = 3f;
+    public const float DefaultSoulSlashVisualDuration = 0.45f;
+    public const int DefaultSharpSoulHitReduction = 1;
+    public const float DefaultAdditionalSwordDamage = 10f;
+    public const float DefaultAmplificationDamageMultiplier = 1.2f;
+    public const int DefaultSwordRainRequiredActivations = 3;
+    public const int DefaultSwordRainTargetCount = 4;
+    public const float DefaultSwordRainDamage = 20f;
+    public const float DefaultSwordRainVisualDuration = 0.65f;
+
+    [Header("Level 2 / 영혼 참격")]
+    [InspectorName("Required Tool Hits")]
+    [Min(1)] [SerializeField] private int soulSlashRequiredHits = DefaultSoulSlashRequiredHits;
+    [InspectorName("Primary Resistance Damage")]
+    [Min(0f)] [SerializeField] private float soulSlashDamage = DefaultSoulSlashDamage;
+    [InspectorName("Fallback Acquisition Radius")]
+    [Min(0f)] [SerializeField] private float fallbackRadius = DefaultFallbackRadius;
+    [InspectorName("Visual Duration")]
+    [Min(0f)] [SerializeField]
+    private float soulSlashVisualDuration = DefaultSoulSlashVisualDuration;
+
+    [Header("Level 4 / 예리한 영혼")]
+    [InspectorName("Required Hit Reduction")]
+    [Min(0)] [SerializeField]
+    private int sharpSoulHitReduction = DefaultSharpSoulHitReduction;
+
+    [Header("Level 6 / 쌍검 소환")]
+    [InspectorName("Additional Sword Resistance Damage")]
+    [Min(0f)] [SerializeField]
+    private float additionalSwordDamage = DefaultAdditionalSwordDamage;
+
+    [Header("Level 8 / 검기 증폭")]
+    [InspectorName("Synergy Damage Multiplier")]
+    [Min(0f)] [SerializeField]
+    private float amplificationDamageMultiplier = DefaultAmplificationDamageMultiplier;
+
+    [Header("Level 10 / 검의 비")]
+    [InspectorName("Soul Slash Activations Required")]
+    [Min(1)] [SerializeField]
+    private int swordRainRequiredActivations = DefaultSwordRainRequiredActivations;
+    [InspectorName("Maximum Targets")]
+    [Min(0)] [SerializeField]
+    private int swordRainTargetCount = DefaultSwordRainTargetCount;
+    [InspectorName("Resistance Damage")]
+    [Min(0f)] [SerializeField] private float swordRainDamage = DefaultSwordRainDamage;
+    [InspectorName("Visual Duration")]
+    [Min(0f)] [SerializeField]
+    private float swordRainVisualDuration = DefaultSwordRainVisualDuration;
+
+    public int SoulSlashRequiredHits => Math.Max(1, soulSlashRequiredHits);
+    public float SoulSlashDamage => Mathf.Max(0f, soulSlashDamage);
+    public float FallbackRadius => Mathf.Max(0f, fallbackRadius);
+    public float SoulSlashVisualDuration => Mathf.Max(0f, soulSlashVisualDuration);
+    public int SharpSoulHitReduction => Math.Max(0, sharpSoulHitReduction);
+    public float AdditionalSwordDamage => Mathf.Max(0f, additionalSwordDamage);
+    public float AmplificationDamageMultiplier => Mathf.Max(0f, amplificationDamageMultiplier);
+    public int SwordRainRequiredActivations => Math.Max(1, swordRainRequiredActivations);
+    public int SwordRainTargetCount => Math.Max(0, swordRainTargetCount);
+    public float SwordRainDamage => Mathf.Max(0f, swordRainDamage);
+    public float SwordRainVisualDuration => Mathf.Max(0f, swordRainVisualDuration);
+
+    public int GetEffectiveSoulSlashRequiredHits(SingleElementSynergyState state) =>
+        Math.Max(1, SoulSlashRequiredHits -
+            (state.IsLevel4Active ? SharpSoulHitReduction : 0));
+
+    public float GetEffectiveDamage(float baseDamage, SingleElementSynergyState state) =>
+        ElectricSynergyMath.CalculateDamage(
+            baseDamage,
+            state.IsLevel8Active ? AmplificationDamageMultiplier : 1f);
+
+    public void Normalize()
+    {
+        soulSlashRequiredHits = SoulSlashRequiredHits;
+        soulSlashDamage = SoulSlashDamage;
+        fallbackRadius = FallbackRadius;
+        soulSlashVisualDuration = SoulSlashVisualDuration;
+        sharpSoulHitReduction = SharpSoulHitReduction;
+        additionalSwordDamage = AdditionalSwordDamage;
+        amplificationDamageMultiplier = AmplificationDamageMultiplier;
+        swordRainRequiredActivations = SwordRainRequiredActivations;
+        swordRainTargetCount = SwordRainTargetCount;
+        swordRainDamage = SwordRainDamage;
+        swordRainVisualDuration = SwordRainVisualDuration;
+    }
+}
+
+[Serializable]
+public sealed class IceSynergySettings
+{
+    public const float DefaultColdWaveRadius = 2f;
+    public const int DefaultColdWaveTargetCount = 2;
+    public const float DefaultColdWaveSlowPercentage = 0.25f;
+    public const float DefaultColdWaveSlowDuration = 2f;
+    public const float DefaultColdWaveVisualDuration = 0.5f;
+    public const int DefaultColdSpreadAdditionalTargets = 1;
+    public const float DefaultFreezeDuration = 1f;
+    public const float DefaultRefreezeLockout = 4f;
+    public const float DefaultLingeringChillAdditionalDuration = 0.5f;
+    public const int DefaultFrostBurstRequiredCaptures = 3;
+    public const float DefaultFrostBurstRadius = 3f;
+    public const int DefaultFrostBurstTargetCount = 4;
+    public const float DefaultFrostBurstDamage = 12f;
+    public const float DefaultFrostBurstSlowPercentage = 0.3f;
+    public const float DefaultFrostBurstSlowDuration = 3f;
+    public const float DefaultFrostBurstVisualDuration = 0.7f;
+
+    [Header("Level 2 / 냉기 파동")]
+    [InspectorName("Radius")]
+    [Min(0f)] [SerializeField] private float coldWaveRadius = DefaultColdWaveRadius;
+    [InspectorName("Maximum Targets")]
+    [Min(0)] [SerializeField] private int coldWaveTargetCount = DefaultColdWaveTargetCount;
+    [InspectorName("Slow Percentage")]
+    [Range(0f, 1f)] [SerializeField]
+    private float coldWaveSlowPercentage = DefaultColdWaveSlowPercentage;
+    [InspectorName("Slow Duration")]
+    [Min(0f)] [SerializeField]
+    private float coldWaveSlowDuration = DefaultColdWaveSlowDuration;
+    [InspectorName("Visual Duration")]
+    [Min(0f)] [SerializeField]
+    private float coldWaveVisualDuration = DefaultColdWaveVisualDuration;
+
+    [Header("Level 4 / 냉기 확산")]
+    [InspectorName("Additional Targets")]
+    [Min(0)] [SerializeField]
+    private int coldSpreadAdditionalTargets = DefaultColdSpreadAdditionalTargets;
+
+    [Header("Level 6 / 순간 빙결")]
+    [InspectorName("Freeze Duration")]
+    [Min(0f)] [SerializeField] private float freezeDuration = DefaultFreezeDuration;
+    [InspectorName("Re-Freeze Lockout After End")]
+    [Min(0f)] [SerializeField] private float refreezeLockout = DefaultRefreezeLockout;
+
+    [Header("Level 8 / 오래가는 한기")]
+    [InspectorName("Additional Slow Duration")]
+    [Min(0f)] [SerializeField]
+    private float lingeringChillAdditionalDuration = DefaultLingeringChillAdditionalDuration;
+
+    [Header("Level 10 / 서리 폭발")]
+    [InspectorName("Tool Captures Required")]
+    [Min(1)] [SerializeField]
+    private int frostBurstRequiredCaptures = DefaultFrostBurstRequiredCaptures;
+    [InspectorName("Radius")]
+    [Min(0f)] [SerializeField] private float frostBurstRadius = DefaultFrostBurstRadius;
+    [InspectorName("Maximum Targets")]
+    [Min(0)] [SerializeField]
+    private int frostBurstTargetCount = DefaultFrostBurstTargetCount;
+    [InspectorName("Resistance Damage")]
+    [Min(0f)] [SerializeField] private float frostBurstDamage = DefaultFrostBurstDamage;
+    [InspectorName("Slow Percentage")]
+    [Range(0f, 1f)] [SerializeField]
+    private float frostBurstSlowPercentage = DefaultFrostBurstSlowPercentage;
+    [InspectorName("Slow Duration")]
+    [Min(0f)] [SerializeField]
+    private float frostBurstSlowDuration = DefaultFrostBurstSlowDuration;
+    [InspectorName("Visual Duration")]
+    [Min(0f)] [SerializeField]
+    private float frostBurstVisualDuration = DefaultFrostBurstVisualDuration;
+
+    public float ColdWaveRadius => Mathf.Max(0f, coldWaveRadius);
+    public int ColdWaveTargetCount => Math.Max(0, coldWaveTargetCount);
+    public float ColdWaveSlowPercentage => Mathf.Clamp01(coldWaveSlowPercentage);
+    public float ColdWaveSlowDuration => Mathf.Max(0f, coldWaveSlowDuration);
+    public float ColdWaveVisualDuration => Mathf.Max(0f, coldWaveVisualDuration);
+    public int ColdSpreadAdditionalTargets => Math.Max(0, coldSpreadAdditionalTargets);
+    public float FreezeDuration => Mathf.Max(0f, freezeDuration);
+    public float RefreezeLockout => Mathf.Max(0f, refreezeLockout);
+    public float LingeringChillAdditionalDuration =>
+        Mathf.Max(0f, lingeringChillAdditionalDuration);
+    public int FrostBurstRequiredCaptures => Math.Max(1, frostBurstRequiredCaptures);
+    public float FrostBurstRadius => Mathf.Max(0f, frostBurstRadius);
+    public int FrostBurstTargetCount => Math.Max(0, frostBurstTargetCount);
+    public float FrostBurstDamage => Mathf.Max(0f, frostBurstDamage);
+    public float FrostBurstSlowPercentage => Mathf.Clamp01(frostBurstSlowPercentage);
+    public float FrostBurstSlowDuration => Mathf.Max(0f, frostBurstSlowDuration);
+    public float FrostBurstVisualDuration => Mathf.Max(0f, frostBurstVisualDuration);
+
+    public int GetEffectiveColdWaveTargetCount(SingleElementSynergyState state)
+    {
+        long count = ColdWaveTargetCount +
+            (state.IsLevel4Active ? (long)ColdSpreadAdditionalTargets : 0L);
+        return count >= int.MaxValue ? int.MaxValue : (int)count;
+    }
+
+    public float GetEffectiveSlowDuration(
+        float baseDuration,
+        SingleElementSynergyState state) =>
+        Mathf.Max(0f, baseDuration) +
+        (state.IsLevel8Active ? LingeringChillAdditionalDuration : 0f);
+
+    public void Normalize()
+    {
+        coldWaveRadius = ColdWaveRadius;
+        coldWaveTargetCount = ColdWaveTargetCount;
+        coldWaveSlowPercentage = ColdWaveSlowPercentage;
+        coldWaveSlowDuration = ColdWaveSlowDuration;
+        coldWaveVisualDuration = ColdWaveVisualDuration;
+        coldSpreadAdditionalTargets = ColdSpreadAdditionalTargets;
+        freezeDuration = FreezeDuration;
+        refreezeLockout = RefreezeLockout;
+        lingeringChillAdditionalDuration = LingeringChillAdditionalDuration;
+        frostBurstRequiredCaptures = FrostBurstRequiredCaptures;
+        frostBurstRadius = FrostBurstRadius;
+        frostBurstTargetCount = FrostBurstTargetCount;
+        frostBurstDamage = FrostBurstDamage;
+        frostBurstSlowPercentage = FrostBurstSlowPercentage;
+        frostBurstSlowDuration = FrostBurstSlowDuration;
+        frostBurstVisualDuration = FrostBurstVisualDuration;
+    }
+}
+
 public readonly struct SynergyTargetKey : IEquatable<SynergyTargetKey>
 {
     public SynergyTargetKey(int instanceId, int lifecycleVersion)
@@ -445,12 +660,246 @@ public sealed class ElectricSynergyRuntimeState
     }
 }
 
-public static class ElectricSynergyTriggerPolicy
+public sealed class SwordSynergyRuntimeState
+{
+    private int toolHitCount;
+    private int successfulSoulSlashCount;
+    private bool level10WasActive;
+
+    public int ToolHitCount => toolHitCount;
+    public int SuccessfulSoulSlashCount => successfulSoulSlashCount;
+
+    public bool RecordValidToolHit(
+        SingleElementSynergyState state,
+        int requiredHits)
+    {
+        if (!state.IsLevel2Active)
+        {
+            return false;
+        }
+
+        requiredHits = Math.Max(1, requiredHits);
+        if (toolHitCount < int.MaxValue)
+        {
+            toolHitCount++;
+        }
+
+        if (toolHitCount < requiredHits)
+        {
+            return false;
+        }
+
+        toolHitCount -= requiredHits;
+        return true;
+    }
+
+    public bool RecordSuccessfulSoulSlash(
+        SingleElementSynergyState state,
+        int requiredActivations)
+    {
+        if (!state.IsLevel10Active)
+        {
+            level10WasActive = false;
+            successfulSoulSlashCount = 0;
+            return false;
+        }
+
+        if (!level10WasActive)
+        {
+            level10WasActive = true;
+            successfulSoulSlashCount = 0;
+        }
+
+        requiredActivations = Math.Max(1, requiredActivations);
+        if (successfulSoulSlashCount < int.MaxValue)
+        {
+            successfulSoulSlashCount++;
+        }
+
+        if (successfulSoulSlashCount < requiredActivations)
+        {
+            return false;
+        }
+
+        successfulSoulSlashCount -= requiredActivations;
+        return true;
+    }
+
+    public void RefreshTierState(SingleElementSynergyState state)
+    {
+        if (!state.IsLevel10Active)
+        {
+            level10WasActive = false;
+            successfulSoulSlashCount = 0;
+        }
+    }
+
+    public void Reset()
+    {
+        toolHitCount = 0;
+        successfulSoulSlashCount = 0;
+        level10WasActive = false;
+    }
+}
+
+public enum IceSynergyActivation
+{
+    None = 0,
+    ColdWave = 1,
+    FrostBurst = 2
+}
+
+public sealed class IceSynergyRuntimeState
+{
+    private readonly Dictionary<SynergyTargetKey, float> freezeLockoutEndsAt = new();
+    private readonly Dictionary<int, int> processedCaptureLifecycles = new();
+    private int toolCaptureCount;
+    private int frostBurstCaptureCount;
+    private bool level10WasActive;
+
+    public int ToolCaptureCount => toolCaptureCount;
+    public int FrostBurstCaptureCount => frostBurstCaptureCount;
+    public int FreezeLockoutCount => freezeLockoutEndsAt.Count;
+
+    public IceSynergyActivation RecordToolCapture(
+        CombatDamageResult result,
+        SingleElementSynergyState state,
+        int frostBurstRequiredCaptures)
+    {
+        if (!state.IsLevel2Active ||
+            result.Target == null ||
+            result.Context.Origin != CombatDamageOrigin.Tool ||
+            result.AppliedDamage <= 0f ||
+            !result.CapturedByHit ||
+            result.Target.LifecycleVersion != result.TargetLifecycleVersion)
+        {
+            return IceSynergyActivation.None;
+        }
+
+        int instanceId = result.Target.GetInstanceID();
+        if (processedCaptureLifecycles.TryGetValue(instanceId, out int lifecycle) &&
+            lifecycle == result.TargetLifecycleVersion)
+        {
+            return IceSynergyActivation.None;
+        }
+
+        processedCaptureLifecycles[instanceId] = result.TargetLifecycleVersion;
+        if (toolCaptureCount < int.MaxValue)
+        {
+            toolCaptureCount++;
+        }
+
+        if (!state.IsLevel10Active)
+        {
+            level10WasActive = false;
+            frostBurstCaptureCount = 0;
+            return IceSynergyActivation.ColdWave;
+        }
+
+        if (!level10WasActive)
+        {
+            level10WasActive = true;
+            frostBurstCaptureCount = 0;
+        }
+
+        frostBurstRequiredCaptures = Math.Max(1, frostBurstRequiredCaptures);
+        if (frostBurstCaptureCount < int.MaxValue)
+        {
+            frostBurstCaptureCount++;
+        }
+
+        if (frostBurstCaptureCount < frostBurstRequiredCaptures)
+        {
+            return IceSynergyActivation.ColdWave;
+        }
+
+        frostBurstCaptureCount -= frostBurstRequiredCaptures;
+        return IceSynergyActivation.FrostBurst;
+    }
+
+    public bool TryBeginFreeze(
+        SynergyTargetKey target,
+        float scaledTime,
+        float freezeDuration,
+        float refreezeLockout)
+    {
+        if (target.InstanceId == 0 || freezeDuration <= 0f || float.IsNaN(scaledTime))
+        {
+            return false;
+        }
+
+        if (freezeLockoutEndsAt.TryGetValue(target, out float lockoutEnd) &&
+            scaledTime < lockoutEnd)
+        {
+            return false;
+        }
+
+        freezeLockoutEndsAt[target] = AddDuration(
+            AddDuration(scaledTime, freezeDuration),
+            refreezeLockout);
+        return true;
+    }
+
+    public bool IsFreezeLocked(SynergyTargetKey target, float scaledTime) =>
+        freezeLockoutEndsAt.TryGetValue(target, out float lockoutEnd) &&
+        scaledTime < lockoutEnd;
+
+    public void ClearTarget(int instanceId)
+    {
+        if (instanceId == 0 || freezeLockoutEndsAt.Count == 0)
+        {
+            return;
+        }
+
+        List<SynergyTargetKey> stale = null;
+        foreach (SynergyTargetKey key in freezeLockoutEndsAt.Keys)
+        {
+            if (key.InstanceId == instanceId)
+            {
+                stale ??= new List<SynergyTargetKey>();
+                stale.Add(key);
+            }
+        }
+
+        if (stale == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < stale.Count; i++)
+        {
+            freezeLockoutEndsAt.Remove(stale[i]);
+        }
+    }
+
+    public void Reset()
+    {
+        freezeLockoutEndsAt.Clear();
+        processedCaptureLifecycles.Clear();
+        toolCaptureCount = 0;
+        frostBurstCaptureCount = 0;
+        level10WasActive = false;
+    }
+
+    private static float AddDuration(float scaledTime, float duration)
+    {
+        double result = (double)scaledTime + Math.Max(0f, duration);
+        return result >= float.MaxValue ? float.MaxValue : (float)result;
+    }
+}
+
+public static class SingleElementSynergyTriggerPolicy
 {
     public static bool IsValidToolDamage(CombatDamageResult result) =>
         result.Target != null &&
         result.AppliedDamage > 0f &&
         result.Context.Origin == CombatDamageOrigin.Tool;
+}
+
+public static class ElectricSynergyTriggerPolicy
+{
+    public static bool IsValidToolDamage(CombatDamageResult result) =>
+        SingleElementSynergyTriggerPolicy.IsValidToolDamage(result);
 }
 
 public static class ElectricSynergyMath
@@ -467,7 +916,7 @@ public static class ElectricSynergyMath
     }
 }
 
-public static class ElectricSynergyTargeting
+public static class SingleElementSynergyTargeting
 {
     public static List<FishController> SelectDistinctEligibleTargets(
         IReadOnlyList<FishController> candidates,
@@ -525,4 +974,20 @@ public static class ElectricSynergyTargeting
             ? distance
             : a.GetInstanceID().CompareTo(b.GetInstanceID());
     }
+}
+
+public static class ElectricSynergyTargeting
+{
+    public static List<FishController> SelectDistinctEligibleTargets(
+        IReadOnlyList<FishController> candidates,
+        Vector2 origin,
+        float radius,
+        int maximumTargets,
+        ISet<FishController> excluded = null) =>
+        SingleElementSynergyTargeting.SelectDistinctEligibleTargets(
+            candidates,
+            origin,
+            radius,
+            maximumTargets,
+            excluded);
 }
