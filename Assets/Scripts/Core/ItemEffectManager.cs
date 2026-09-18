@@ -14,11 +14,29 @@ public sealed class ItemEffectManager : MonoBehaviour
     [Min(0.01f)] [SerializeField] private float continuousHitCountInterval = 0.5f;
 
     [Header("Storm Orb / 폭풍 구슬")]
+    [Tooltip("이 아이템의 유한 최대 레벨입니다. 무제한 옵션이 켜지면 무시됩니다.")]
+    [InspectorName("Maximum Level")]
+    [Min(1)] [SerializeField] private int stormOrbMaximumLevel = ItemLevelLimit.DefaultMaximumLevel;
+    [Tooltip("켜면 유한 최대 레벨을 무시합니다. int 범위를 넘는 업그레이드는 항상 차단됩니다.")]
+    [InspectorName("Unlimited Maximum Level")]
+    [SerializeField] private bool stormOrbUnlimitedMaximumLevel;
+    [Tooltip("Lv1 기준 피해에 레벨마다 더하는 비율입니다. 0.2는 레벨당 기준 피해의 20%입니다.")]
+    [InspectorName("Damage Bonus Per Level")]
+    [Min(0f)] [SerializeField] private float stormOrbDamageBonusPerLevel = 0.2f;
     [Min(0.1f)] [SerializeField] private float stormOrbAttackInterval = 8f;
     [Min(0f)] [SerializeField] private float stormOrbResistanceDamage = 12f;
     [Min(0f)] [SerializeField] private float stormOrbVisualDuration = 0.35f;
 
     [Header("Capacitor Coil / 축전 코일")]
+    [Tooltip("이 아이템의 유한 최대 레벨입니다. 무제한 옵션이 켜지면 무시됩니다.")]
+    [InspectorName("Maximum Level")]
+    [Min(1)] [SerializeField] private int capacitorMaximumLevel = ItemLevelLimit.DefaultMaximumLevel;
+    [Tooltip("켜면 유한 최대 레벨을 무시합니다. int 범위를 넘는 업그레이드는 항상 차단됩니다.")]
+    [InspectorName("Unlimited Maximum Level")]
+    [SerializeField] private bool capacitorUnlimitedMaximumLevel;
+    [Tooltip("Lv1 기준 피해에 레벨마다 더하는 비율입니다. 0.2는 레벨당 기준 피해의 20%입니다.")]
+    [InspectorName("Damage Bonus Per Level")]
+    [Min(0f)] [SerializeField] private float capacitorDamageBonusPerLevel = 0.2f;
     [Min(1)] [SerializeField] private int capacitorRequiredHits = 5;
     [Min(0f)] [SerializeField] private float capacitorChainRadius = 3f;
     [Min(1)] [SerializeField] private int capacitorMaximumTargets = 2;
@@ -26,21 +44,57 @@ public sealed class ItemEffectManager : MonoBehaviour
     [Min(0f)] [SerializeField] private float capacitorVisualDuration = 0.4f;
 
     [Header("Spectral Scabbard / 유령 검집")]
+    [Tooltip("이 아이템의 유한 최대 레벨입니다. 무제한 옵션이 켜지면 무시됩니다.")]
+    [InspectorName("Maximum Level")]
+    [Min(1)] [SerializeField] private int scabbardMaximumLevel = ItemLevelLimit.DefaultMaximumLevel;
+    [Tooltip("켜면 유한 최대 레벨을 무시합니다. int 범위를 넘는 업그레이드는 항상 차단됩니다.")]
+    [InspectorName("Unlimited Maximum Level")]
+    [SerializeField] private bool scabbardUnlimitedMaximumLevel;
+    [Tooltip("Lv1 기준 피해에 레벨마다 더하는 비율입니다. 0.25는 레벨당 기준 피해의 25%입니다.")]
+    [InspectorName("Damage Bonus Per Level")]
+    [Min(0f)] [SerializeField] private float scabbardDamageBonusPerLevel = 0.25f;
     [Min(1)] [SerializeField] private int scabbardRequiredHits = 4;
     [Min(0f)] [SerializeField] private float scabbardResistanceDamage = 16f;
     [Min(0f)] [SerializeField] private float scabbardVisualDuration = 0.35f;
 
     [Header("Autonomous Sword Array / 자동 검진")]
+    [Tooltip("이 아이템의 유한 최대 레벨입니다. 무제한 옵션이 켜지면 무시됩니다.")]
+    [InspectorName("Maximum Level")]
+    [Min(1)] [SerializeField] private int swordArrayMaximumLevel = ItemLevelLimit.DefaultMaximumLevel;
+    [Tooltip("켜면 유한 최대 레벨을 무시합니다. int 범위를 넘는 업그레이드는 항상 차단됩니다.")]
+    [InspectorName("Unlimited Maximum Level")]
+    [SerializeField] private bool swordArrayUnlimitedMaximumLevel;
+    [Tooltip("Lv1 기준 피해에 레벨마다 더하는 비율입니다. 0.2는 레벨당 기준 피해의 20%입니다.")]
+    [InspectorName("Damage Bonus Per Level")]
+    [Min(0f)] [SerializeField] private float swordArrayDamageBonusPerLevel = 0.2f;
     [Min(0.1f)] [SerializeField] private float swordArrayAttackInterval = 10f;
     [Min(0f)] [SerializeField] private float swordArrayResistanceDamage = 18f;
     [Min(0f)] [SerializeField] private float swordArrayVisualDuration = 0.45f;
 
     [Header("Frost Sigil / 서리 인장")]
+    [Tooltip("이 아이템의 유한 최대 레벨입니다. 무제한 옵션이 켜지면 무시됩니다.")]
+    [InspectorName("Maximum Level")]
+    [Min(1)] [SerializeField] private int frostSigilMaximumLevel = ItemLevelLimit.DefaultMaximumLevel;
+    [Tooltip("켜면 유한 최대 레벨을 무시합니다. int 범위를 넘는 업그레이드는 항상 차단됩니다.")]
+    [InspectorName("Unlimited Maximum Level")]
+    [SerializeField] private bool frostSigilUnlimitedMaximumLevel;
+    [Tooltip("Lv1 기준 둔화 지속시간에 레벨마다 더하는 초입니다.")]
+    [InspectorName("Duration Per Level")]
+    [Min(0f)] [SerializeField] private float frostSigilDurationPerLevel = 0.4f;
     [Min(1)] [SerializeField] private int frostSigilRequiredHits = 3;
     [Range(0f, 1f)] [SerializeField] private float frostSigilSlowPercentage = 0.4f;
     [Min(0f)] [SerializeField] private float frostSigilSlowDuration = 2f;
 
     [Header("Frost Crystal / 빙결 결정")]
+    [Tooltip("이 아이템의 유한 최대 레벨입니다. 무제한 옵션이 켜지면 무시됩니다.")]
+    [InspectorName("Maximum Level")]
+    [Min(1)] [SerializeField] private int frostCrystalMaximumLevel = ItemLevelLimit.DefaultMaximumLevel;
+    [Tooltip("켜면 유한 최대 레벨을 무시합니다. int 범위를 넘는 업그레이드는 항상 차단됩니다.")]
+    [InspectorName("Unlimited Maximum Level")]
+    [SerializeField] private bool frostCrystalUnlimitedMaximumLevel;
+    [Tooltip("Lv1 기준 둔화 지속시간에 레벨마다 더하는 초입니다.")]
+    [InspectorName("Duration Per Level")]
+    [Min(0f)] [SerializeField] private float frostCrystalDurationPerLevel = 0.4f;
     [Min(0.1f)] [SerializeField] private float frostCrystalAttackInterval = 12f;
     [Min(1)] [SerializeField] private int frostCrystalMaximumTargets = 2;
     [Min(0f)] [SerializeField] private float frostCrystalTargetRadius = 3f;
@@ -161,6 +215,102 @@ public sealed class ItemEffectManager : MonoBehaviour
         pendingDamageResults.Add(result);
     }
 
+    public bool CanUpgradeItem(string itemId, out ItemUpgradeResult result)
+    {
+        RunItemInventory inventory = GetCurrentInventory();
+        if (inventory == null || !TryGetLevelLimit(itemId, out ItemLevelLimit limit))
+        {
+            result = ItemCatalog.TryGet(itemId, out _)
+                ? ItemUpgradeResult.ConfigurationUnavailable
+                : ItemUpgradeResult.InvalidItemId;
+            return false;
+        }
+
+        return inventory.CanUpgrade(itemId, limit, out result);
+    }
+
+    public bool TryUpgradeItem(string itemId, out ItemUpgradeResult result)
+    {
+        RunItemInventory inventory = GetCurrentInventory();
+        if (inventory == null || !TryGetLevelLimit(itemId, out ItemLevelLimit limit))
+        {
+            result = ItemCatalog.TryGet(itemId, out _)
+                ? ItemUpgradeResult.ConfigurationUnavailable
+                : ItemUpgradeResult.InvalidItemId;
+            return false;
+        }
+
+        return inventory.TryUpgrade(itemId, limit, out result);
+    }
+
+    public bool TryGetLevelLimit(string itemId, out ItemLevelLimit limit)
+    {
+        switch (itemId)
+        {
+            case ItemCatalog.StormOrbId:
+                limit = new ItemLevelLimit(
+                    stormOrbMaximumLevel,
+                    stormOrbUnlimitedMaximumLevel);
+                return true;
+            case ItemCatalog.CapacitorCoilId:
+                limit = new ItemLevelLimit(
+                    capacitorMaximumLevel,
+                    capacitorUnlimitedMaximumLevel);
+                return true;
+            case ItemCatalog.SpectralScabbardId:
+                limit = new ItemLevelLimit(
+                    scabbardMaximumLevel,
+                    scabbardUnlimitedMaximumLevel);
+                return true;
+            case ItemCatalog.AutonomousSwordArrayId:
+                limit = new ItemLevelLimit(
+                    swordArrayMaximumLevel,
+                    swordArrayUnlimitedMaximumLevel);
+                return true;
+            case ItemCatalog.FrostSigilId:
+                limit = new ItemLevelLimit(
+                    frostSigilMaximumLevel,
+                    frostSigilUnlimitedMaximumLevel);
+                return true;
+            case ItemCatalog.FrostCrystalId:
+                limit = new ItemLevelLimit(
+                    frostCrystalMaximumLevel,
+                    frostCrystalUnlimitedMaximumLevel);
+                return true;
+            default:
+                limit = default;
+                return false;
+        }
+    }
+
+    public float GetEffectivePrimaryValue(
+        string itemId,
+        RunItemInventory inventory)
+    {
+        int level = GetOwnedLevel(inventory, itemId);
+        if (level == 0)
+        {
+            return 0f;
+        }
+
+        return itemId switch
+        {
+            ItemCatalog.StormOrbId => ItemLevelScaling.CalculateAdditiveDamage(
+                stormOrbResistanceDamage, level, stormOrbDamageBonusPerLevel),
+            ItemCatalog.CapacitorCoilId => ItemLevelScaling.CalculateAdditiveDamage(
+                capacitorResistanceDamage, level, capacitorDamageBonusPerLevel),
+            ItemCatalog.SpectralScabbardId => ItemLevelScaling.CalculateAdditiveDamage(
+                scabbardResistanceDamage, level, scabbardDamageBonusPerLevel),
+            ItemCatalog.AutonomousSwordArrayId => ItemLevelScaling.CalculateAdditiveDamage(
+                swordArrayResistanceDamage, level, swordArrayDamageBonusPerLevel),
+            ItemCatalog.FrostSigilId => ItemLevelScaling.CalculateAdditiveDuration(
+                frostSigilSlowDuration, level, frostSigilDurationPerLevel),
+            ItemCatalog.FrostCrystalId => ItemLevelScaling.CalculateAdditiveDuration(
+                frostCrystalSlowDuration, level, frostCrystalDurationPerLevel),
+            _ => 0f
+        };
+    }
+
     public void HandleCombatDamage(CombatDamageResult result)
     {
         if (!IsRunActive() || boundInventory == null ||
@@ -233,11 +383,11 @@ public sealed class ItemEffectManager : MonoBehaviour
                 result.Target,
                 ItemCatalog.FrostSigilId,
                 frostSigilSlowPercentage,
-                frostSigilSlowDuration);
+                GetEffectiveSlowDuration(ItemCatalog.FrostSigilId));
             CreateFrostMarker(
                 result.Target.transform.position,
                 0.65f,
-                frostSigilSlowDuration);
+                GetEffectiveSlowDuration(ItemCatalog.FrostSigilId));
         }
     }
 
@@ -284,7 +434,7 @@ public sealed class ItemEffectManager : MonoBehaviour
             return string.Empty;
         }
 
-        return itemId switch
+        string runtimeStatus = itemId switch
         {
             ItemCatalog.StormOrbId =>
                 $"다음 자동 공격: {Mathf.Max(0f, stormOrbRemaining):0.0}초",
@@ -300,6 +450,23 @@ public sealed class ItemEffectManager : MonoBehaviour
                 $"다음 자동 공격: {Mathf.Max(0f, frostCrystalRemaining):0.0}초 · 둔화 중 {CountActiveSlows(ItemCatalog.FrostCrystalId)}마리",
             _ => string.Empty
         };
+
+        float primaryValue = GetEffectivePrimaryValue(itemId, boundInventory);
+        string primaryStatus = itemId switch
+        {
+            ItemCatalog.StormOrbId or
+            ItemCatalog.CapacitorCoilId or
+            ItemCatalog.SpectralScabbardId or
+            ItemCatalog.AutonomousSwordArrayId =>
+                $"현재 저항력 피해: {primaryValue:0.##}",
+            ItemCatalog.FrostSigilId or ItemCatalog.FrostCrystalId =>
+                $"현재 둔화 지속시간: {primaryValue:0.##}초",
+            _ => string.Empty
+        };
+
+        return string.IsNullOrEmpty(runtimeStatus)
+            ? primaryStatus
+            : $"{primaryStatus}\n{runtimeStatus}";
     }
 
     private void UpdatePeriodicEffects()
@@ -353,7 +520,13 @@ public sealed class ItemEffectManager : MonoBehaviour
 
         FishController target = fish[0];
         Vector2 position = target.transform.position;
-        DealItemDamage(target, ItemCatalog.StormOrbId, stormOrbResistanceDamage);
+        DealItemDamage(
+            target,
+            ItemCatalog.StormOrbId,
+            GetEffectiveDamage(
+                ItemCatalog.StormOrbId,
+                stormOrbResistanceDamage,
+                stormOrbDamageBonusPerLevel));
         CreateLightning(
             new[] { position + Vector2.up * 1.8f, position },
             stormOrbVisualDuration);
@@ -391,7 +564,10 @@ public sealed class ItemEffectManager : MonoBehaviour
             DealItemDamage(
                 target,
                 ItemCatalog.CapacitorCoilId,
-                capacitorResistanceDamage);
+                GetEffectiveDamage(
+                    ItemCatalog.CapacitorCoilId,
+                    capacitorResistanceDamage,
+                    capacitorDamageBonusPerLevel));
         }
 
         CreateLightning(points, capacitorVisualDuration);
@@ -404,7 +580,10 @@ public sealed class ItemEffectManager : MonoBehaviour
             DealItemDamage(
                 target,
                 ItemCatalog.SpectralScabbardId,
-                scabbardResistanceDamage);
+                GetEffectiveDamage(
+                    ItemCatalog.SpectralScabbardId,
+                    scabbardResistanceDamage,
+                    scabbardDamageBonusPerLevel));
         }
         CreateSwordMarker(position, scabbardVisualDuration, false);
     }
@@ -437,7 +616,10 @@ public sealed class ItemEffectManager : MonoBehaviour
             DealItemDamage(
                 target,
                 ItemCatalog.AutonomousSwordArrayId,
-                swordArrayResistanceDamage);
+                GetEffectiveDamage(
+                    ItemCatalog.AutonomousSwordArrayId,
+                    swordArrayResistanceDamage,
+                    swordArrayDamageBonusPerLevel));
         }
         CreateSwordMarker(position, swordArrayVisualDuration, true);
     }
@@ -480,7 +662,7 @@ public sealed class ItemEffectManager : MonoBehaviour
                 target,
                 ItemCatalog.FrostCrystalId,
                 frostCrystalSlowPercentage,
-                frostCrystalSlowDuration);
+                GetEffectiveSlowDuration(ItemCatalog.FrostCrystalId));
         }
 
         CreateFrostMarker(
@@ -492,7 +674,9 @@ public sealed class ItemEffectManager : MonoBehaviour
             CreateFrostMarker(
                 affectedPositions[i],
                 0.55f,
-                Mathf.Max(frostCrystalVisualDuration, frostCrystalSlowDuration));
+                Mathf.Max(
+                    frostCrystalVisualDuration,
+                    GetEffectiveSlowDuration(ItemCatalog.FrostCrystalId)));
         }
     }
 
@@ -506,6 +690,43 @@ public sealed class ItemEffectManager : MonoBehaviour
         fish.TakeCaptureDamage(
             damage,
             CombatDamageContext.Item(itemId, this));
+    }
+
+    private float GetEffectiveDamage(
+        string itemId,
+        float baseline,
+        float bonusPerLevel)
+    {
+        int level = GetOwnedLevel(boundInventory, itemId);
+        return ItemLevelScaling.CalculateAdditiveDamage(
+            baseline,
+            level == 0 ? 1 : level,
+            bonusPerLevel);
+    }
+
+    private float GetEffectiveSlowDuration(string itemId)
+    {
+        int level = GetOwnedLevel(boundInventory, itemId);
+        return itemId switch
+        {
+            ItemCatalog.FrostSigilId => ItemLevelScaling.CalculateAdditiveDuration(
+                frostSigilSlowDuration,
+                level == 0 ? 1 : level,
+                frostSigilDurationPerLevel),
+            ItemCatalog.FrostCrystalId => ItemLevelScaling.CalculateAdditiveDuration(
+                frostCrystalSlowDuration,
+                level == 0 ? 1 : level,
+                frostCrystalDurationPerLevel),
+            _ => 0f
+        };
+    }
+
+    private static int GetOwnedLevel(
+        RunItemInventory inventory,
+        string itemId)
+    {
+        RunItemInstance owned = inventory?.GetOwned(itemId);
+        return owned != null && owned.Level > 0 ? owned.Level : 0;
     }
 
     private void ApplySlow(
@@ -642,6 +863,66 @@ public sealed class ItemEffectManager : MonoBehaviour
             ? distance
             : a.GetInstanceID().CompareTo(b.GetInstanceID());
     }
+
+    [ContextMenu("Development/Upgrade First Eligible Owned Item")]
+    private void DevelopmentUpgradeFirstEligibleOwnedItem()
+    {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (!Application.isPlaying || !IsRunActive())
+        {
+            Debug.LogWarning("아이템 업그레이드 테스트는 Play Mode의 진행 중인 Run에서만 사용할 수 있습니다.");
+            return;
+        }
+
+        RunItemInventory inventory = GetCurrentInventory();
+        if (inventory == null || inventory.Count == 0)
+        {
+            Debug.LogWarning("업그레이드 테스트에는 실제로 소유한 아이템이 필요합니다.");
+            return;
+        }
+
+        IReadOnlyList<RunItemInstance> items = inventory.OwnedItems;
+        ItemUpgradeResult lastResult = ItemUpgradeResult.ItemNotOwned;
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (!CanUpgradeItem(items[i].ItemId, out lastResult))
+            {
+                continue;
+            }
+
+            string itemId = items[i].ItemId;
+            if (TryUpgradeItem(itemId, out ItemUpgradeResult result))
+            {
+                RunItemInstance upgraded = inventory.GetOwned(itemId);
+                Debug.Log($"아이템 업그레이드 테스트 완료: {itemId} Lv.{upgraded?.Level}");
+                return;
+            }
+
+            lastResult = result;
+        }
+
+        Debug.LogWarning($"업그레이드 가능한 소유 아이템이 없습니다: {GetUpgradeDiagnostic(lastResult)}");
+#else
+        Debug.LogWarning("아이템 업그레이드 테스트는 Editor 또는 Development Build에서만 사용할 수 있습니다.");
+#endif
+    }
+
+    private static string GetUpgradeDiagnostic(ItemUpgradeResult result) => result switch
+    {
+        ItemUpgradeResult.InvalidItemId => "알 수 없는 아이템 ID입니다.",
+        ItemUpgradeResult.ItemNotOwned => "소유하지 않은 아이템입니다.",
+        ItemUpgradeResult.InvalidCurrentLevel => "현재 아이템 레벨이 유효하지 않습니다.",
+        ItemUpgradeResult.MaximumLevelReached => "설정된 최대 레벨에 도달했습니다.",
+        ItemUpgradeResult.LevelOverflow => "레벨 정수 범위를 넘을 수 없습니다.",
+        ItemUpgradeResult.ConfigurationUnavailable => "아이템 레벨 설정을 찾을 수 없습니다.",
+        _ => "업그레이드할 수 없습니다."
+    };
+
+    private RunItemInventory GetCurrentInventory() =>
+        boundInventory ??
+        (RunManager.Instance != null && RunManager.Instance.GrowthState != null
+            ? RunManager.Instance.GrowthState.ItemInventory
+            : null);
 
     private void BindInventoryIfNeeded()
     {
@@ -949,6 +1230,18 @@ public sealed class ItemEffectManager : MonoBehaviour
             gameplayViewport.width, 0.01f, 1f - gameplayViewport.x);
         gameplayViewport.height = Mathf.Clamp(
             gameplayViewport.height, 0.01f, 1f - gameplayViewport.y);
+        stormOrbMaximumLevel = Mathf.Max(1, stormOrbMaximumLevel);
+        capacitorMaximumLevel = Mathf.Max(1, capacitorMaximumLevel);
+        scabbardMaximumLevel = Mathf.Max(1, scabbardMaximumLevel);
+        swordArrayMaximumLevel = Mathf.Max(1, swordArrayMaximumLevel);
+        frostSigilMaximumLevel = Mathf.Max(1, frostSigilMaximumLevel);
+        frostCrystalMaximumLevel = Mathf.Max(1, frostCrystalMaximumLevel);
+        stormOrbDamageBonusPerLevel = Mathf.Max(0f, stormOrbDamageBonusPerLevel);
+        capacitorDamageBonusPerLevel = Mathf.Max(0f, capacitorDamageBonusPerLevel);
+        scabbardDamageBonusPerLevel = Mathf.Max(0f, scabbardDamageBonusPerLevel);
+        swordArrayDamageBonusPerLevel = Mathf.Max(0f, swordArrayDamageBonusPerLevel);
+        frostSigilDurationPerLevel = Mathf.Max(0f, frostSigilDurationPerLevel);
+        frostCrystalDurationPerLevel = Mathf.Max(0f, frostCrystalDurationPerLevel);
         capacitorRequiredHits = Mathf.Max(1, capacitorRequiredHits);
         capacitorMaximumTargets = Mathf.Max(1, capacitorMaximumTargets);
         scabbardRequiredHits = Mathf.Max(1, scabbardRequiredHits);

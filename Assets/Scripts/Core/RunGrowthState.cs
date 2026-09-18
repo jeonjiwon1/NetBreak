@@ -46,6 +46,9 @@ public sealed class RunGrowthState
         rewardedBossAreas.Contains(CurrentArea);
     public event Action<int> AvailableMasteryPointsChanged;
 
+    public int GetElementLevel(ItemElement element) =>
+        itemInventory.GetElementLevel(element);
+
     public RunSkillTreeProgress GetTree(GrowthToolRole role) => role switch
     {
         GrowthToolRole.Core => coreTree,
