@@ -197,6 +197,307 @@ public sealed class ItemProgressionTests
     }
 
     [Test]
+    public void GrowthManagementDefaultsToSkillTreeAndRemembersItemPageWithinRun()
+    {
+        RunGrowthState growth = new();
+
+        Assert.That(
+            growth.LastGrowthManagementPage,
+            Is.EqualTo(GrowthManagementPage.SkillTree));
+        Assert.That(
+            growth.TrySetGrowthManagementPage(GrowthManagementPage.Item),
+            Is.True);
+        Assert.That(
+            growth.LastGrowthManagementPage,
+            Is.EqualTo(GrowthManagementPage.Item));
+        Assert.That(
+            new RunGrowthState().LastGrowthManagementPage,
+            Is.EqualTo(GrowthManagementPage.SkillTree));
+    }
+
+    [Test]
+    public void SwitchingGrowthPageDoesNotChangeProgressionOrSpendMastery()
+    {
+        RunGrowthState growth = new();
+        Assert.That(growth.TryGrantMasteryPoints(3), Is.True);
+        AssertAcquire(growth.ItemInventory, ItemCatalog.StormOrbId);
+
+        Assert.That(growth.TrySetGrowthManagementPage(GrowthManagementPage.Item), Is.True);
+
+        Assert.That(growth.AvailableMasteryPoints, Is.EqualTo(3));
+        Assert.That(growth.SpentMasteryPoints, Is.Zero);
+        Assert.That(growth.ItemInventory.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void ItemPageProjectionKeepsFourAuthoritativeSlotsAndEmptyEntries()
+    {
+        RunItemInventory inventory = CreateInventoryWith(ItemCatalog.StormOrbId);
+
+        Assert.That(
+            GrowthItemPage.BuildItemSlotText(0, inventory),
+            Does.Contain("폭풍 구슬"));
+        Assert.That(
+            GrowthItemPage.BuildItemSlotText(0, inventory),
+            Does.Contain("전기 · Lv.1"));
+        for (int i = 1; i < RunItemInventory.Capacity; i++)
+        {
+            Assert.That(
+                GrowthItemPage.BuildItemSlotText(i, inventory),
+                Does.Contain("비어 있음"));
+        }
+    }
+
+    [Test]
+    public void InventoryAcquisitionAndUpgradeRaiseLiveRefreshNotification()
+    {
+        RunItemInventory inventory = new();
+        int changes = 0;
+        inventory.Changed += () => changes++;
+
+        AssertAcquire(inventory, ItemCatalog.CapacitorCoilId);
+        Assert.That(
+            inventory.TryUpgrade(
+                ItemCatalog.CapacitorCoilId,
+                ItemLevelLimit.DefaultFinite,
+                out ItemUpgradeResult result),
+            Is.True);
+
+        Assert.That(result, Is.EqualTo(ItemUpgradeResult.Success));
+        Assert.That(changes, Is.EqualTo(2));
+        Assert.That(
+            GrowthItemPage.BuildItemSlotText(0, inventory),
+            Does.Contain("Lv.2"));
+    }
+
+    [Test]
+    public void ItemTooltipUsesConfiguredEffectiveValueAndNextLevelPreview()
+    {
+        GameObject owner = new("Growth Item Tooltip Test");
+        ItemEffectManager manager = owner.AddComponent<ItemEffectManager>();
+        try
+        {
+            RunItemInventory inventory = CreateInventoryWith(ItemCatalog.StormOrbId);
+            string tooltip = manager.BuildItemTooltipText(
+                inventory.GetOwned(ItemCatalog.StormOrbId),
+                inventory);
+
+            Assert.That(tooltip, Does.Contain("현재"));
+            Assert.That(tooltip, Does.Contain("12"));
+            Assert.That(tooltip, Does.Contain("다음 Lv.2: 14.4"));
+
+            UpgradeRepeatedly(
+                inventory,
+                ItemCatalog.StormOrbId,
+                ItemLevelLimit.DefaultFinite,
+                4);
+            string maximumTooltip = manager.BuildItemTooltipText(
+                inventory.GetOwned(ItemCatalog.StormOrbId),
+                inventory);
+            Assert.That(maximumTooltip, Does.Contain("최대 레벨"));
+            Assert.That(maximumTooltip, Does.Not.Contain("다음 Lv.6"));
+        }
+        finally
+        {
+            Object.DestroyImmediate(owner);
+        }
+    }
+
+    [TestCase(
+        ItemCatalog.CapacitorCoilId,
+        ItemCatalog.AutonomousSwordArrayId,
+        CombinedSynergyId.ThunderSwordResonance)]
+    [TestCase(
+        ItemCatalog.CapacitorCoilId,
+        ItemCatalog.FrostCrystalId,
+        CombinedSynergyId.Superconductivity)]
+    [TestCase(
+        ItemCatalog.AutonomousSwordArrayId,
+        ItemCatalog.FrostCrystalId,
+        CombinedSynergyId.FrostSwordResonance)]
+    public void CombinedEligibilityUsesElementLevelsInsteadOfSpecificItemIds(
+        string firstItemId,
+        string secondItemId,
+        CombinedSynergyId expectedId)
+    {
+        RunItemInventory inventory = new();
+        AssertAcquire(inventory, firstItemId);
+        AssertAcquire(inventory, secondItemId);
+        UpgradeRepeatedly(inventory, firstItemId, ItemLevelLimit.DefaultFinite, 1);
+        UpgradeRepeatedly(inventory, secondItemId, ItemLevelLimit.DefaultFinite, 1);
+
+        RunCombinedSynergyState state = new();
+
+        Assert.That(state.IsEligible(expectedId, inventory), Is.True);
+    }
+
+    [Test]
+    public void AllCombinedSynergiesCanBeEligibleAtTheSameTime()
+    {
+        RunItemInventory inventory = CreateCombinedEligibleInventory(
+            ItemElement.Electric,
+            ItemElement.Sword,
+            ItemElement.Ice);
+        RunCombinedSynergyState state = new();
+
+        foreach (CombinedSynergyDefinition definition in CombinedSynergyCatalog.All)
+        {
+            Assert.That(state.IsEligible(definition.Id, inventory), Is.True,
+                definition.DisplayName);
+        }
+    }
+
+    [Test]
+    public void InitialAutoActivationUsesCatalogOrderAndStartsNoCooldown()
+    {
+        RunItemInventory inventory = CreateCombinedEligibleInventory(
+            ItemElement.Electric,
+            ItemElement.Sword,
+            ItemElement.Ice);
+        RunCombinedSynergyState state = new(30f);
+
+        Assert.That(state.TryAutoActivateFirstEligible(inventory, 10f, true), Is.True);
+        Assert.That(
+            state.ActiveId,
+            Is.EqualTo(CombinedSynergyId.ThunderSwordResonance));
+        Assert.That(state.GetRemainingSwitchCooldown(10f), Is.Zero);
+    }
+
+    [Test]
+    public void FurtherEligibilityNeverReplacesExistingActiveCombination()
+    {
+        RunItemInventory inventory = CreateCombinedEligibleInventory(
+            ItemElement.Electric,
+            ItemElement.Sword);
+        RunCombinedSynergyState state = new();
+        Assert.That(state.TryAutoActivateFirstEligible(inventory, 1f, true), Is.True);
+        CombinedSynergyId original = state.ActiveId;
+        AddElementAtLevelTwo(inventory, ItemElement.Ice);
+
+        Assert.That(state.TryAutoActivateFirstEligible(inventory, 2f, true), Is.False);
+        Assert.That(state.ActiveId, Is.EqualTo(original));
+    }
+
+    [Test]
+    public void SuccessfulManualSwitchStartsCooldownAndSameSelectionIsNoOp()
+    {
+        RunItemInventory inventory = CreateCombinedEligibleInventory(
+            ItemElement.Electric,
+            ItemElement.Sword,
+            ItemElement.Ice);
+        RunCombinedSynergyState state = new(30f);
+        Assert.That(state.TryAutoActivateFirstEligible(inventory, 10f, true), Is.True);
+        Assert.That(
+            state.TrySelect(CombinedSynergyId.Superconductivity, inventory),
+            Is.True);
+
+        Assert.That(
+            state.TryActivateSelected(inventory, 10f, true),
+            Is.EqualTo(CombinedSynergyActivationResult.Success));
+        Assert.That(state.ActiveId, Is.EqualTo(CombinedSynergyId.Superconductivity));
+        Assert.That(state.GetRemainingSwitchCooldown(10f), Is.EqualTo(30f));
+        Assert.That(
+            state.TryActivateSelected(inventory, 12f, true),
+            Is.EqualTo(CombinedSynergyActivationResult.AlreadyActive));
+        Assert.That(state.GetRemainingSwitchCooldown(12f), Is.EqualTo(28f));
+    }
+
+    [Test]
+    public void LockedSelectionAndCooldownSwitchFailAtomically()
+    {
+        RunItemInventory inventory = CreateCombinedEligibleInventory(
+            ItemElement.Electric,
+            ItemElement.Sword,
+            ItemElement.Ice);
+        RunCombinedSynergyState state = new(30f);
+        Assert.That(state.TryAutoActivateFirstEligible(inventory, 0f, true), Is.True);
+        Assert.That(state.TrySelect(CombinedSynergyId.Superconductivity, inventory), Is.True);
+        Assert.That(
+            state.TryActivateSelected(inventory, 0f, true),
+            Is.EqualTo(CombinedSynergyActivationResult.Success));
+        Assert.That(state.TrySelect(CombinedSynergyId.FrostSwordResonance, inventory), Is.True);
+
+        Assert.That(
+            state.TryActivateSelected(inventory, 5f, true),
+            Is.EqualTo(CombinedSynergyActivationResult.CooldownActive));
+        Assert.That(state.ActiveId, Is.EqualTo(CombinedSynergyId.Superconductivity));
+
+        RunItemInventory lockedInventory =
+            CreateCombinedEligibleInventory(ItemElement.Electric, ItemElement.Sword);
+        RunCombinedSynergyState lockedState = new();
+        Assert.That(
+            lockedState.TrySelect(CombinedSynergyId.Superconductivity, lockedInventory),
+            Is.False);
+        Assert.That(lockedState.SelectedId, Is.EqualTo(CombinedSynergyId.None));
+    }
+
+    [Test]
+    public void ScaledTimeCooldownDoesNotAdvanceWhileTimeReferenceIsPaused()
+    {
+        RunItemInventory inventory = CreateCombinedEligibleInventory(
+            ItemElement.Electric,
+            ItemElement.Sword,
+            ItemElement.Ice);
+        RunCombinedSynergyState state = new(30f);
+        Assert.That(state.TryAutoActivateFirstEligible(inventory, 20f, true), Is.True);
+        Assert.That(state.TrySelect(CombinedSynergyId.Superconductivity, inventory), Is.True);
+        Assert.That(
+            state.TryActivateSelected(inventory, 20f, true),
+            Is.EqualTo(CombinedSynergyActivationResult.Success));
+
+        Assert.That(state.GetRemainingSwitchCooldown(20f), Is.EqualTo(30f));
+        Assert.That(state.GetRemainingSwitchCooldown(20f), Is.EqualTo(30f));
+        Assert.That(state.GetRemainingSwitchCooldown(25f), Is.EqualTo(25f));
+    }
+
+    [Test]
+    public void CombinedStatePersistsAcrossAreaAndResetsWithNewRun()
+    {
+        RunGrowthState growth = new(30f);
+        AddElementAtLevelTwo(growth.ItemInventory, ItemElement.Electric);
+        AddElementAtLevelTwo(growth.ItemInventory, ItemElement.Sword);
+        Assert.That(
+            growth.CombinedSynergy.TryAutoActivateFirstEligible(
+                growth.ItemInventory, 0f, true),
+            Is.True);
+
+        Assert.That(growth.TrySetCurrentArea(2), Is.True);
+        Assert.That(
+            growth.CombinedSynergy.ActiveId,
+            Is.EqualTo(CombinedSynergyId.ThunderSwordResonance));
+        Assert.That(
+            new RunGrowthState().CombinedSynergy.ActiveId,
+            Is.EqualTo(CombinedSynergyId.None));
+    }
+
+    [Test]
+    public void G6C1NeverActivatesUnimplementedCombinedEffects()
+    {
+        RunItemInventory inventory = CreateCombinedEligibleInventory(
+            ItemElement.Electric,
+            ItemElement.Sword,
+            ItemElement.Ice);
+        RunCombinedSynergyState state = new();
+
+        Assert.That(CombinedSynergyCatalog.CombatEffectsImplemented, Is.False);
+        Assert.That(
+            state.TryAutoActivateFirstEligible(
+                inventory,
+                0f,
+                CombinedSynergyCatalog.CombatEffectsImplemented),
+            Is.False);
+        Assert.That(state.ActiveId, Is.EqualTo(CombinedSynergyId.None));
+        Assert.That(state.TrySelect(CombinedSynergyId.ThunderSwordResonance, inventory), Is.True);
+        Assert.That(
+            state.TryActivateSelected(
+                inventory,
+                0f,
+                CombinedSynergyCatalog.CombatEffectsImplemented),
+            Is.EqualTo(CombinedSynergyActivationResult.FeatureUnavailable));
+        Assert.That(state.ActiveId, Is.EqualTo(CombinedSynergyId.None));
+    }
+
+    [Test]
     public void ManagerDefaultsAllItemsToFiniteLevelFive()
     {
         GameObject owner = new("Item Progression Test Manager");
@@ -1827,6 +2128,32 @@ public sealed class ItemProgressionTests
         }
 
         return inventory;
+    }
+
+    private static RunItemInventory CreateCombinedEligibleInventory(
+        params ItemElement[] elements)
+    {
+        RunItemInventory inventory = new();
+        for (int i = 0; i < elements.Length; i++)
+        {
+            AddElementAtLevelTwo(inventory, elements[i]);
+        }
+        return inventory;
+    }
+
+    private static void AddElementAtLevelTwo(
+        RunItemInventory inventory,
+        ItemElement element)
+    {
+        string itemId = element switch
+        {
+            ItemElement.Electric => ItemCatalog.CapacitorCoilId,
+            ItemElement.Sword => ItemCatalog.AutonomousSwordArrayId,
+            ItemElement.Ice => ItemCatalog.FrostCrystalId,
+            _ => string.Empty
+        };
+        AssertAcquire(inventory, itemId);
+        UpgradeRepeatedly(inventory, itemId, ItemLevelLimit.DefaultFinite, 1);
     }
 
     private static FishController CreateFish(

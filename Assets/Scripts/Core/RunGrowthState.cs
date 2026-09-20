@@ -19,6 +19,12 @@ public enum RunMilestoneType
     Boss = 1
 }
 
+public enum GrowthManagementPage
+{
+    SkillTree = 0,
+    Item = 1
+}
+
 // Run data only. G2+ systems will connect this state to rewards and the active loadout.
 public sealed class RunGrowthState
 {
@@ -31,20 +37,51 @@ public sealed class RunGrowthState
     private readonly HashSet<int> rewardedMiniBossAreas = new();
     private readonly HashSet<int> rewardedBossAreas = new();
     private readonly RunItemInventory itemInventory = new();
+    private readonly RunCombinedSynergyState combinedSynergy;
+
+    public RunGrowthState(
+        float combinedSynergySwitchCooldown = 30f,
+        CombinedSynergyUnlockSettings combinedSynergyUnlockSettings = null)
+    {
+        combinedSynergy = new RunCombinedSynergyState(
+            combinedSynergySwitchCooldown,
+            combinedSynergyUnlockSettings);
+    }
 
     public RunSkillTreeProgress CoreTree => coreTree;
     public RunSkillTreeProgress PartnerTree => partnerTree;
     public RunItemInventory ItemInventory => itemInventory;
+    public RunCombinedSynergyState CombinedSynergy => combinedSynergy;
     public ToolId SelectedCoreTool => coreTree.Tool;
     public ToolId SelectedPartnerTool => partnerTree.Tool;
     public int AvailableMasteryPoints { get; private set; }
     public int SpentMasteryPoints { get; private set; }
     public int CurrentArea { get; private set; } = 1;
+    public GrowthManagementPage LastGrowthManagementPage { get; private set; } =
+        GrowthManagementPage.SkillTree;
     public bool HasClearedCurrentAreaMiniBoss =>
         rewardedMiniBossAreas.Contains(CurrentArea);
     public bool HasClearedCurrentAreaBoss =>
         rewardedBossAreas.Contains(CurrentArea);
     public event Action<int> AvailableMasteryPointsChanged;
+    public event Action<GrowthManagementPage> GrowthManagementPageChanged;
+
+    public bool TrySetGrowthManagementPage(GrowthManagementPage page)
+    {
+        if (!Enum.IsDefined(typeof(GrowthManagementPage), page))
+        {
+            return false;
+        }
+
+        if (LastGrowthManagementPage == page)
+        {
+            return true;
+        }
+
+        LastGrowthManagementPage = page;
+        GrowthManagementPageChanged?.Invoke(page);
+        return true;
+    }
 
     public int GetElementLevel(ItemElement element) =>
         itemInventory.GetElementLevel(element);

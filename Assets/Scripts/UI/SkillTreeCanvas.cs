@@ -45,6 +45,14 @@ public sealed class SkillTreeCanvas : MonoBehaviour
     [SerializeField] private TMP_Text noticeText;
     [SerializeField] private Button closeButton;
 
+    [Header("Growth Management Pages")]
+    [SerializeField] private GameObject navigationRoot;
+    [SerializeField] private Button skillTreeTabButton;
+    [SerializeField] private Button itemTabButton;
+    [SerializeField] private GameObject skillTreePage;
+    [SerializeField] private GameObject itemPage;
+    [SerializeField] private GrowthItemPage itemPageView;
+
     [Header("Branches")]
     [SerializeField] private SkillTreeBranchView coreBranch;
     [SerializeField] private SkillTreeBranchView partnerBranch;
@@ -60,7 +68,10 @@ public sealed class SkillTreeCanvas : MonoBehaviour
 
     private SkillTreeManager manager;
     private int originalSiblingIndex;
-    private bool movedBehindExternalModal;
+    private bool hasRuntimeSiblingOverride;
+    private GrowthManagementPage currentPage = GrowthManagementPage.SkillTree;
+
+    public GrowthManagementPage CurrentPage => currentPage;
 
     private void Start()
     {
@@ -69,6 +80,14 @@ public sealed class SkillTreeCanvas : MonoBehaviour
         if (closeButton != null)
         {
             closeButton.onClick.AddListener(HandleClose);
+        }
+        if (skillTreeTabButton != null)
+        {
+            skillTreeTabButton.onClick.AddListener(ShowSkillTreePage);
+        }
+        if (itemTabButton != null)
+        {
+            itemTabButton.onClick.AddListener(ShowItemPage);
         }
 
         BindChoiceButtons();
@@ -96,23 +115,63 @@ public sealed class SkillTreeCanvas : MonoBehaviour
             (PrototypeJobManager.Instance != null && PrototypeJobManager.Instance.IsChoosingJob) ||
             ItemRewardManager.IsSelectionPendingOrActive;
 
-        if (externalModal && !movedBehindExternalModal)
+        if (transform.parent == null)
         {
-            transform.SetAsFirstSibling();
-            movedBehindExternalModal = true;
+            return;
         }
-        else if (!externalModal && movedBehindExternalModal)
+
+        bool treeOpen = manager != null && manager.IsOpen;
+        if (externalModal)
         {
-            transform.SetSiblingIndex(Mathf.Min(
-                originalSiblingIndex,
-                transform.parent != null ? transform.parent.childCount - 1 : 0));
-            movedBehindExternalModal = false;
+            SetRuntimeSiblingIndex(0);
+            return;
         }
+
+        if (treeOpen)
+        {
+            SetRuntimeSiblingIndex(transform.parent.childCount - 1);
+            return;
+        }
+
+        RestoreOriginalSiblingIndex();
+    }
+
+    private void SetRuntimeSiblingIndex(int siblingIndex)
+    {
+        if (transform.GetSiblingIndex() != siblingIndex)
+        {
+            transform.SetSiblingIndex(siblingIndex);
+        }
+
+        hasRuntimeSiblingOverride = true;
+    }
+
+    private void RestoreOriginalSiblingIndex()
+    {
+        if (!hasRuntimeSiblingOverride || transform.parent == null)
+        {
+            return;
+        }
+
+        transform.SetSiblingIndex(Mathf.Min(
+            originalSiblingIndex,
+            transform.parent.childCount - 1));
+        hasRuntimeSiblingOverride = false;
     }
 
     public void ToggleTreeFromUI()
     {
         manager?.ToggleFromUI();
+    }
+
+    public void ShowSkillTreePage()
+    {
+        TryShowPage(GrowthManagementPage.SkillTree);
+    }
+
+    public void ShowItemPage()
+    {
+        TryShowPage(GrowthManagementPage.Item);
     }
 
     private void HandleClose()
@@ -144,6 +203,7 @@ public sealed class SkillTreeCanvas : MonoBehaviour
         if (!show || manager == null)
         {
             SkillTreeTooltip.HideShared();
+            itemPageView?.SetPageVisible(false);
             return;
         }
 
@@ -167,11 +227,73 @@ public sealed class SkillTreeCanvas : MonoBehaviour
             closeButton.interactable = !manager.IsMandatoryAcquisition;
         }
 
-        coreBranch?.Refresh(manager, GrowthToolRole.Core);
-        partnerBranch?.Refresh(manager, GrowthToolRole.Partner);
-        tacticalBranch?.RefreshAbility(manager, GrowthAbilitySlot.TacticalE);
-        signatureBranch?.RefreshAbility(manager, GrowthAbilitySlot.SignatureR);
+        RefreshPages(growth);
+
+        if (currentPage == GrowthManagementPage.SkillTree)
+        {
+            coreBranch?.Refresh(manager, GrowthToolRole.Core);
+            partnerBranch?.Refresh(manager, GrowthToolRole.Partner);
+            tacticalBranch?.RefreshAbility(manager, GrowthAbilitySlot.TacticalE);
+            signatureBranch?.RefreshAbility(manager, GrowthAbilitySlot.SignatureR);
+        }
         RefreshAcquisition();
+    }
+
+    private void TryShowPage(GrowthManagementPage page)
+    {
+        if (manager == null || !manager.CanInteract ||
+            manager.IsMandatoryAcquisition)
+        {
+            return;
+        }
+
+        RunGrowthState growth = RunManager.Instance?.GrowthState;
+        if (growth == null || !growth.TrySetGrowthManagementPage(page))
+        {
+            return;
+        }
+
+        currentPage = page;
+        SkillTreeTooltip.HideShared();
+        RefreshPages(growth);
+    }
+
+    private void RefreshPages(RunGrowthState growth)
+    {
+        GrowthManagementPage requested = manager.IsMandatoryAcquisition
+            ? GrowthManagementPage.SkillTree
+            : growth?.LastGrowthManagementPage ?? GrowthManagementPage.SkillTree;
+        currentPage = requested;
+        bool showSkillTree = requested == GrowthManagementPage.SkillTree;
+
+        if (navigationRoot != null)
+        {
+            navigationRoot.SetActive(true);
+        }
+        if (skillTreePage != null && skillTreePage.activeSelf != showSkillTree)
+        {
+            skillTreePage.SetActive(showSkillTree);
+        }
+        if (itemPage != null && itemPage.activeSelf == showSkillTree)
+        {
+            itemPage.SetActive(!showSkillTree);
+        }
+        if (skillTreeTabButton != null)
+        {
+            skillTreeTabButton.interactable =
+                !showSkillTree && !manager.IsMandatoryAcquisition && manager.CanInteract;
+        }
+        if (itemTabButton != null)
+        {
+            itemTabButton.interactable =
+                showSkillTree && !manager.IsMandatoryAcquisition && manager.CanInteract;
+        }
+
+        itemPageView?.SetPageVisible(!showSkillTree);
+        if (!showSkillTree)
+        {
+            SkillTreeTooltip.HideShared();
+        }
     }
 
     private void RefreshAcquisition()
@@ -228,6 +350,8 @@ public sealed class SkillTreeCanvas : MonoBehaviour
 
     private void OnDisable()
     {
+        RestoreOriginalSiblingIndex();
         SkillTreeTooltip.HideShared();
+        itemPageView?.SetPageVisible(false);
     }
 }

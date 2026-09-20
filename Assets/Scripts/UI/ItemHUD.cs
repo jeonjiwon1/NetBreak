@@ -76,16 +76,12 @@ public sealed class ItemHUD : MonoBehaviour
 
         if (tooltipText != null)
         {
-            string status = ItemEffectManager.Instance != null
-                ? ItemEffectManager.Instance.GetStatusText(owned.ItemId)
-                : string.Empty;
-            tooltipText.text =
-                $"<b>{definition.DisplayName}</b>\n" +
-                $"속성: {definition.ElementDisplayName} · Lv.{owned.Level}\n\n" +
-                $"{definition.PlannedEffectDescription}" +
-                (string.IsNullOrEmpty(status)
-                    ? string.Empty
-                    : $"\n\n<color=#9DDEF2>{status}</color>");
+            ItemEffectManager manager = ItemEffectManager.Instance;
+            tooltipText.text = manager != null
+                ? manager.BuildItemTooltipText(owned, inventory)
+                : $"<b>{definition.DisplayName}</b>\n" +
+                  $"속성: {definition.ElementDisplayName} · Lv.{owned.Level}\n\n" +
+                  definition.PlannedEffectDescription;
         }
 
         if (tooltipPanel != null)

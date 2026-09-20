@@ -756,22 +756,7 @@ public sealed class ItemEffectManager : MonoBehaviour
             return string.Empty;
         }
 
-        string runtimeStatus = itemId switch
-        {
-            ItemCatalog.StormOrbId =>
-                $"다음 자동 공격: {Mathf.Max(0f, stormOrbRemaining):0.0}초",
-            ItemCatalog.CapacitorCoilId =>
-                $"도구 적중: {capacitorHitCount}/{capacitorRequiredHits}",
-            ItemCatalog.SpectralScabbardId =>
-                $"대상별 도구 적중 {scabbardRequiredHits}회마다 발동",
-            ItemCatalog.AutonomousSwordArrayId =>
-                $"다음 자동 공격: {Mathf.Max(0f, swordArrayRemaining):0.0}초",
-            ItemCatalog.FrostSigilId =>
-                $"대상별 적중 {frostSigilRequiredHits}회 · 둔화 중 {CountActiveSlows(ItemCatalog.FrostSigilId)}마리",
-            ItemCatalog.FrostCrystalId =>
-                $"다음 자동 공격: {Mathf.Max(0f, frostCrystalRemaining):0.0}초 · 둔화 중 {CountActiveSlows(ItemCatalog.FrostCrystalId)}마리",
-            _ => string.Empty
-        };
+        string runtimeStatus = GetRuntimeStatusText(itemId);
 
         float primaryValue = GetEffectivePrimaryValue(itemId, boundInventory);
         string primaryStatus = itemId switch
@@ -790,6 +775,105 @@ public sealed class ItemEffectManager : MonoBehaviour
             ? primaryStatus
             : $"{primaryStatus}\n{runtimeStatus}";
     }
+
+    public string BuildItemTooltipText(
+        RunItemInstance owned,
+        RunItemInventory inventory)
+    {
+        if (owned == null || inventory == null ||
+            !ItemCatalog.TryGet(owned.ItemId, out ItemDefinition definition))
+        {
+            return string.Empty;
+        }
+
+        int level = Math.Max(1, owned.Level);
+        float currentValue = GetEffectivePrimaryValue(owned.ItemId, level);
+        StringBuilder builder = new();
+        builder.Append("<size=22><b>");
+        builder.Append(definition.DisplayName);
+        builder.Append("</b></size>\n");
+        builder.Append("속성: ");
+        builder.Append(definition.ElementDisplayName);
+        builder.Append(" · Lv.");
+        builder.Append(level);
+        builder.Append("\n\n");
+        builder.Append(BuildCurrentItemEffectDescription(
+            owned.ItemId,
+            currentValue));
+        builder.Append("\n\n<color=#9DDEF2>");
+        builder.Append("현재 ");
+        builder.Append(definition.PrimaryEffectDisplayName);
+        builder.Append(": ");
+        builder.Append(currentValue.ToString("0.##"));
+        builder.Append(definition.PrimaryValueSuffix);
+        builder.Append("</color>");
+
+        if (TryGetLevelLimit(owned.ItemId, out ItemLevelLimit limit) &&
+            inventory.CanUpgrade(owned.ItemId, limit, out _))
+        {
+            float nextValue = GetEffectivePrimaryValue(owned.ItemId, level + 1);
+            builder.Append("\n다음 Lv.");
+            builder.Append(level + 1);
+            builder.Append(": ");
+            builder.Append(nextValue.ToString("0.##"));
+            builder.Append(definition.PrimaryValueSuffix);
+            builder.Append(" (+");
+            builder.Append((nextValue - currentValue).ToString("0.##"));
+            builder.Append(definition.PrimaryValueSuffix);
+            builder.Append(')');
+        }
+        else
+        {
+            builder.Append("\n<b>최대 레벨</b>");
+        }
+
+        string runtimeStatus = Owns(owned.ItemId)
+            ? GetRuntimeStatusText(owned.ItemId)
+            : string.Empty;
+        if (!string.IsNullOrEmpty(runtimeStatus))
+        {
+            builder.Append("\n\n");
+            builder.Append(runtimeStatus);
+        }
+
+        return builder.ToString();
+    }
+
+    private string GetRuntimeStatusText(string itemId) => itemId switch
+    {
+        ItemCatalog.StormOrbId =>
+            $"다음 자동 공격: {Mathf.Max(0f, stormOrbRemaining):0.0}초",
+        ItemCatalog.CapacitorCoilId =>
+            $"도구 적중: {capacitorHitCount}/{capacitorRequiredHits}",
+        ItemCatalog.SpectralScabbardId =>
+            $"대상별 도구 적중 {scabbardRequiredHits}회마다 발동",
+        ItemCatalog.AutonomousSwordArrayId =>
+            $"다음 자동 공격: {Mathf.Max(0f, swordArrayRemaining):0.0}초",
+        ItemCatalog.FrostSigilId =>
+            $"대상별 적중 {frostSigilRequiredHits}회 · 둔화 중 {CountActiveSlows(ItemCatalog.FrostSigilId)}마리",
+        ItemCatalog.FrostCrystalId =>
+            $"다음 자동 공격: {Mathf.Max(0f, frostCrystalRemaining):0.0}초 · 둔화 중 {CountActiveSlows(ItemCatalog.FrostCrystalId)}마리",
+        _ => string.Empty
+    };
+
+    private string BuildCurrentItemEffectDescription(
+        string itemId,
+        float primaryValue) => itemId switch
+    {
+        ItemCatalog.StormOrbId =>
+            $"{stormOrbAttackInterval:0.##}초마다 화면 안에서 커서에 가장 가까운 물고기에게 저항력 피해 {primaryValue:0.##}.",
+        ItemCatalog.CapacitorCoilId =>
+            $"유효한 도구 적중 {capacitorRequiredHits}회마다 반경 {capacitorChainRadius:0.##} 안의 다른 물고기 최대 {capacitorMaximumTargets}마리에게 각각 저항력 피해 {primaryValue:0.##}.",
+        ItemCatalog.SpectralScabbardId =>
+            $"같은 물고기에 유효한 도구 적중 {scabbardRequiredHits}회마다 저항력 피해 {primaryValue:0.##}.",
+        ItemCatalog.AutonomousSwordArrayId =>
+            $"{swordArrayAttackInterval:0.##}초마다 화면 안에서 남은 저항력이 가장 높은 물고기에게 저항력 피해 {primaryValue:0.##}.",
+        ItemCatalog.FrostSigilId =>
+            $"같은 물고기에 유효한 도구 적중 {frostSigilRequiredHits}회마다 {primaryValue:0.##}초 동안 이동 속도를 {frostSigilSlowPercentage * 100f:0.##}% 낮춥니다.",
+        ItemCatalog.FrostCrystalId =>
+            $"{frostCrystalAttackInterval:0.##}초마다 커서 반경 {frostCrystalTargetRadius:0.##} 안의 가까운 물고기 최대 {frostCrystalMaximumTargets}마리에게 저항력 피해 {frostCrystalResistanceDamage:0.##}와 {primaryValue:0.##}초간 {frostCrystalSlowPercentage * 100f:0.##}% 둔화를 줍니다.",
+        _ => string.Empty
+    };
 
     private void UpdatePeriodicEffects()
     {

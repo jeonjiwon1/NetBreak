@@ -1,6 +1,6 @@
 # NETBREAK 인수인계
 
-기준일: 2026-09-18. 현재 마일스톤: **G6-B1 독립 전기 2/4/6/8/10 시너지·속성 hover 툴팁 소스 구현 완료, Unity 검증 대기**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
+기준일: 2026-09-20. 현재 마일스톤: **G6-C1 성장 관리 아이템 페이지·복합 시너지 Run 상태 기반 구현 및 Unity 검증 완료. 다음 구현 단계는 G6-C2 복합 시너지 전투 효과**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경
 - 저장소: `C:\game_dev\unity\NetBreak`, 브랜치 `vertical-slice`.
@@ -332,3 +332,18 @@ FULL RUN #2 수동 검증 및 실측.
 - 개발 검증은 진행 중인 Editor/Development Build Run에서 `ItemRewardManager > Development/Open Item Acquisition Reward`로 실제 검 또는 얼음 Item을 소유한 뒤 `ItemEffectManager > Development/Upgrade First Eligible Owned Item`을 반복한다. 기본 최대 레벨에서는 같은 속성 두 Item을 각각 Lv5로 올려 합계 Lv10을 만든다. 정상 Area 1 Item 0개와 보상·경제는 변경하지 않았다.
 - `ItemProgressionTests`에 검/얼음 0/1/2/4/6/8/10 누적, 단일 Item Lv6, 검 5-hit/부분 진행/피해 배율/서로 다른 추가 대상/검의 비 원본 카운터, 실제 FishController 포획 origin·position snapshot, Ice origin·중복 방지/대상 수/둔화·빙결/독립 보스 CC/3포획 대체/target bounded/lockout·reset/modifier 합성, 검·얼음 tooltip 활성 상태와 실제 설정값 검증을 추가했다. 기존 Electric/G6-A/Area 1 테스트는 유지했다.
 - 요청에 따라 Unity, Computer Use, Test Runner, Play Mode, Console, Editor 메뉴, Scene 저장, commit, push는 실행하지 않았다. Unity 6000.3.11f1 기존 Bee response를 사용한 외부 Roslyn runtime/editor source-level 컴파일은 오류 없이 통과했다. 이는 Unity 자동 테스트 통과 또는 수동 Play 검증을 뜻하지 않는다. G6-C combined synergy와 최종 VFX/SFX는 계속 미구현이다.
+
+## 최근 변경 — G6-C1 성장 관리 아이템 페이지·복합 시너지 기반
+
+- 기존 `SkillTreeManager`의 Tab 입력과 Pause/Resume 경로는 그대로 두고 `SkillTreeCanvas`에 `[스킬 트리] [아이템]` 페이지 상태만 추가했다. `RunGrowthState.LastGrowthManagementPage` 기본값은 스킬 트리이며 같은 Run에서 마지막 페이지를 기억하고 새 Run에서 초기화한다. 필수 Core/Partner 획득 중에는 스킬 트리 페이지를 강제 표시하되 기억값은 덮지 않는다.
+- 안전 이관 메뉴 `NETBREAK/UI/Migrate Growth Window To Skill Tree + Item`을 추가했다. 현재 Main Scene의 실제 `SkillTreeUI/TreePanel` 전체 화면 Rect와 Q/W/E/R Branch·Acquisition 참조를 검사한 뒤 공용 Header/닫기/숙련 표시는 창에 남기고 페이지 전용 기존 자식만 같은 full-stretch `SkillTreePage` 아래로 RectTransform 값 그대로 감싼다. 새 `GrowthNavigation`과 `ItemPage`만 만들며 별도 Tab listener, Manager, 영구 HUD를 만들지 않는다. 부분 구조·중복·외부/누락 참조에서는 변경 전 중단하고 Undo·재실행을 지원한다. Main Scene에서 이관 메뉴 실행과 저장을 완료했다.
+- `GrowthItemPage`는 `RunGrowthState.ItemInventory`의 실제 4칸을 표시하고 빈 슬롯을 보존한다. Inventory `Changed`, Inventory 재바인딩, 페이지 열기/재진입에만 전체 표시를 갱신한다. 기존 ItemDefinition에는 icon 참조가 없으므로 새 임의 icon을 만들지 않았다. 영구 우상단 Item HUD·기존 Element HUD·Q/W/E/R Hotbar는 변경하지 않는다.
+- `ItemEffectManager.BuildItemTooltipText`를 authoritative 아이템 설명 경로로 추가하고 기존 Item HUD와 새 페이지가 공유한다. 현재 Inspector 설정으로 계산한 실제 효과 문장·현재 주 효과값·다음 레벨 개선 또는 최대 레벨·런타임 상태를 표시한다. 새 속성 Hover도 기존 `BuildElementSynergyTooltipText`를 그대로 호출해 전기/검/얼음의 2/4/6/8/10 실제 `활성/미해금` 상태를 표시한다. 두 Tooltip은 페이지 경계 안에 보정되고 raycast를 막지 않으며 페이지 전환·창 닫기·포인터 이탈·차단 모달에서 숨는다.
+- `CombinedSynergyCatalog`의 안정 순서는 뇌검 공명(전기+검), 초전도(전기+얼음), 빙검 공명(검+얼음)이다. 자격은 특정 Item ID가 아니라 기존 Inventory의 두 속성 레벨 합으로 평가하며 기본 각 Lv2다. 세 카드에 요구/현재 레벨, 짧은 효과, `미해금` 또는 `해금됨`, `구현 예정`을 함께 표시하고 하나의 상세 영역에서 승인된 G6-C2 임시 수치를 설명한다.
+- `RunGrowthState.CombinedSynergy`가 UI 선택 후보와 하나의 Active ID, 결정적 첫 자동 선택, 기존 Active 보존, 원자적 수동 변경 검증, 동일 선택 무동작, 기본 30초 scaled gameplay time 쿨다운을 Run 범위로 소유한다. `RunManager`가 Inventory `Changed`를 구독해 UI를 열지 않아도 첫 자동 선택 API를 평가한다. 같은 Run의 Area 변경에서는 유지되고 새 Run에서 초기화된다. RunManager `Combined Synergy / 복합 시너지`에서 세 조합별 요구 레벨과 `Combined Synergy Switch Cooldown`을 조절한다.
+- G6-C1에서는 `CombinedSynergyCatalog.CombatEffectsImplemented=false`로 정상 자동 활성·확인을 모두 차단했다. 따라서 자격을 만족해도 `해금됨 · 구현 예정`만 표시하고 Active 보너스나 `사용 중`을 거짓으로 표시하지 않으며 확인 버튼은 비활성이다. production 상태 API는 테스트에서만 명시적으로 효과 사용 가능 인자를 받아 최종 동작을 검증할 수 있다.
+- `ItemProgressionTests`에 성장 페이지 기본/기억/새 Run 초기화, 페이지 변경 시 진행 보존, 실제 4칸/빈 슬롯, 획득·업그레이드 알림과 tooltip preview, 세 조합의 Item ID 비종속 자격, 동시 자격, 카탈로그 tie-break, 첫 활성 무쿨다운, 기존 Active 보존, 성공 변경 쿨다운, 동일 선택 무동작, 잠금/쿨다운 원자적 실패, scaled 시간 정지, Area 유지/새 Run reset, G6-C1 정상 활성 차단을 추가했다. 기존 테스트는 삭제·Skip하지 않았다.
+- 첫 이관 저장에서 `OwnedItemSlot_1~4`의 Hover가 `GrowthItemPage.cs` 내부 런타임 MonoScript 참조로 직렬화되어 Missing Script 4개가 발생했다. `GrowthItemSlotHover`를 독립 `.cs/.meta` 자산으로 분리하고 제한적 복구 메뉴로 정확한 네 컴포넌트의 `m_Script`를 정상 GUID에 재바인딩했다. Main Scene 저장, Scene 재로드와 Unity 재시작 뒤 Missing Script 0개 및 경고 미재발을 확인했다. 기존 `owner`, `slotIndex`, 다른 컴포넌트와 Inspector 값은 보존했다.
+- 단일 `GameCanvas`의 런타임 sibling 순서에서 Item 보상 모달이 `ItemSystemUI`를 최상위로 올린 뒤 복원하지 않아 영구 HUD가 성장 창보다 앞에 남던 문제를 보정했다. 성장 창이 열릴 때만 `SkillTreeUI`를 HUD보다 앞으로 올리고 닫으면 원래 순서로 복원하며, 외부 보상 모달은 계속 최상위와 입력 차단을 유지한다. 아이템·속성 Tooltip은 표시 중 `TreePanel` 최상위로 올려 본문·HUD보다 앞에 표시하되 기존 경계 보정, raycast 비차단과 숨김 규칙을 유지한다.
+- Unity 6000.3.11f1에서 G6-C1 UI 이관과 Main Scene 저장, Scene 재로드·Unity 재시작, Console 컴파일 오류 없음, `ItemProgressionTests` 115/115 통과를 확인했다. 수동 검증으로 기존 Q/W/E/R Tree·노드 Tooltip, 스킬 트리/아이템 페이지, 4칸과 빈 슬롯, 슬롯 Hover, 아이템 획득·강화 실시간 갱신, 단일 속성 Tooltip, 복합 시너지 카드/해금 표시/활성화 차단, 새 Run 초기화, 상시 HUD·성장 창·Tooltip 렌더링 순서, 보상 모달 우선순위와 입력 차단을 확인했다. G6-C1 검증은 완료됐으며 commit/push는 아직 수행하지 않았다.
+- 다음 구현 단계는 G6-C2다. 뇌검 공명·초전도·빙검 공명의 실제 전투 효과, 독립 시너지 이벤트 연결, 효과별 Inspector 튜닝값과 정상 자동 활성·수동 교체는 아직 미구현이다. G6-C1의 `CombinedSynergyCatalog.CombatEffectsImplemented=false` 게이트와 비활성 확인 버튼을 G6-C2 검증 전까지 유지한다.

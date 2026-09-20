@@ -70,7 +70,7 @@ public sealed class MasteryPointReminder : MonoBehaviour
 
         if (hintText != null)
         {
-            hintText.text = "Tab — 스킬 트리 열기";
+            hintText.text = "Tab — 성장 관리 열기";
         }
 
         SetVisible(visible);

@@ -35,8 +35,14 @@ public class RunManager : MonoBehaviour
     [Min(1)] [SerializeField] private int miniBossMasteryReward = 1;
     [Min(1)] [SerializeField] private int bossMasteryReward = 2;
 
+    [Header("Combined Synergy / 복합 시너지")]
+    [SerializeField] private CombinedSynergyUnlockSettings combinedSynergyUnlocks = new();
+    [Tooltip("복합 시너지 수동 변경 성공 후 적용되는 scaled gameplay time 쿨다운입니다.")]
+    [Min(0f)] [SerializeField] private float combinedSynergySwitchCooldown = 30f;
+
     private int currentGold;
     private int capturedFishCount;
+    private bool combinedSynergyInventorySubscribed;
 
     private int capturedCatchValue;
     private int totalCatchValue;
@@ -95,7 +101,10 @@ public class RunManager : MonoBehaviour
         Instance = this;
 
         ToolSlots = new RunToolLoadout();
-        GrowthState = new RunGrowthState();
+        GrowthState = new RunGrowthState(
+            combinedSynergySwitchCooldown,
+            combinedSynergyUnlocks);
+        SubscribeCombinedSynergyInventory();
         ToolInput = new ToolSlotInput(ToolSlots);
         SkillTree = GetComponent<SkillTreeManager>();
         if (SkillTree == null)
@@ -132,6 +141,30 @@ public class RunManager : MonoBehaviour
 
         expToNextLevel =
             level2ExpRequirement;
+    }
+
+    private void RefreshCombinedSynergyEligibility()
+    {
+        GrowthState?.CombinedSynergy.TryAutoActivateFirstEligible(
+            GrowthState.ItemInventory,
+            Time.time,
+            CombinedSynergyCatalog.CombatEffectsImplemented);
+    }
+
+    private void SubscribeCombinedSynergyInventory()
+    {
+        if (combinedSynergyInventorySubscribed || GrowthState == null)
+        {
+            return;
+        }
+
+        GrowthState.ItemInventory.Changed += RefreshCombinedSynergyEligibility;
+        combinedSynergyInventorySubscribed = true;
+    }
+
+    private void OnEnable()
+    {
+        SubscribeCombinedSynergyInventory();
     }
 
     private void Update()
@@ -384,6 +417,12 @@ public class RunManager : MonoBehaviour
 
     private void OnDisable()
     {
+        if (combinedSynergyInventorySubscribed && GrowthState != null)
+        {
+            GrowthState.ItemInventory.Changed -= RefreshCombinedSynergyEligibility;
+            combinedSynergyInventorySubscribed = false;
+        }
+
         if (Instance == this)
         {
             Instance = null;
