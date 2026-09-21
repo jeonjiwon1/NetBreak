@@ -1,6 +1,6 @@
 # NETBREAK 인수인계
 
-기준일: 2026-09-20. 현재 마일스톤: **G6-C1 성장 관리 아이템 페이지·복합 시너지 Run 상태 기반 구현 및 Unity 검증 완료. 다음 구현 단계는 G6-C2 복합 시너지 전투 효과**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
+기준일: 2026-09-21. 현재 마일스톤: **G6-C2 복합 시너지 전투 구현 및 Unity 검증 완료. 다음 작업은 버티컬 슬라이스 잔여 기능과 버그 점검**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경
 - 저장소: `C:\game_dev\unity\NetBreak`, 브랜치 `vertical-slice`.
@@ -347,3 +347,16 @@ FULL RUN #2 수동 검증 및 실측.
 - 단일 `GameCanvas`의 런타임 sibling 순서에서 Item 보상 모달이 `ItemSystemUI`를 최상위로 올린 뒤 복원하지 않아 영구 HUD가 성장 창보다 앞에 남던 문제를 보정했다. 성장 창이 열릴 때만 `SkillTreeUI`를 HUD보다 앞으로 올리고 닫으면 원래 순서로 복원하며, 외부 보상 모달은 계속 최상위와 입력 차단을 유지한다. 아이템·속성 Tooltip은 표시 중 `TreePanel` 최상위로 올려 본문·HUD보다 앞에 표시하되 기존 경계 보정, raycast 비차단과 숨김 규칙을 유지한다.
 - Unity 6000.3.11f1에서 G6-C1 UI 이관과 Main Scene 저장, Scene 재로드·Unity 재시작, Console 컴파일 오류 없음, `ItemProgressionTests` 115/115 통과를 확인했다. 수동 검증으로 기존 Q/W/E/R Tree·노드 Tooltip, 스킬 트리/아이템 페이지, 4칸과 빈 슬롯, 슬롯 Hover, 아이템 획득·강화 실시간 갱신, 단일 속성 Tooltip, 복합 시너지 카드/해금 표시/활성화 차단, 새 Run 초기화, 상시 HUD·성장 창·Tooltip 렌더링 순서, 보상 모달 우선순위와 입력 차단을 확인했다. G6-C1 검증은 완료됐으며 commit/push는 아직 수행하지 않았다.
 - 다음 구현 단계는 G6-C2다. 뇌검 공명·초전도·빙검 공명의 실제 전투 효과, 독립 시너지 이벤트 연결, 효과별 Inspector 튜닝값과 정상 자동 활성·수동 교체는 아직 미구현이다. G6-C1의 `CombinedSynergyCatalog.CombatEffectsImplemented=false` 게이트와 비활성 확인 버튼을 G6-C2 검증 전까지 유지한다.
+
+## 최근 변경 — G6-C2 복합 시너지 전투
+
+- 뇌검 공명은 독립 전기 연쇄 방전의 실제 피해 성공 대상에 생명주기별 8초 전도 표식을 부여한다. 같은 대상 재부여는 피해를 중첩하지 않고 만료 시각만 갱신하며, 독립 검 영혼 참격이 유효 적중했을 때 표식을 소비해 원본 대상 저항력 피해 18과 원본을 제외한 주변 최대 2마리 각각 8 피해를 준다. 폭발 내부 쿨다운은 scaled gameplay time 8초다.
+- 초전도는 일반 Item 둔화가 아니라 기존 `ice_synergy.slow`가 적용된 대상에 독립 전기 연쇄 방전이 실제 적중했을 때만 발동한다. 원본을 제외한 주변 최대 2마리에게 각각 저항력 피해 8을 주고 기존 얼음 시너지 둔화 종료 시각을 최대 0.5초 연장하며, 내부 쿨다운은 6초다.
+- 빙검 공명은 기존 얼음 시너지 둔화 또는 빙결 대상에 독립 검 영혼 참격이 실제 적중했을 때 발동한다. 원본과 중복 Collider를 제외한 주변 최대 2마리에게 각각 저항력 피해 10을 주고 별도 시간제 modifier로 20% 둔화를 1.5초 적용한다. 내부 쿨다운은 6초이며 기존 얼음, Net, R 이동 제어와 독립적으로 합성된다.
+- 세 효과는 기존 `CombatDamageOrigin.ItemSynergy`, Resistance 피해·포획 경로와 거리/instance ID 결정적 대상 선정을 재사용한다. 복합 시너지 추가 피해는 Tool 적중 조건을 만족하지 않아 Item이나 단일 시너지 효과를 재귀 발동하지 않는다. Normal/Pufferfish/Squid/MiniBoss/Boss는 추가 Resistance 피해를 동일하게 받고, MiniBoss/Boss 군중제어에만 기존 `SynergyCrowdControlPolicy` 0.5 배율을 한 번 적용한다.
+- `ItemEffectManager > Combined Synergy / 복합 시너지`가 세 효과의 피해, 대상 수, 표식·둔화 지속시간, 둔화율과 내부 쿨다운을 단일 Inspector 위치에서 소유한다. 범위는 기존 전기 연쇄 방전과 검 영혼 참격 탐색 반경을 재사용한다. `RunManager`의 각 Lv2 해금 요구와 기본 30초 수동 교체 쿨다운은 그대로 유지했다.
+- `CombinedSynergyCatalog.CombatEffectsImplemented=true`로 정상 첫 자동 활성과 아이템 페이지 확인 버튼을 개방했다. 동시에 하나만 활성화하고 추가 조합 해금은 기존 Active를 바꾸지 않는다. 성공한 수동 교체만 scaled gameplay time 30초 쿨다운을 시작하며, UI는 `현재 사용 중`, `해금됨 · 교체 가능`과 남은 시간을 표시한다.
+- 전도 표식은 Fish instance ID와 `LifecycleVersion`으로 구분한다. 포획·도주·Pool 반환 시 개체 상태와 빙검 modifier를 정리하고, Run 종료·새 Run에서 모든 표식·내부 쿨다운·임시 modifier를 초기화한다. 기존 Run 상태의 활성 조합과 교체 쿨다운은 Area 상태와 분리되어 있으나, 실제 해역 이동을 포함한 통합 Run 검증은 아직 완료하지 않았다.
+- 변경 파일은 `Assets/Scripts/Core/CombinedSynergy.cs`, `ItemEffectManager.cs`, `Assets/Scripts/Fish/FishMovement.cs`, `Assets/Scripts/UI/GrowthItemPage.cs`, `Assets/Editor/Tests/ItemProgressionTests.cs`다. 기존 115개를 삭제·Skip하지 않고 G6-C2 결정론적 테스트 5개를 추가했다.
+- Unity 6000.3.11f1에서 Runtime/Editor 컴파일 성공, Console의 새로운 문제 없음, EditMode `ItemProgressionTests` 120/120 통과를 확인했다. Unity 수동 검증으로 복합 시너지 자동 활성·수동 교체 UI, 대표 전투 효과, 기존 단일 속성 시너지와 UI 회귀를 확인했다. 정상 Area 1 아이템 미지급 원칙은 유지했다.
+- G6-C2 구현과 지정 검증은 완료됐다. 실제 해역 이동과 향후 전체 Run 통합 검증은 완료로 기록하지 않으며, 다음 작업은 버티컬 슬라이스 잔여 기능과 버그 점검이다. 문서 갱신 뒤 commit/push는 사용자가 수행한다.

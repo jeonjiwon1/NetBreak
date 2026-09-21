@@ -90,8 +90,11 @@ public sealed class GrowthItemPage : MonoBehaviour
                     $"{GetElementDisplayName(definition.SecondElement)} Lv.{secondRequirement}\n" +
                     $"현재 {firstLevel} / {secondLevel}\n" +
                     $"{definition.ShortDescription}\n" +
-                    (eligible ? "<color=#79E6B2>해금됨 · 구현 예정</color>" :
-                        "<color=#9AA7AD>미해금 · 구현 예정</color>");
+                    (state != null && state.ActiveId == id
+                        ? "<color=#79E6B2>현재 사용 중</color>"
+                        : eligible
+                            ? "<color=#79E6B2>해금됨 · 교체 가능</color>"
+                            : "<color=#9AA7AD>미해금</color>");
             }
 
             if (background != null)
@@ -383,9 +386,11 @@ public sealed class GrowthItemPage : MonoBehaviour
                 $"{GetElementDisplayName(definition.FirstElement)} {firstLevel}/{firstRequirement}, " +
                 $"{GetElementDisplayName(definition.SecondElement)} {secondLevel}/{secondRequirement}\n" +
                 definition.DetailedDescription + "\n" +
-                (eligible
-                    ? "<color=#79E6B2>해금됨 · 전투 활성화는 G6-C2 구현 예정</color>"
-                    : "<color=#9AA7AD>미해금 · 요구 속성 레벨을 달성하세요.</color>");
+                (state != null && state.ActiveId == previewedCombination
+                    ? "<color=#79E6B2>현재 사용 중</color>"
+                    : eligible
+                        ? "<color=#79E6B2>해금됨 · 교체 가능</color>"
+                        : "<color=#9AA7AD>미해금 · 요구 속성 레벨을 달성하세요.</color>");
         }
 
         float remaining = state?.GetRemainingSwitchCooldown(Time.time) ?? 0f;

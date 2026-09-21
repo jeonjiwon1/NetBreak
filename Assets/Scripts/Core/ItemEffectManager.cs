@@ -34,6 +34,10 @@ public sealed class ItemEffectManager : MonoBehaviour
     [Tooltip("얼음 속성 레벨로 해금되는 독립 패시브의 유일한 효과 설정입니다.")]
     [SerializeField] private IceSynergySettings iceSynergy = new();
 
+    [Header("Combined Synergy / 복합 시너지")]
+    [Tooltip("세 복합 시너지 전투 효과의 유일한 반복 튜닝 설정입니다.")]
+    [SerializeField] private CombinedSynergyCombatSettings combinedSynergyCombat = new();
+
     [Header("Storm Orb / 폭풍 구슬")]
     [Tooltip("이 아이템의 유한 최대 레벨입니다. 무제한 옵션이 켜지면 무시됩니다.")]
     [InspectorName("Maximum Level")]
@@ -168,6 +172,11 @@ public sealed class ItemEffectManager : MonoBehaviour
     private const string IceFrostBurstDamageId = "ice_synergy.frost_burst";
     private const string IceSlowModifierId = "ice_synergy.slow";
     private const string IceFreezeModifierId = "ice_synergy.freeze";
+    private const string ThunderSwordPrimaryDamageId = "combined_synergy.thunder_sword.primary";
+    private const string ThunderSwordSplashDamageId = "combined_synergy.thunder_sword.splash";
+    private const string SuperconductivityDamageId = "combined_synergy.superconductivity";
+    private const string FrostSwordDamageId = "combined_synergy.frost_sword";
+    private const string FrostSwordSlowModifierId = "combined_synergy.frost_sword.slow";
 
     private readonly Dictionary<FishController, int> scabbardHitCounts = new();
     private readonly Dictionary<FishController, int> frostSigilHitCounts = new();
@@ -180,6 +189,7 @@ public sealed class ItemEffectManager : MonoBehaviour
     private readonly ElectricSynergyRuntimeState electricSynergyRuntime = new();
     private readonly SwordSynergyRuntimeState swordSynergyRuntime = new();
     private readonly IceSynergyRuntimeState iceSynergyRuntime = new();
+    private readonly CombinedSynergyCombatRuntime combinedSynergyRuntime = new();
 
     private RunItemInventory boundInventory;
     private Material runtimeMaterial;
@@ -188,6 +198,7 @@ public sealed class ItemEffectManager : MonoBehaviour
     private float stormOrbRemaining;
     private float swordArrayRemaining;
     private float frostCrystalRemaining;
+    private CombinedSynergyId lastObservedCombinedSynergy;
 
     private void Awake()
     {
@@ -720,10 +731,12 @@ public sealed class ItemEffectManager : MonoBehaviour
         frostCrystalSlowedFish.Remove(fish);
         electricSynergyRuntime.ClearTarget(fish.GetInstanceID());
         iceSynergyRuntime.ClearTarget(fish.GetInstanceID());
+        combinedSynergyRuntime.ClearTarget(fish.GetInstanceID());
         FishMovement movement = fish.GetComponent<FishMovement>();
         movement?.RemoveTimedSpeedModifier(ElectricStunModifierId);
         movement?.RemoveTimedSpeedModifier(IceSlowModifierId);
         movement?.RemoveTimedSpeedModifier(IceFreezeModifierId);
+        movement?.RemoveTimedSpeedModifier(FrostSwordSlowModifierId);
 
         int fishId = fish.GetInstanceID();
         List<ContinuousHitKey> staleKeys = null;
@@ -1050,7 +1063,12 @@ public sealed class ItemEffectManager : MonoBehaviour
         {
             FishController target = targets[i];
             points[i + 1] = target.transform.position;
-            DealSynergyDamage(target, ElectricChainDamageId, damage);
+            bool hadIceSynergySlow = HasIceSynergySlow(target);
+            bool chainHit = DealSynergyDamage(target, ElectricChainDamageId, damage);
+            if (chainHit)
+            {
+                HandleCombinedElectricChainHit(target, points[i + 1], hadIceSynergySlow);
+            }
             if (state.IsLevel6Active && IsEligibleFish(target))
             {
                 ApplyElectricDischargeStun(target, state, settings);
@@ -1164,6 +1182,7 @@ public sealed class ItemEffectManager : MonoBehaviour
         }
 
         Vector2 primaryPosition = primaryTarget.transform.position;
+        bool hadIceSynergyControl = HasIceSynergyControl(primaryTarget);
         bool primaryExecuted = DealSynergyDamage(
             primaryTarget,
             SwordSoulSlashDamageId,
@@ -1172,6 +1191,11 @@ public sealed class ItemEffectManager : MonoBehaviour
         {
             return;
         }
+
+        HandleCombinedSoulSlashHit(
+            primaryTarget,
+            primaryPosition,
+            hadIceSynergyControl);
 
         CreateSwordSynergyMarker(
             primaryPosition,
@@ -1493,6 +1517,171 @@ public sealed class ItemEffectManager : MonoBehaviour
             damage,
             CombatDamageContext.ItemSynergy(synergyId, this));
         return true;
+    }
+
+    private void HandleCombinedElectricChainHit(
+        FishController target,
+        Vector2 hitPosition,
+        bool hadIceSynergySlow)
+    {
+        CombinedSynergyId active = ObserveActiveCombinedSynergy();
+        CombinedSynergyCombatSettings settings = GetCombinedSynergyCombatSettings();
+        if (active == CombinedSynergyId.ThunderSwordResonance && IsEligibleFish(target))
+        {
+            combinedSynergyRuntime.ApplyConductiveMark(
+                new SynergyTargetKey(target.GetInstanceID(), target.LifecycleVersion),
+                Time.time,
+                settings.ConductiveMarkDuration);
+            return;
+        }
+
+        if (active != CombinedSynergyId.Superconductivity || !hadIceSynergySlow ||
+            !combinedSynergyRuntime.TryBeginSuperconductivity(
+                Time.time,
+                settings.SuperconductivityCooldown))
+        {
+            return;
+        }
+
+        if (target != null && target.Data != null)
+        {
+            target.GetComponent<FishMovement>()?.ExtendTimedSpeedModifier(
+                IceSlowModifierId,
+                GetCrowdControlPolicy().GetAdjustedDuration(
+                    settings.SuperconductivitySlowExtension,
+                    target.Data.SpecialType));
+        }
+
+        DamageAdditionalCombinedTargets(
+            hitPosition,
+            target,
+            GetElectricSynergySettings().ChainRadius,
+            settings.SuperconductivityAdditionalTargets,
+            settings.SuperconductivityDamage,
+            SuperconductivityDamageId,
+            false);
+    }
+
+    private void HandleCombinedSoulSlashHit(
+        FishController target,
+        Vector2 hitPosition,
+        bool hadIceSynergyControl)
+    {
+        CombinedSynergyId active = ObserveActiveCombinedSynergy();
+        CombinedSynergyCombatSettings settings = GetCombinedSynergyCombatSettings();
+        if (active == CombinedSynergyId.ThunderSwordResonance)
+        {
+            SynergyTargetKey key = target != null
+                ? new SynergyTargetKey(target.GetInstanceID(), target.LifecycleVersion)
+                : default;
+            if (!combinedSynergyRuntime.TryConsumeConductiveMark(
+                    key,
+                    Time.time,
+                    settings.ThunderSwordCooldown))
+            {
+                return;
+            }
+
+            DealSynergyDamage(target, ThunderSwordPrimaryDamageId, settings.ThunderSwordPrimaryDamage);
+            DamageAdditionalCombinedTargets(
+                hitPosition,
+                target,
+                GetSwordSynergySettings().FallbackRadius,
+                settings.ThunderSwordAdditionalTargets,
+                settings.ThunderSwordAdditionalDamage,
+                ThunderSwordSplashDamageId,
+                false);
+            return;
+        }
+
+        if (active != CombinedSynergyId.FrostSwordResonance || !hadIceSynergyControl ||
+            !combinedSynergyRuntime.TryBeginFrostSword(Time.time, settings.FrostSwordCooldown))
+        {
+            return;
+        }
+
+        DamageAdditionalCombinedTargets(
+            hitPosition,
+            target,
+            GetSwordSynergySettings().FallbackRadius,
+            settings.FrostSwordAdditionalTargets,
+            settings.FrostSwordDamage,
+            FrostSwordDamageId,
+            true);
+    }
+
+    private void DamageAdditionalCombinedTargets(
+        Vector2 origin,
+        FishController source,
+        float radius,
+        int maximumTargets,
+        float damage,
+        string damageId,
+        bool applyFrostSwordSlow)
+    {
+        Camera camera = Camera.main;
+        if (camera == null) return;
+
+        HashSet<FishController> excluded = new();
+        if (source != null) excluded.Add(source);
+        List<FishController> targets = SingleElementSynergyTargeting.SelectDistinctEligibleTargets(
+            GetEligibleFish(camera), origin, radius, maximumTargets, excluded);
+        CombinedSynergyCombatSettings settings = GetCombinedSynergyCombatSettings();
+        for (int i = 0; i < targets.Count; i++)
+        {
+            FishController target = targets[i];
+            if (!DealSynergyDamage(target, damageId, damage) ||
+                !applyFrostSwordSlow || !IsEligibleFish(target) || target.Data == null)
+            {
+                continue;
+            }
+
+            ApplySlow(
+                target,
+                FrostSwordSlowModifierId,
+                GetCrowdControlPolicy().GetAdjustedAdditionalSlowPercentage(
+                    settings.FrostSwordSlowPercentage,
+                    target.Data.SpecialType),
+                GetCrowdControlPolicy().GetAdjustedDuration(
+                    settings.FrostSwordSlowDuration,
+                    target.Data.SpecialType));
+        }
+    }
+
+    private static bool HasIceSynergySlow(FishController fish)
+    {
+        FishMovement movement = fish != null ? fish.GetComponent<FishMovement>() : null;
+        return movement != null && movement.HasTimedSpeedModifier(IceSlowModifierId);
+    }
+
+    private static bool HasIceSynergyControl(FishController fish)
+    {
+        FishMovement movement = fish != null ? fish.GetComponent<FishMovement>() : null;
+        return movement != null &&
+            (movement.HasTimedSpeedModifier(IceSlowModifierId) ||
+             movement.HasTimedSpeedModifier(IceFreezeModifierId));
+    }
+
+    private static CombinedSynergyId GetActiveCombinedSynergy() =>
+        RunManager.Instance?.GrowthState?.CombinedSynergy.ActiveId ?? CombinedSynergyId.None;
+
+    private CombinedSynergyId ObserveActiveCombinedSynergy()
+    {
+        CombinedSynergyId active = GetActiveCombinedSynergy();
+        if (active == lastObservedCombinedSynergy)
+        {
+            return active;
+        }
+
+        combinedSynergyRuntime.Reset();
+        lastObservedCombinedSynergy = active;
+        return active;
+    }
+
+    private CombinedSynergyCombatSettings GetCombinedSynergyCombatSettings()
+    {
+        combinedSynergyCombat ??= new CombinedSynergyCombatSettings();
+        return combinedSynergyCombat;
     }
 
     private SingleElementSynergyState GetElectricSynergyState() =>
@@ -1908,6 +2097,8 @@ public sealed class ItemEffectManager : MonoBehaviour
         electricSynergyRuntime.Reset();
         swordSynergyRuntime.Reset();
         iceSynergyRuntime.Reset();
+        combinedSynergyRuntime.Reset();
+        lastObservedCombinedSynergy = CombinedSynergyId.None;
         stormOrbRemaining = stormOrbAttackInterval;
         swordArrayRemaining = swordArrayAttackInterval;
         frostCrystalRemaining = frostCrystalAttackInterval;
@@ -1937,6 +2128,7 @@ public sealed class ItemEffectManager : MonoBehaviour
             movements[i].RemoveTimedSpeedModifier(ElectricStunModifierId);
             movements[i].RemoveTimedSpeedModifier(IceSlowModifierId);
             movements[i].RemoveTimedSpeedModifier(IceFreezeModifierId);
+            movements[i].RemoveTimedSpeedModifier(FrostSwordSlowModifierId);
         }
 
         if (resetKnownOwnership)
@@ -2216,6 +2408,7 @@ public sealed class ItemEffectManager : MonoBehaviour
         GetElectricSynergySettings().Normalize();
         GetSwordSynergySettings().Normalize();
         GetIceSynergySettings().Normalize();
+        GetCombinedSynergyCombatSettings().Normalize();
         stormOrbMaximumLevel = Mathf.Max(1, stormOrbMaximumLevel);
         capacitorMaximumLevel = Mathf.Max(1, capacitorMaximumLevel);
         scabbardMaximumLevel = Mathf.Max(1, scabbardMaximumLevel);

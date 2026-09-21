@@ -537,6 +537,19 @@ public class FishMovement : MonoBehaviour
         timedSpeedModifiers.TryGetValue(modifierId, out TimedSpeedModifier modifier) &&
         modifier.ExpiresAt > Time.time;
 
+    public bool ExtendTimedSpeedModifier(string modifierId, float additionalDuration)
+    {
+        if (string.IsNullOrEmpty(modifierId) || additionalDuration <= 0f ||
+            !timedSpeedModifiers.TryGetValue(modifierId, out TimedSpeedModifier modifier) ||
+            modifier.ExpiresAt <= Time.time)
+        {
+            return false;
+        }
+
+        modifier.ExpiresAt += additionalDuration;
+        return true;
+    }
+
     public void RemoveTimedSpeedModifier(string modifierId)
     {
         if (string.IsNullOrEmpty(modifierId) ||

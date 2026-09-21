@@ -471,7 +471,7 @@ public sealed class ItemProgressionTests
     }
 
     [Test]
-    public void G6C1NeverActivatesUnimplementedCombinedEffects()
+    public void G6C2EnablesAutomaticAndManualCombinedEffects()
     {
         RunItemInventory inventory = CreateCombinedEligibleInventory(
             ItemElement.Electric,
@@ -479,22 +479,119 @@ public sealed class ItemProgressionTests
             ItemElement.Ice);
         RunCombinedSynergyState state = new();
 
-        Assert.That(CombinedSynergyCatalog.CombatEffectsImplemented, Is.False);
+        Assert.That(CombinedSynergyCatalog.CombatEffectsImplemented, Is.True);
         Assert.That(
             state.TryAutoActivateFirstEligible(
                 inventory,
                 0f,
                 CombinedSynergyCatalog.CombatEffectsImplemented),
-            Is.False);
-        Assert.That(state.ActiveId, Is.EqualTo(CombinedSynergyId.None));
-        Assert.That(state.TrySelect(CombinedSynergyId.ThunderSwordResonance, inventory), Is.True);
+            Is.True);
+        Assert.That(state.ActiveId, Is.EqualTo(CombinedSynergyId.ThunderSwordResonance));
+        Assert.That(state.TrySelect(CombinedSynergyId.Superconductivity, inventory), Is.True);
         Assert.That(
             state.TryActivateSelected(
                 inventory,
                 0f,
                 CombinedSynergyCatalog.CombatEffectsImplemented),
-            Is.EqualTo(CombinedSynergyActivationResult.FeatureUnavailable));
-        Assert.That(state.ActiveId, Is.EqualTo(CombinedSynergyId.None));
+            Is.EqualTo(CombinedSynergyActivationResult.Success));
+        Assert.That(state.ActiveId, Is.EqualTo(CombinedSynergyId.Superconductivity));
+    }
+
+    [Test]
+    public void ConductiveMarkRefreshesExpiresConsumesAndHonorsCooldown()
+    {
+        CombinedSynergyCombatRuntime runtime = new();
+        SynergyTargetKey first = new(11, 1);
+        SynergyTargetKey second = new(12, 1);
+
+        runtime.ApplyConductiveMark(first, 1f, 8f);
+        runtime.ApplyConductiveMark(first, 4f, 8f);
+        Assert.That(runtime.ConductiveMarkCount, Is.EqualTo(1));
+        Assert.That(runtime.HasConductiveMark(first, 11.99f), Is.True);
+        Assert.That(runtime.TryConsumeConductiveMark(first, 12f, 8f), Is.False);
+        Assert.That(runtime.ConductiveMarkCount, Is.Zero);
+
+        runtime.ApplyConductiveMark(first, 20f, 8f);
+        Assert.That(runtime.TryConsumeConductiveMark(first, 20f, 8f), Is.True);
+        Assert.That(runtime.HasConductiveMark(first, 20f), Is.False);
+        runtime.ApplyConductiveMark(second, 21f, 8f);
+        Assert.That(runtime.TryConsumeConductiveMark(second, 27.99f, 8f), Is.False);
+        Assert.That(runtime.TryConsumeConductiveMark(second, 28f, 8f), Is.True);
+    }
+
+    [Test]
+    public void ConductiveMarkUsesLifecycleAndPoolCleanup()
+    {
+        CombinedSynergyCombatRuntime runtime = new();
+        runtime.ApplyConductiveMark(new SynergyTargetKey(21, 1), 0f, 8f);
+
+        Assert.That(runtime.HasConductiveMark(new SynergyTargetKey(21, 2), 1f), Is.False);
+        runtime.ClearTarget(21);
+        Assert.That(runtime.ConductiveMarkCount, Is.Zero);
+    }
+
+    [Test]
+    public void CombinedInternalCooldownsUseScaledTimeAndResetForNewRun()
+    {
+        CombinedSynergyCombatRuntime runtime = new();
+        Assert.That(runtime.TryBeginSuperconductivity(5f, 6f), Is.True);
+        Assert.That(runtime.TryBeginSuperconductivity(5f, 6f), Is.False);
+        Assert.That(runtime.TryBeginSuperconductivity(10.99f, 6f), Is.False);
+        Assert.That(runtime.TryBeginSuperconductivity(11f, 6f), Is.True);
+        Assert.That(runtime.TryBeginFrostSword(5f, 6f), Is.True);
+        Assert.That(runtime.TryBeginFrostSword(10.99f, 6f), Is.False);
+
+        runtime.Reset();
+        Assert.That(runtime.TryBeginSuperconductivity(5f, 6f), Is.True);
+        Assert.That(runtime.TryBeginFrostSword(5f, 6f), Is.True);
+    }
+
+    [Test]
+    public void CombinedCombatDefaultsMatchApprovedValues()
+    {
+        CombinedSynergyCombatSettings settings = new();
+        Assert.That(settings.ConductiveMarkDuration, Is.EqualTo(8f));
+        Assert.That(settings.ThunderSwordPrimaryDamage, Is.EqualTo(18f));
+        Assert.That(settings.ThunderSwordAdditionalTargets, Is.EqualTo(2));
+        Assert.That(settings.ThunderSwordAdditionalDamage, Is.EqualTo(8f));
+        Assert.That(settings.ThunderSwordCooldown, Is.EqualTo(8f));
+        Assert.That(settings.SuperconductivityAdditionalTargets, Is.EqualTo(2));
+        Assert.That(settings.SuperconductivityDamage, Is.EqualTo(8f));
+        Assert.That(settings.SuperconductivitySlowExtension, Is.EqualTo(0.5f));
+        Assert.That(settings.SuperconductivityCooldown, Is.EqualTo(6f));
+        Assert.That(settings.FrostSwordAdditionalTargets, Is.EqualTo(2));
+        Assert.That(settings.FrostSwordDamage, Is.EqualTo(10f));
+        Assert.That(settings.FrostSwordSlowPercentage, Is.EqualTo(0.2f));
+        Assert.That(settings.FrostSwordSlowDuration, Is.EqualTo(1.5f));
+        Assert.That(settings.FrostSwordCooldown, Is.EqualTo(6f));
+    }
+
+    [Test]
+    public void IceSynergySlowExtensionRequiresTheExactModifierAndComposes()
+    {
+        GameObject owner = new("Combined Slow Extension Test");
+        try
+        {
+            owner.AddComponent<FishController>();
+            FishMovement movement = owner.AddComponent<FishMovement>();
+            movement.ApplyTimedSpeedModifier(ItemCatalog.FrostSigilId, 0.5f, 10f);
+            Assert.That(movement.ExtendTimedSpeedModifier("ice_synergy.slow", 0.5f), Is.False);
+
+            movement.ApplyTimedSpeedModifier("ice_synergy.slow", 0.75f, 10f);
+            movement.ApplyTimedSpeedModifier("combined_synergy.frost_sword.slow", 0.8f, 1.5f);
+            Assert.That(movement.ExtendTimedSpeedModifier("ice_synergy.slow", 0.5f), Is.True);
+            Assert.That(movement.HasTimedSpeedModifier(ItemCatalog.FrostSigilId), Is.True);
+            Assert.That(movement.HasTimedSpeedModifier("ice_synergy.slow"), Is.True);
+            Assert.That(movement.HasTimedSpeedModifier("combined_synergy.frost_sword.slow"), Is.True);
+
+            movement.InitializeSchoolMovement(0f);
+            Assert.That(movement.HasTimedSpeedModifier("ice_synergy.slow"), Is.False);
+            Assert.That(movement.HasTimedSpeedModifier("combined_synergy.frost_sword.slow"), Is.False);
+        }
+        finally
+        {
+            Object.DestroyImmediate(owner);
+        }
     }
 
     [Test]
