@@ -1,17 +1,17 @@
 # NETBREAK 인수인계
 
-기준일: 2026-09-21. 현재 마일스톤: **G6-C2 복합 시너지 전투 구현 및 Unity 검증 완료. 다음 작업은 버티컬 슬라이스 잔여 기능과 버그 점검**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
+기준일: 2026-09-21. 현재 마일스톤: **G6-C2 복합 시너지 전투 구현·테스트·수동 검증 완료. Windows 빌드 생성과 EXE 실행 확인 완료. 다음 작업은 현재 버전 최소 안정화**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 장기 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경
 - 저장소: `C:\game_dev\unity\NetBreak`, 브랜치 `vertical-slice`.
 - origin: `https://github.com/jeonjiwon1/NetBreak.git`.
-- STEP 10D 작업 전 HEAD: `6e744dada4dc8a21e620fc6075a63e09857e0fab`.
-- 기존 사용자 변경: `Assets/UI/Fonts/NanumGothic-Bold SDF.asset`, `NanumGothic-ExtraBold SDF.asset`, `NanumGothic-Regular SDF.asset`. 보존하며 이번 문서 커밋에 자동 포함하지 않는다.
+- 현재 확인한 HEAD: `99e2031` (`Fix Windows build scene configuration`), `origin/vertical-slice`와 동일하다. 이 커밋은 Windows Build Profile과 Main Scene 등록을 포함한다.
+- 현재 미커밋 사용자 변경: `Assets/DefaultVolumeProfile.asset`, `Assets/Settings/UniversalRP.asset`, `Assets/UniversalRenderPipelineGlobalSettings.asset`, `ProjectSettings/ProjectSettings.asset`, `ProjectSettings/UnityConnectSettings.asset`. 최근 Windows 빌드 검증 과정의 변경으로 보고 이번 문서 작업에서 수정하거나 삭제하지 않는다.
 - Unity `6000.3.11f1`, URP `17.3.0`, Input System `1.19.0`, Test Framework `1.6.0`. `activeInputHandler: 1`.
 - 추적 파일 242개. 주요 구조: Assets/Scripts/{Core,Fish,Gear,UI}, Assets/Editor, Assets/Scenes, Assets/Prefabs/{Fish,Gear}, Assets/UI/Fonts, Packages, ProjectSettings, Docs. Library/Logs/UserSettings는 로컬 Unity 산출물이다.
 
-## 코드에서 확인한 기존 시스템과 연결
-실행 검증 완료를 뜻하지 않는 정적 조사 결과다.
+## 초기 온보딩 당시 코드에서 확인한 시스템과 연결 — 역사적 스냅샷
+아래 표는 성장 시스템 전환 전의 정적 조사 기록이며 현재 구현 설명이 아니다. 실행 검증 완료를 뜻하지 않는다.
 
 | 영역 | 현재 구현 |
 |---|---|
@@ -24,7 +24,7 @@
 | 증강/직업 | PrototypeAugmentManager가 코드 내 후보 풀·3택1·Gold 리롤·카테고리 가중치·Unique HashSet을 관리. Unique: CastNetFullHaul/FishingRodExtraHook/LandingNetChainCapture. PrototypeJobManager가 4종 전직 효과를 컨트롤러에 직접 적용 |
 | UI | PrototypeHUDCanvas는 HUD/시작/공지, PrototypeSelectionCanvas는 증강/직업 선택, PrototypeHUD는 월드 피드백/결과/재시작. BossHUD/MiniBossHUD는 전용 TMP UI |
 
-## 설계 충돌·미구현·주의점
+## 초기 온보딩 당시 설계 충돌·미구현·주의점 — 역사적 스냅샷
 1. `BaitController.HandleInput` Q, `NetPlacementController.HandleModeInput` W, `CastNetController.HandleCastNetInput` E 누름/뗌, `FishingRodPlacementController.HandleModeInput` R로 분산 입력된다. 단순 키 치환만으로 범용 슬롯 구조가 되지 않는다. 배치/재배치 static 상태와 취소/선택 중 입력 차단도 함께 추적해야 한다.
 2. Run 도구 소유/슬롯, 도구 획득, Meta 도구 해금 및 다중 지역 진행 모델을 현재 Scripts에서 찾지 못했다. 컨트롤러가 Scene에 존재하는 것과 도구를 소유하는 것을 구분해야 한다.
 3. 증강은 첫 레벨업부터 즉시 표시되고 후보 풀에는 소유 도구 필터가 없다. 직업 가중치도 소유 여부와 별개다. General enum은 있지만 현재 기본 풀에 General 후보는 없다. 향후 필터 적용 시 3개 미만 후보/리롤/Unique 고갈 처리도 유지해야 한다.
@@ -37,11 +37,11 @@
 
 ## Unity Scene/Inspector 확인 사항
 - 실제 게임 Scene은 `Assets/Scenes/Main.unity`. `Assets/_Recovery/0.unity`와 URP 템플릿도 있으나 게임 진입 Scene으로 가정하지 않는다.
-- **Main의 FishSpawner.bossTestMode=1, miniBossTestMode=0**. 현재 저장된 Scene은 정상 전체 Run 대신 보스 테스트 경로로 시작한다. 전체 Run 검증 전에 Inspector에서 모드를 확인해야 한다. 이번에는 변경하지 않았다.
+- 현재 Main의 `FishSpawner.bossTestMode=0`, `miniBossTestMode=0`이며 정상 Area 1 시퀀스 설정이다. 이는 직렬화 상태 확인이며 현재 G6-C2 전체 Run 성공 검증을 뜻하지 않는다.
 - BossEncounterController의 maxPasses=3, 회유 경로 3개 참조가 지정되어 있다. Augment/Job Manager의 도구 참조와 HUD/선택/결과/보스 패널 참조도 YAML에서 확인했다. Editor에서 Missing 참조나 클릭 동작까지 검증한 것은 아니다.
 - 코드 기본값과 Inspector 값이 다르다. 예: 뜰채 capturePower/radius/cooldown은 Main에서 3/1.1/0.45다. 이번에 수치 변경은 없다.
 - Main의 TMP fontAsset 참조는 NanumGothic-Bold SDF GUID를 사용하며 해당 에셋 atlas population mode는 Dynamic이다. 폰트 3개의 기존 변경은 보존했다.
-- **ProjectSettings/EditorBuildSettings.asset는 존재하지 않는 Assets/Scenes/SampleScene.unity를 등록**한다. Main의 빌드 포함과 결과 화면 재시작(buildIndex 사용)은 Unity Build Profiles/Editor에서 별도로 확인해야 한다. 이번 문서 작업에서는 수정하지 않았다.
+- `99e2031`에서 Windows Build Profile을 추가하고 `ProjectSettings/EditorBuildSettings.asset`의 등록 Scene을 `Assets/Scenes/Main.unity`로 수정했다. 사용자는 이후 Windows 빌드를 생성하고 EXE 실행을 확인했다. 결과 화면 재시작과 새 Run 초기화는 별도 통합 검증 대상으로 남아 있다.
 
 ## 초기 온보딩 변경·검증
 - 새 파일: `AGENTS.md`, `Docs/NETBREAK_DESIGN.md`, `NETBREAK_STATE.md`만 작성. 기존 Docs 대문자 경로를 사용한다.
@@ -104,8 +104,8 @@
 - 기존 좌측 `CastNetText`의 고정 키·준비/쿨다운 표시는 비활성화해 동적 Hotbar를 유일한 플레이어 노출 투망 상태 표시로 사용한다. Gold·포획·어획률·Level·EXP·구간 등 Run HUD는 유지한다.
 - 이번 정리는 코드 구현만 수행했으며 Unity 컴파일, Console, Play Mode 및 자동 검증을 실행하지 않았다. 수동 Unity 검증이 필요하다.
 
-## 다음 정확한 단계
-FULL RUN #2 수동 검증 및 실측.
+## 당시 다음 단계 기록 — 역사적
+당시 예정은 FULL RUN #2 수동 검증 및 실측이었다. 현재 다음 단계는 문서 끝의 최신 기획 변경을 따른다.
 
 ## 최근 변경 — Balance Inspector Pass
 - Area 1 / Vertical Slice에서 반복 조정 가능성이 높은 하드코딩 수치만 Inspector에 노출했다. EXP 단계별 요구량과 Lv4+ 성장식, 낚시꾼의 낚싯대 최대 수·설치비 배율, 투망 기본 최대 충전 수, 구간별 Ambient 스폰 간격·특수어 확률을 각 기존 권위 컴포넌트에 두었다.
@@ -346,7 +346,7 @@ FULL RUN #2 수동 검증 및 실측.
 - 첫 이관 저장에서 `OwnedItemSlot_1~4`의 Hover가 `GrowthItemPage.cs` 내부 런타임 MonoScript 참조로 직렬화되어 Missing Script 4개가 발생했다. `GrowthItemSlotHover`를 독립 `.cs/.meta` 자산으로 분리하고 제한적 복구 메뉴로 정확한 네 컴포넌트의 `m_Script`를 정상 GUID에 재바인딩했다. Main Scene 저장, Scene 재로드와 Unity 재시작 뒤 Missing Script 0개 및 경고 미재발을 확인했다. 기존 `owner`, `slotIndex`, 다른 컴포넌트와 Inspector 값은 보존했다.
 - 단일 `GameCanvas`의 런타임 sibling 순서에서 Item 보상 모달이 `ItemSystemUI`를 최상위로 올린 뒤 복원하지 않아 영구 HUD가 성장 창보다 앞에 남던 문제를 보정했다. 성장 창이 열릴 때만 `SkillTreeUI`를 HUD보다 앞으로 올리고 닫으면 원래 순서로 복원하며, 외부 보상 모달은 계속 최상위와 입력 차단을 유지한다. 아이템·속성 Tooltip은 표시 중 `TreePanel` 최상위로 올려 본문·HUD보다 앞에 표시하되 기존 경계 보정, raycast 비차단과 숨김 규칙을 유지한다.
 - Unity 6000.3.11f1에서 G6-C1 UI 이관과 Main Scene 저장, Scene 재로드·Unity 재시작, Console 컴파일 오류 없음, `ItemProgressionTests` 115/115 통과를 확인했다. 수동 검증으로 기존 Q/W/E/R Tree·노드 Tooltip, 스킬 트리/아이템 페이지, 4칸과 빈 슬롯, 슬롯 Hover, 아이템 획득·강화 실시간 갱신, 단일 속성 Tooltip, 복합 시너지 카드/해금 표시/활성화 차단, 새 Run 초기화, 상시 HUD·성장 창·Tooltip 렌더링 순서, 보상 모달 우선순위와 입력 차단을 확인했다. G6-C1 검증은 완료됐으며 commit/push는 아직 수행하지 않았다.
-- 다음 구현 단계는 G6-C2다. 뇌검 공명·초전도·빙검 공명의 실제 전투 효과, 독립 시너지 이벤트 연결, 효과별 Inspector 튜닝값과 정상 자동 활성·수동 교체는 아직 미구현이다. G6-C1의 `CombinedSynergyCatalog.CombatEffectsImplemented=false` 게이트와 비활성 확인 버튼을 G6-C2 검증 전까지 유지한다.
+- 당시 다음 구현 단계는 G6-C2였다. 뇌검 공명·초전도·빙검 공명의 실제 전투 효과, 독립 시너지 이벤트 연결, 효과별 Inspector 튜닝값과 정상 자동 활성·수동 교체는 이 시점에는 아직 미구현이었다. G6-C1의 `CombinedSynergyCatalog.CombatEffectsImplemented=false` 게이트와 비활성 확인 버튼을 G6-C2 검증 전까지 유지했다.
 
 ## 최근 변경 — G6-C2 복합 시너지 전투
 
@@ -359,4 +359,16 @@ FULL RUN #2 수동 검증 및 실측.
 - 전도 표식은 Fish instance ID와 `LifecycleVersion`으로 구분한다. 포획·도주·Pool 반환 시 개체 상태와 빙검 modifier를 정리하고, Run 종료·새 Run에서 모든 표식·내부 쿨다운·임시 modifier를 초기화한다. 기존 Run 상태의 활성 조합과 교체 쿨다운은 Area 상태와 분리되어 있으나, 실제 해역 이동을 포함한 통합 Run 검증은 아직 완료하지 않았다.
 - 변경 파일은 `Assets/Scripts/Core/CombinedSynergy.cs`, `ItemEffectManager.cs`, `Assets/Scripts/Fish/FishMovement.cs`, `Assets/Scripts/UI/GrowthItemPage.cs`, `Assets/Editor/Tests/ItemProgressionTests.cs`다. 기존 115개를 삭제·Skip하지 않고 G6-C2 결정론적 테스트 5개를 추가했다.
 - Unity 6000.3.11f1에서 Runtime/Editor 컴파일 성공, Console의 새로운 문제 없음, EditMode `ItemProgressionTests` 120/120 통과를 확인했다. Unity 수동 검증으로 복합 시너지 자동 활성·수동 교체 UI, 대표 전투 효과, 기존 단일 속성 시너지와 UI 회귀를 확인했다. 정상 Area 1 아이템 미지급 원칙은 유지했다.
-- G6-C2 구현과 지정 검증은 완료됐다. 실제 해역 이동과 향후 전체 Run 통합 검증은 완료로 기록하지 않으며, 다음 작업은 버티컬 슬라이스 잔여 기능과 버그 점검이다. 문서 갱신 뒤 commit/push는 사용자가 수행한다.
+- G6-C2 구현과 지정 검증은 완료됐다. 실제 해역 이동과 향후 전체 Run 통합 검증은 완료로 기록하지 않는다. 당시 다음 작업은 버티컬 슬라이스 잔여 기능과 버그 점검이었으며, 현재 순서는 아래 최신 기획 변경을 따른다. 해당 문서 갱신 뒤 commit/push는 사용자가 수행했다.
+
+## 최근 기획 변경 — 플레이타임·밸런스·개발 순서
+
+- 한 Run의 기존 약 30분 목표를 폐기했다. 30분·45분·60분 같은 고정 목표나 절대 상한을 두지 않으며 1시간 이상도 허용한다. 특정 시간을 채우려고 반복·대기·어군 간격·전투 시간·Boss Resistance를 억지로 늘리지 않는다. 과거 Full Run #1~#3의 10분대 실측은 당시 버전의 역사적 기록으로 그대로 보존한다.
+- 한 Run은 조업 시작부터 결과 화면까지다. 정식 게임은 항상 Area 1에서 시작해 해금된 마지막 해역까지 순차 진행하며 해역 이동은 새 Run이 아니다. 개발 단계마다 현재 구현된 해역 수를 기준으로 개별 해역 시간과 전체 Run 시간을 구분해 기록한다. 최우선 평가는 성장 밀도, 전투 변화, 전략적 판단과 지루함 여부다.
+- 밸런싱을 분리했다. 지금은 진행 불가, 선택 무력화, 무한 피해 재귀·보상 중복·자원 증식, 무조작 해결, 실제로 확인된 심각한 페이싱 같은 구조적 문제를 처리한다. 아이템별 최종 피해, 도구 DPS, 상점 가격·확률, 전체 경제·난이도·플레이타임의 정밀 조정은 콘텐츠 확장 이후 수행한다. 현재 수치는 기능 검증용 임시값이다.
+- G10 Area 1 Balance는 유지하되 Area 1의 최종 수치 확정이 아니라 기본 플레이 가능성, 대표 Core/Partner 빌드 성립, MiniBoss/Boss 진행과 명백한 구조적 문제 확인 단계로 재정의했다.
+- 최신 개발 순서는 `현재 버전 최소 안정화 → 최소 온보딩·전투 피드백 → 소규모 외부 플레이테스트 → G7/G8 성장·경제 연결 → Area 2 제작 및 확장성 검증 → 점진적 도구·아이템/Area 3~6 확장 → 충분한 콘텐츠 이후 전체 정밀 밸런스·Meta·Hard Mode·출시 준비`다.
+- G9 Legacy 정리는 관련 시스템 대체와 회귀가 확인된 범위만 수행한다. 현재 콘텐츠 제작을 막지 않는 휴면 코드의 대규모 정리는 우선하지 않는다.
+- 현재 최소 안정화의 통과 조건은 G6-C2 버전 대표 Area 1 성공 Run, MiniBoss/Boss 주요 실패 경로, 결과 화면 재시작, 새 Run 성장 초기화, 치명적인 입력·모달·참조 오류 확인이다. 여러 Full Run을 반복하는 정밀 밸런스는 현재 통과 조건이 아니다.
+- Windows Build Profile과 Main Scene 등록 수정은 커밋 `99e2031`로 `origin/vertical-slice`에 반영되어 있다. 사용자는 Windows 빌드 생성과 EXE 실행을 확인했다. 현재 미커밋 URP·ProjectSettings 변경 5개는 빌드 검증 과정의 사용자 변경이며 이번 문서 개정에서 보존했다. EXE 실행 확인을 Area 1 성공 Run, 결과 화면 재시작 또는 새 Run 초기화 검증으로 확대 해석하지 않는다.
+- 이번 작업은 기획 문서 개정만 수행했다. Unity, 게임 코드, Scene/Prefab, Inspector, Build Profile과 ProjectSettings를 수정하거나 새 테스트를 실행하지 않았다. 문서 commit/push는 사용자가 수행한다.
