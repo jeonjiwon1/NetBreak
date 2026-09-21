@@ -27100,6 +27100,21 @@ MonoBehaviour:
     frostBurstSlowPercentage: 0.3
     frostBurstSlowDuration: 3
     frostBurstVisualDuration: 0.7
+  combinedSynergyCombat:
+    conductiveMarkDuration: 8
+    thunderSwordPrimaryDamage: 18
+    thunderSwordAdditionalTargets: 2
+    thunderSwordAdditionalDamage: 8
+    thunderSwordCooldown: 8
+    superconductivityAdditionalTargets: 2
+    superconductivityDamage: 8
+    superconductivitySlowExtension: 0.5
+    superconductivityCooldown: 6
+    frostSwordAdditionalTargets: 2
+    frostSwordDamage: 10
+    frostSwordSlowPercentage: 0.2
+    frostSwordSlowDuration: 1.5
+    frostSwordCooldown: 6
   stormOrbMaximumLevel: 5
   stormOrbUnlimitedMaximumLevel: 0
   stormOrbDamageBonusPerLevel: 0.2

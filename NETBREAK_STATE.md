@@ -1,12 +1,12 @@
 # NETBREAK 인수인계
 
-기준일: 2026-09-21. 현재 마일스톤: **G6-C2 복합 시너지 전투 구현·테스트·수동 검증 완료. Windows 빌드 생성과 EXE 실행 확인 완료. 다음 작업은 현재 버전 최소 안정화**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 장기 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
+기준일: 2026-09-21. 현재 마일스톤: **G6-C2와 현재 버전 최소 안정화 수동 검증 완료. UX-F1 오징어 먹물 방해 시각화 구현·자동 검증 완료, Unity 수동 시각 검증 대기**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 장기 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경
 - 저장소: `C:\game_dev\unity\NetBreak`, 브랜치 `vertical-slice`.
 - origin: `https://github.com/jeonjiwon1/NetBreak.git`.
-- 현재 확인한 HEAD: `99e2031` (`Fix Windows build scene configuration`), `origin/vertical-slice`와 동일하다. 이 커밋은 Windows Build Profile과 Main Scene 등록을 포함한다.
-- 현재 미커밋 사용자 변경: `Assets/DefaultVolumeProfile.asset`, `Assets/Settings/UniversalRP.asset`, `Assets/UniversalRenderPipelineGlobalSettings.asset`, `ProjectSettings/ProjectSettings.asset`, `ProjectSettings/UnityConnectSettings.asset`. 최근 Windows 빌드 검증 과정의 변경으로 보고 이번 문서 작업에서 수정하거나 삭제하지 않는다.
+- 현재 확인한 HEAD: `c6dd1b5` (`Revise development roadmap and playtime goals`), `origin/vertical-slice`와 동일하다. Windows Build Profile과 Main Scene 등록은 앞선 `99e2031`에 포함되어 있다.
+- UX-F1 시작 전 확인한 미커밋 사용자 변경: `Assets/DefaultVolumeProfile.asset`, `Assets/Scenes/Main.unity`, `Assets/Settings/UniversalRP.asset`, `Assets/UniversalRenderPipelineGlobalSettings.asset`, `ProjectSettings/ProjectSettings.asset`, `ProjectSettings/UnityConnectSettings.asset`. 최근 Windows 빌드·수동 검증 과정의 변경으로 보고 UX-F1에서 수정하거나 삭제하지 않았다.
 - Unity `6000.3.11f1`, URP `17.3.0`, Input System `1.19.0`, Test Framework `1.6.0`. `activeInputHandler: 1`.
 - 추적 파일 242개. 주요 구조: Assets/Scripts/{Core,Fish,Gear,UI}, Assets/Editor, Assets/Scenes, Assets/Prefabs/{Fish,Gear}, Assets/UI/Fonts, Packages, ProjectSettings, Docs. Library/Logs/UserSettings는 로컬 Unity 산출물이다.
 
@@ -372,3 +372,25 @@
 - 현재 최소 안정화의 통과 조건은 G6-C2 버전 대표 Area 1 성공 Run, MiniBoss/Boss 주요 실패 경로, 결과 화면 재시작, 새 Run 성장 초기화, 치명적인 입력·모달·참조 오류 확인이다. 여러 Full Run을 반복하는 정밀 밸런스는 현재 통과 조건이 아니다.
 - Windows Build Profile과 Main Scene 등록 수정은 커밋 `99e2031`로 `origin/vertical-slice`에 반영되어 있다. 사용자는 Windows 빌드 생성과 EXE 실행을 확인했다. 현재 미커밋 URP·ProjectSettings 변경 5개는 빌드 검증 과정의 사용자 변경이며 이번 문서 개정에서 보존했다. EXE 실행 확인을 Area 1 성공 Run, 결과 화면 재시작 또는 새 Run 초기화 검증으로 확대 해석하지 않는다.
 - 이번 작업은 기획 문서 개정만 수행했다. Unity, 게임 코드, Scene/Prefab, Inspector, Build Profile과 ProjectSettings를 수정하거나 새 테스트를 실행하지 않았다. 문서 commit/push는 사용자가 수행한다.
+
+## 최신 검증 — G6-C2 Area 1 성공 Run과 오징어 낚싯대 방해 조사
+
+- 사용자 수동 Full Run 실측은 10분 36초, Core 낚싯대 / Partner 투망, 최종 Level 8, Gold 2895, 어획률 94.3%다. Boss 포획, 결과 화면, 재시작이 정상이고 Console Error는 0개였다. 이는 현재 Area 1 대표 성공 경로의 실측 기록이며 고정 플레이타임 목표나 최종 밸런스 판정이 아니다.
+- 같은 버전에서 재시작과 새 Run 상태 초기화가 정상임을 확인했다. 추가 수동 검증에서 MiniBoss 도주 시 Run Failure·등급 F·재시작, Boss 1~2회 도주 뒤 다음 회유 계속, 3회 도주 시 Run Failure·등급 F·재시작이 모두 정상이고 Console Error는 0개였다. 검증 뒤 Boss/MiniBoss 테스트 모드도 OFF로 복구했다. 따라서 현재 버전 최소 안정화의 대표 성공 경로와 주요 실패·재시작 경로는 확인 완료다.
+- 오징어 실제 데이터는 최초 먹물 2초, 이후 간격 5초, 반경 2.5, 방해 지속 2.5초다. `SquidController`는 먹물 시점에 반경 안 Collider의 부모 `FishingRodController`를 중복 제거해 `DisableTemporarily`로 전달한다. MiniBoss 전후, 성장 상태, E 스킬 또는 Tree 상태에 따라 대상을 제외하거나 방해 규칙을 바꾸는 분기는 없다.
+- 낚싯대는 먹물 방해 중 `Update` 초입에서 비작동 상태를 확인해 대상을 지우고 공격 타이머 감소와 공격 실행 전에 반환한다. 방해 종료 시 공격 타이머를 0으로 만들어 즉시 공격을 재개한다. E `빠른 릴링`은 공격 간격 배율만, Tree 강화는 위력·범위·설치 수·비용만 변경하므로 먹물 비활성 조건을 우회하지 않는다.
+- 여러 오징어의 방해 종료 시각은 `Mathf.Max`로 합쳐져 짧은 후속 방해가 기존 긴 방해를 줄이지 않는다. 재배치 차단과 먹물 차단도 독립 조건으로 합성된다. Fish Pool은 `Initialize(data)` 후 활성화하므로 재사용 오징어의 `OnEnable`에서 현재 데이터의 최초 먹물 지연으로 초기화된다.
+- Unity 6000.3.11f1 임시 EditMode 결정론적 테스트 5개가 5/5 통과했다: 반경 안/밖 대상 선택, 방해 중 실제 공격 중지와 만료 후 복구, MiniBoss 완료 상태에서 Tree 강화·E 빠른 릴링과의 조합, 여러 오징어의 종료 시각 합성, 재배치 차단 합성, Pool 재사용 초기화를 검증했다. 제품 코드 결함은 재현되지 않아 C#을 수정하지 않았고 임시 테스트 자산도 제거했다.
+- 체감상 방해가 보이지 않을 수 있는 근거는 작은 반경, 최초 발동 전 2초 지연, 발동 전에 오징어가 포획될 가능성, 2.5초의 짧은 지속시간, 별도 먹물 상태 UI/VFX 없이 낚싯대 Sprite가 어두워지고 대상선만 사라지는 현재 피드백이다. 후반 강화 낚싯대의 빠른 포획과 즉시 공격 복구도 관찰을 어렵게 할 수 있다.
+- 최소 수동 후속 검증은 MiniBoss 이후 오징어가 낚싯대 2.5 반경 안에 2초 이상 생존하도록 두고, 낚싯대 색상·상태 문구·대상선·실제 Resistance 감소가 2.5초 동안 함께 멈췄다가 복구되는지 한 번 관찰하는 것이다. 이 시각 확인은 아직 완료로 기록하지 않는다.
+
+## 최근 변경 — UX-F1 오징어 먹물 방해 시각화
+
+- `FishingRodController`가 기존 `specialDisabledUntil`을 단일 진실 공급원으로 사용해 실제 먹물 방해 중인 낚싯대만 어둡게 하고 바로 위에 TextMeshPro 문구 `먹물 방해`를 표시한다. 표시용 독립 타이머나 별도 방해 상태는 추가하지 않았으며 만료·연장·공격 중지와 표시가 같은 종료 시각을 따른다.
+- 상태 표시는 각 낚싯대 아래에 한 번만 생성해 재사용하고 매 프레임 오브젝트나 문자열을 만들지 않는다. 로드된 `NanumGothic-Bold SDF`를 우선 사용하고 찾지 못할 때 TMP 기본 글꼴로 대체한다. Scene/Prefab/YAML과 기존 Inspector 직렬화 값은 수정하지 않았고 Editor 메뉴도 필요하지 않다.
+- 먹물 방해와 재배치 비작동 상태는 독립적으로 합성한다. 재배치 중에는 기존처럼 낚싯대를 어둡게 하지만 `먹물 방해` 문구를 거짓 표시하지 않는다. 렌더러의 원래 색상을 보존하고 외부에서 바뀐 색상도 정상 기준색으로 갱신해 흰색으로 강제 복원하거나 다른 시각 상태를 지우지 않는다.
+- 여러 오징어는 기존 `Mathf.Max` 종료 시각을 공유하므로 문구도 가장 늦은 실제 방해 만료까지 하나만 유지된다. 방해를 건 오징어가 먼저 포획되어도 남은 방해 시간은 유지한다. 낚싯대 비활성화, Run 종료, Scene 재시작 시 문구를 숨기고 원래 색상을 복원하며 새 Run의 새 낚싯대는 방해 상태 없이 시작한다.
+- 시각 조정값은 기존 `FishingRodController`의 `Ink Interference Visual / 먹물 방해 시각`에만 추가했다. 기본값은 어둡게 할 색상 검정, 혼합 강도 0.65, 상태 글자색 RGBA `(0.75, 0.9, 1, 1)`, 로컬 위치 `(0, 1.6, 0)`, 글자 크기 3.5다. 오징어 범위·주기·지속시간과 낚싯대 위력·공격 간격·범위 등 Gameplay 수치는 변경하지 않았다.
+- 변경 파일은 `Assets/Scripts/Gear/FishingRodController.cs`, 신규 `Assets/Editor/Tests/FishingRodInterferenceVisualTests.cs`와 `.meta`, `NETBREAK_STATE.md`다. UX-F1 시작 전 사용자 변경 파일은 그대로 보존했다.
+- Unity 6000.3.11f1에서 Runtime 및 Editor/Test 스크립트 컴파일에 성공했다. 신규 EditMode 결정론적 테스트 9/9와 기존 `ItemProgressionTests` 120/120이 각각 통과했으며, 최종 전체 EditMode 회귀도 129/129 통과했다. 신규 테스트는 표시 시작·종료, 공격 중지 일치, 여러 오징어 연장, 비대상 낚싯대, 비활성화 정리, Run 종료·새 Run, E 빠른 릴링, 재배치와 외부 원래 색상 보존을 검증한다. 기존 테스트는 삭제하거나 Skip하지 않았다.
+- Unity Play Mode에서 글자 위치·크기·가독성, 실제 전투 중 어두워짐과 문구, 여러 낚싯대별 표시, 만료 후 시각·공격 복귀, Run 종료·재시작 뒤 잔상 부재는 아직 수동 확인하지 않았다. 이 확인 전에는 UX-F1을 실제 시각 검증 완료로 기록하지 않는다. 확인 뒤 다음 계획 단계는 UX-F2 아이템/시너지 전투 피드백이며 아직 구현하지 않았다.
