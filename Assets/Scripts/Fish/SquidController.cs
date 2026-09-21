@@ -138,6 +138,29 @@ public class SquidController : MonoBehaviour
                 );
             }
         }
+
+        ItemEffectManager vfx =
+            ItemEffectManager.Instance;
+
+        if (vfx == null)
+        {
+            return;
+        }
+
+        Vector2 origin =
+            transform.position;
+
+        foreach (FishingRodController rod
+                 in affectedRods)
+        {
+            if (rod != null)
+            {
+                vfx.ShowSquidInkAttack(
+                    origin,
+                    rod.transform.position
+                );
+            }
+        }
     }
 
     private void OnDrawGizmosSelected()

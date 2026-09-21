@@ -666,10 +666,7 @@ public class FishingRodController : MonoBehaviour
             }
         }
 
-        cachedStatusFont =
-            TMP_Settings.defaultFontAsset;
-
-        return cachedStatusFont;
+        return TMP_Settings.defaultFontAsset;
     }
 
     private void SetInterferenceStatusVisible(
@@ -682,6 +679,22 @@ public class FishingRodController : MonoBehaviour
 
         GameObject statusObject =
             interferenceStatusText.gameObject;
+
+        if (visible &&
+            !statusObject.activeSelf &&
+            (interferenceStatusText.font == null ||
+             interferenceStatusText.font.name !=
+             PreferredStatusFontName))
+        {
+            TMP_FontAsset resolvedFont =
+                ResolveStatusFont();
+
+            if (resolvedFont != null)
+            {
+                interferenceStatusText.font =
+                    resolvedFont;
+            }
+        }
 
         if (statusObject.activeSelf != visible)
         {

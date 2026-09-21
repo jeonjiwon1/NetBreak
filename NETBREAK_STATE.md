@@ -1,12 +1,12 @@
 # NETBREAK 인수인계
 
-기준일: 2026-09-21. 현재 마일스톤: **G6-C2와 현재 버전 최소 안정화 수동 검증 완료. UX-F1 오징어 먹물 방해 시각화 구현·자동 검증 완료, Unity 수동 시각 검증 대기**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 장기 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
+기준일: 2026-09-22. 현재 마일스톤: **G6-C2와 현재 버전 최소 안정화 수동 검증 완료. UX-F1 구현·자동·수동 검증 완료. UX-F2-A 전투 VFX 구현·자동 검증 완료, Unity 수동 시각 검증 대기**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 장기 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경
 - 저장소: `C:\game_dev\unity\NetBreak`, 브랜치 `vertical-slice`.
 - origin: `https://github.com/jeonjiwon1/NetBreak.git`.
-- 현재 확인한 HEAD: `c6dd1b5` (`Revise development roadmap and playtime goals`), `origin/vertical-slice`와 동일하다. Windows Build Profile과 Main Scene 등록은 앞선 `99e2031`에 포함되어 있다.
-- UX-F1 시작 전 확인한 미커밋 사용자 변경: `Assets/DefaultVolumeProfile.asset`, `Assets/Scenes/Main.unity`, `Assets/Settings/UniversalRP.asset`, `Assets/UniversalRenderPipelineGlobalSettings.asset`, `ProjectSettings/ProjectSettings.asset`, `ProjectSettings/UnityConnectSettings.asset`. 최근 Windows 빌드·수동 검증 과정의 변경으로 보고 UX-F1에서 수정하거나 삭제하지 않았다.
+- 현재 확인한 HEAD: `5b595e0` (`Add squid ink interference visual feedback`), `origin/vertical-slice`와 동일하다. UX-F1 코드·테스트·문서가 이 커밋에 포함되어 있다. Windows Build Profile과 Main Scene 등록은 앞선 `99e2031`에 포함되어 있다.
+- UX-F2-A 시작 전 확인한 미커밋 사용자 변경: `Assets/DefaultVolumeProfile.asset`, `Assets/Settings/UniversalRP.asset`, `Assets/UniversalRenderPipelineGlobalSettings.asset`, `ProjectSettings/ProjectSettings.asset`, `ProjectSettings/UnityConnectSettings.asset`. 최근 Windows 빌드·수동 검증 과정의 변경으로 보고 UX-F2-A에서 수정하거나 삭제하지 않았다.
 - Unity `6000.3.11f1`, URP `17.3.0`, Input System `1.19.0`, Test Framework `1.6.0`. `activeInputHandler: 1`.
 - 추적 파일 242개. 주요 구조: Assets/Scripts/{Core,Fish,Gear,UI}, Assets/Editor, Assets/Scenes, Assets/Prefabs/{Fish,Gear}, Assets/UI/Fonts, Packages, ProjectSettings, Docs. Library/Logs/UserSettings는 로컬 Unity 산출물이다.
 
@@ -393,4 +393,17 @@
 - 시각 조정값은 기존 `FishingRodController`의 `Ink Interference Visual / 먹물 방해 시각`에만 추가했다. 기본값은 어둡게 할 색상 검정, 혼합 강도 0.65, 상태 글자색 RGBA `(0.75, 0.9, 1, 1)`, 로컬 위치 `(0, 1.6, 0)`, 글자 크기 3.5다. 오징어 범위·주기·지속시간과 낚싯대 위력·공격 간격·범위 등 Gameplay 수치는 변경하지 않았다.
 - 변경 파일은 `Assets/Scripts/Gear/FishingRodController.cs`, 신규 `Assets/Editor/Tests/FishingRodInterferenceVisualTests.cs`와 `.meta`, `NETBREAK_STATE.md`다. UX-F1 시작 전 사용자 변경 파일은 그대로 보존했다.
 - Unity 6000.3.11f1에서 Runtime 및 Editor/Test 스크립트 컴파일에 성공했다. 신규 EditMode 결정론적 테스트 9/9와 기존 `ItemProgressionTests` 120/120이 각각 통과했으며, 최종 전체 EditMode 회귀도 129/129 통과했다. 신규 테스트는 표시 시작·종료, 공격 중지 일치, 여러 오징어 연장, 비대상 낚싯대, 비활성화 정리, Run 종료·새 Run, E 빠른 릴링, 재배치와 외부 원래 색상 보존을 검증한다. 기존 테스트는 삭제하거나 Skip하지 않았다.
-- Unity Play Mode에서 글자 위치·크기·가독성, 실제 전투 중 어두워짐과 문구, 여러 낚싯대별 표시, 만료 후 시각·공격 복귀, Run 종료·재시작 뒤 잔상 부재는 아직 수동 확인하지 않았다. 이 확인 전에는 UX-F1을 실제 시각 검증 완료로 기록하지 않는다. 확인 뒤 다음 계획 단계는 UX-F2 아이템/시너지 전투 피드백이며 아직 구현하지 않았다.
+- UX-F1 코드와 자동 테스트는 커밋 `5b595e0`에 포함되어 있고, 사용자는 그 이후 Unity Play Mode에서 오징어 먹물 방해 시각화를 수동 검증 완료했다. UX-F2-A 전체 회귀 중 먼저 생성된 낚싯대가 TMP 기본 글꼴을 정적 캐시에 고정할 수 있던 실행 순서 경계를 추가로 발견해 기본 글꼴은 캐시하지 않고 표시 시 NanumGothic-Bold SDF를 다시 확인하도록 최소 보정했다.
+
+## 최근 변경 — UX-F2-A 전투 VFX
+
+- 기존 G6-B1/B2에는 `ItemEffectManager`가 매 발동마다 LineRenderer 오브젝트를 생성·파괴하는 전기 선, 검격, 냉기 원형 연출을 이미 가지고 있었다. 실제 피해 이벤트 연결과 단일 시너지 지속시간 Inspector 값은 재사용하고, 중복 전역 Manager나 새 공격 이벤트를 만들지 않았다.
+- 오징어 먹물이 실제 낚싯대를 방해한 뒤 오징어→낚싯대 검보라색 발사 궤적과 적중 강조를 표시한다. 모든 `DisableTemporarily` 판정을 먼저 끝낸 뒤 VFX를 호출하며 대상이 없으면 연출도 만들지 않는다. UX-F1의 어두움·`먹물 방해` 문구·여러 오징어 종료 시각 연장은 그대로 유지한다.
+- 전기 연쇄 방전은 실제 Resistance 피해가 성공한 대상만 궤적과 적중 강조에 포함한다. 순간 감전은 실제 `electric_synergy.stun` 이동 modifier가 유지되는 동안 대상을 따라가는 전기 상태 표시를 사용하고 만료·포획·Pool 반환 시 제거한다. 천둥 폭풍은 실제 피해 성공 대상에만 더 굵은 낙뢰와 적중 강조를 표시한다.
+- 검 영혼 참격, 추가 검, 검의 비는 기존 성공한 `DealSynergyDamage` 위치를 사용하면서 색상·방향·다중 검격 형태를 서로 구분했다. 기존 적중 카운터, 추가 대상 선정, 검의 비 카운터와 복합 시너지 연결은 변경하지 않았고 VFX는 추가 공격 이벤트를 발행하지 않는다.
+- 얼음 냉기 파동과 서리 폭발은 실제 둔화·빙결 또는 피해가 적용된 대상이 하나 이상 있을 때만 포획 지점과 기존 반경으로 표시한다. 서리 폭발은 톱니형 확산으로 냉기 파동과 구분한다. 순간 빙결은 실제 `ice_synergy.freeze` modifier 동안만 대상을 따라가며 다른 둔화·감전·그물·R 제어를 지우지 않는다.
+- 새 `CombatVfxPool`은 기존 `ItemEffectManager`가 소유하는 작은 재사용 풀이다. LineRenderer와 Sprites/Default Material을 재사용하고 scaled `Time.deltaTime`으로 수명을 줄여 Pause 중 정지한다. 활성 표시 기본 상한은 48개이며 상한에서는 가장 오래된 임시 VFX만 재사용해 전투 판정은 제한하지 않고 감전·빙결 지속 표시는 재활용 대상으로 삼지 않는다. Run 종료·Manager 비활성화·Scene 재시작에는 모두 비활성화하고 Pool 개체의 Fish lifecycle 변경에도 상태 표시를 정리한다.
+- `ItemEffectManager > Combat VFX / 전투 시각 효과`의 코드 기본값은 활성 표시 상한 48, 선 굵기 배율 1, 크기 배율 1, 먹물 궤적 0.22초, 먹물 적중 0.3초, 공통 적중 강조 0.22초와 효과별 색상이다. 기존 Main 직렬화 값인 연쇄 방전 0.45초, 천둥 폭풍 0.65초, 영혼 참격 0.45초, 검의 비 0.65초, 냉기 파동 0.5초, 서리 폭발 0.7초를 유지했다. Scene/Prefab/YAML과 Gameplay 수치는 수정하지 않았다.
+- 변경 파일은 `Assets/Scripts/Core/CombatVfxPool.cs`와 `.meta`, `ItemEffectManager.cs`, `Assets/Scripts/Fish/SquidController.cs`, `Assets/Scripts/Gear/FishingRodController.cs`, 신규 `Assets/Editor/Tests/CombatVfxTests.cs`와 `.meta`, `NETBREAK_STATE.md`다.
+- Unity 6000.3.11f1에서 Runtime 및 Editor/Test 컴파일에 성공했다. 신규 UX-F2-A EditMode 테스트 10/10과 기존 테스트 129개를 합친 전체 회귀 139/139가 통과했다. 실제 이벤트·대상 없음·대상 위치 일치·Collider 중복 제거·여러 오징어·상태 만료와 Pool 반환·Pause·Run 종료·풀 상한과 재사용·Resistance 피해·추가 피해 재귀 방지를 검증했으며 삭제·Skip한 기존 테스트는 없다.
+- Unity Play Mode에서 색상·굵기·크기·가독성, 대규모 어군에서의 화면 밀도와 성능, 실제 개발용 아이템 강화 상태의 각 단계 연출, Pause·Run 종료·재시작의 시각 잔상은 아직 수동 검증하지 않았다. UX-F2-A를 실제 시각 품질 검증 완료로 기록하지 않는다. UX-F2-B의 구체 범위는 아직 확정된 문서가 없으므로 이번 작업에서 추측하거나 선행 구현하지 않았다.
