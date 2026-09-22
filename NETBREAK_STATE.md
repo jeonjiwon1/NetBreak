@@ -407,3 +407,18 @@
 - 변경 파일은 `Assets/Scripts/Core/CombatVfxPool.cs`와 `.meta`, `ItemEffectManager.cs`, `Assets/Scripts/Fish/SquidController.cs`, `Assets/Scripts/Gear/FishingRodController.cs`, 신규 `Assets/Editor/Tests/CombatVfxTests.cs`와 `.meta`, `NETBREAK_STATE.md`다.
 - Unity 6000.3.11f1에서 Runtime 및 Editor/Test 컴파일에 성공했다. 신규 UX-F2-A EditMode 테스트 10/10과 기존 테스트 129개를 합친 전체 회귀 139/139가 통과했다. 실제 이벤트·대상 없음·대상 위치 일치·Collider 중복 제거·여러 오징어·상태 만료와 Pool 반환·Pause·Run 종료·풀 상한과 재사용·Resistance 피해·추가 피해 재귀 방지를 검증했으며 삭제·Skip한 기존 테스트는 없다.
 - Unity Play Mode에서 색상·굵기·크기·가독성, 대규모 어군에서의 화면 밀도와 성능, 실제 개발용 아이템 강화 상태의 각 단계 연출, Pause·Run 종료·재시작의 시각 잔상은 아직 수동 검증하지 않았다. UX-F2-A를 실제 시각 품질 검증 완료로 기록하지 않는다. UX-F2-B의 구체 범위는 아직 확정된 문서가 없으므로 이번 작업에서 추측하거나 선행 구현하지 않았다.
+
+### UX-F2-A 수동 확인 보충
+
+- 사용자는 UX-F2-A Play Mode에서 개별 기능이 대체로 정상이고 명백한 전투 오류가 없음을 확인했다. 여러 표시가 동시에 발생할 때 각 효과를 정확히 구분할 수 있는지와 화면 가독성은 아직 확인 완료로 기록하지 않는다.
+
+## 최근 변경 — UX-F2-B 아이템·복합 시너지 VFX
+
+- 개별 아이템 6종을 기존 실제 발동 지점에 연결했다. 폭풍 구슬은 단일 대상 위 짧은 낙뢰와 작은 적중, 축전 코일은 마지막 적중 위치에서 실제 추가 피해 대상별 짧은 방전과 적중, 유령 검집은 집중 검격, 자동 검진은 하강 검과 피격, 서리 인장은 실제 `frost_sigil` 둔화 동안 작은 서리 문양, 빙결 결정은 실제 피해 대상의 결정 피격과 실제 `frost_crystal` 둔화 동안 별도 결정 상태 표시를 사용한다. 축전 코일의 추가 대상이 없으면 가짜 방전이 생기지 않으며 모든 순간 VFX는 실제 피해 성공 후에만 생성한다.
+- 뇌검 공명은 실제 전도 표식 런타임과 동기화된 단일 상태 표시를 사용한다. 같은 물고기 재부여는 오브젝트를 중복 생성하지 않고 실제 만료시각만 갱신하며, 표식 소비·만료·포획·도주·Pool 재사용·활성 조합 변경·Run 종료 시 즉시 정리한다. 실제 표식 소비와 원본 추가 피해 성공 때만 번개+검격 결합 폭발을 표시하고 실제 주변 피해 대상에만 별도 공명 타격을 표시한다.
+- 초전도는 기존 `hadIceSynergySlow`와 내부 쿨다운을 통과한 뒤 실제 추가 피해 대상 방향으로만 차가운 번개와 적중을 표시한다. 빙검 공명은 기존 얼음 시너지 제어와 내부 쿨다운을 통과한 뒤 실제 추가 피해 대상에만 냉기 검격 전파와 피격을 표시한다. VFX는 `CombatDamageContext`를 만들지 않으며 기존 추가 피해 재귀 차단, 대상 수·범위·피해·둔화·쿨다운을 변경하지 않는다.
+- 기존 `CombatVfxPool`의 LineRenderer, 단일 Sprites/Default 공용 Material, scaled `Time.deltaTime`, 활성 상한 기본 48과 지속 상태 보호를 재사용했다. 풀 포화 시 `복합 시너지 > 단일 시너지 > 개별 아이템 > 일반 반복 피격` 순서로 낮은 우선순위의 임시 표시만 대체한다. 표시를 생략해도 전투 피해·포획·보상은 계속 처리되며 매 프레임 전체 Fish 탐색이나 개별 Canvas/TMP 생성은 추가하지 않았다.
+- `CombatVfxSettings`에 아이템 6종 및 복합 시너지 3종 색상, 복합 발동 기본 0.42초와 추가 적중 기본 0.28초를 추가했다. 기존 활성 상한 48, 선 굵기·크기 배율 1과 아이템별 기존 VFX 지속시간, 모든 Gameplay Inspector 값은 유지했다. 상태형 표시는 VFX 지속시간이 아니라 실제 modifier/전도 표식 수명을 따른다. Scene/Prefab/YAML과 별도 Editor 설정 메뉴는 추가하거나 수정하지 않았다.
+- 변경 파일은 `Assets/Scripts/Core/CombatVfxPool.cs`, `Assets/Scripts/Core/ItemEffectManager.cs`, `Assets/Editor/Tests/CombatVfxTests.cs`, `NETBREAK_STATE.md`다. 신규 UX-F2-B EditMode 테스트 10개를 추가해 아이템 6종의 실제 대상/피해/상태 만료, 대상 없음, 복합 시너지 Active ID, 전도 표식 재부여·소비·만료·Pool 재사용·조합 변경 정리, 실제 공명/초전도/빙검 추가 대상, 내부 쿨다운, 풀 포화 우선순위를 검증했다. 기존 테스트는 삭제하거나 Skip하지 않았다.
+- Unity 6000.3.11f1 Editor에서 Runtime 및 Editor/Test 스크립트 컴파일에 성공했다. 전체 EditMode 테스트 149/149가 통과했고 최종 Console은 로그 3, 경고 0, 오류 0이었다. 헤드리스 배치 실행은 Editor 라이선스가 없어 테스트 시작 전에 중단됐으며, 같은 버전의 열린 Unity Editor Test Runner에서 전체 검증을 완료했다.
+- UX-F2-B의 실제 Play Mode 시각 품질은 아직 수동 검증하지 않았다. 개발용 아이템 획득·강화로 6종을 발동하고 복합 시너지를 각각 활성화해 색상·형태 구분, 여러 효과 동시 발동 시 HUD/성장 UI 가독성, 대규모 어군 성능, Pause·포획·도주·재시작 잔상을 확인해야 한다. UX-F3/F4의 명칭과 구체 범위는 현재 최신 문서에서 확정되지 않았으므로 미정 미래 작업으로 남기며 구현 완료로 기록하지 않는다.

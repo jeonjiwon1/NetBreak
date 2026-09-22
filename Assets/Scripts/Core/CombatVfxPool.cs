@@ -49,6 +49,32 @@ public sealed class CombatVfxSettings
     [SerializeField] private Color frostBurstColor =
         new(0.78f, 0.96f, 1f, 1f);
 
+    [Header("Items / 개별 아이템")]
+    [SerializeField] private Color stormOrbColor =
+        new(0.32f, 0.82f, 1f, 0.95f);
+    [SerializeField] private Color capacitorCoilColor =
+        new(0.78f, 0.96f, 1f, 0.9f);
+    [SerializeField] private Color spectralScabbardColor =
+        new(0.82f, 0.62f, 1f, 0.95f);
+    [SerializeField] private Color swordArrayColor =
+        new(1f, 0.42f, 0.22f, 0.95f);
+    [SerializeField] private Color frostSigilColor =
+        new(0.42f, 0.86f, 1f, 0.9f);
+    [SerializeField] private Color frostCrystalColor =
+        new(0.72f, 0.95f, 1f, 0.95f);
+
+    [Header("Combined Synergy / 복합 시너지")]
+    [Min(0f)] [SerializeField] private float combinedBurstDuration = 0.42f;
+    [Min(0f)] [SerializeField] private float combinedHitDuration = 0.28f;
+    [SerializeField] private Color conductiveMarkColor =
+        new(1f, 0.84f, 0.25f, 0.95f);
+    [SerializeField] private Color thunderSwordColor =
+        new(0.95f, 0.72f, 1f, 1f);
+    [SerializeField] private Color superconductivityColor =
+        new(0.34f, 1f, 0.92f, 1f);
+    [SerializeField] private Color frostSwordColor =
+        new(0.58f, 0.84f, 1f, 1f);
+
     public int MaximumActiveVisuals => Mathf.Max(1, maximumActiveVisuals);
     public float LineWidthMultiplier => Mathf.Max(0.1f, lineWidthMultiplier);
     public float EffectSizeMultiplier => Mathf.Max(0.1f, effectSizeMultiplier);
@@ -67,6 +93,18 @@ public sealed class CombatVfxSettings
     public Color ColdWaveColor => coldWaveColor;
     public Color FreezeColor => freezeColor;
     public Color FrostBurstColor => frostBurstColor;
+    public Color StormOrbColor => stormOrbColor;
+    public Color CapacitorCoilColor => capacitorCoilColor;
+    public Color SpectralScabbardColor => spectralScabbardColor;
+    public Color SwordArrayColor => swordArrayColor;
+    public Color FrostSigilColor => frostSigilColor;
+    public Color FrostCrystalColor => frostCrystalColor;
+    public float CombinedBurstDuration => Mathf.Max(0f, combinedBurstDuration);
+    public float CombinedHitDuration => Mathf.Max(0f, combinedHitDuration);
+    public Color ConductiveMarkColor => conductiveMarkColor;
+    public Color ThunderSwordColor => thunderSwordColor;
+    public Color SuperconductivityColor => superconductivityColor;
+    public Color FrostSwordColor => frostSwordColor;
 
     public void Normalize()
     {
@@ -76,7 +114,17 @@ public sealed class CombatVfxSettings
         squidTrajectoryDuration = SquidTrajectoryDuration;
         squidImpactDuration = SquidImpactDuration;
         hitEmphasisDuration = HitEmphasisDuration;
+        combinedBurstDuration = CombinedBurstDuration;
+        combinedHitDuration = CombinedHitDuration;
     }
+}
+
+internal enum CombatVfxPriority
+{
+    RepeatedHit = 0,
+    Item = 1,
+    SingleSynergy = 2,
+    CombinedSynergy = 3
 }
 
 internal sealed class CombatVfxPool
@@ -89,6 +137,7 @@ internal sealed class CombatVfxPool
         public bool IsActive;
         public bool IsPersistent;
         public long Sequence;
+        public CombatVfxPriority Priority;
     }
 
     private readonly Transform owner;
@@ -115,7 +164,8 @@ internal sealed class CombatVfxPool
         float width,
         int positionCount,
         float duration,
-        int sortingOrder)
+        int sortingOrder,
+        CombatVfxPriority priority = CombatVfxPriority.Item)
     {
         if (duration <= 0f)
         {
@@ -129,7 +179,8 @@ internal sealed class CombatVfxPool
             positionCount,
             duration,
             false,
-            sortingOrder);
+            sortingOrder,
+            priority);
     }
 
     public LineRenderer AcquirePersistent(
@@ -145,7 +196,8 @@ internal sealed class CombatVfxPool
             positionCount,
             float.PositiveInfinity,
             true,
-            sortingOrder);
+            sortingOrder,
+            CombatVfxPriority.CombinedSynergy);
 
     public void Tick(float scaledDeltaTime)
     {
@@ -219,7 +271,8 @@ internal sealed class CombatVfxPool
         int positionCount,
         float duration,
         bool persistent,
-        int sortingOrder)
+        int sortingOrder,
+        CombatVfxPriority priority)
     {
         if (owner == null || positionCount < 2)
         {
@@ -234,7 +287,7 @@ internal sealed class CombatVfxPool
 
         if (entry == null)
         {
-            entry = FindOldestTransient();
+            entry = FindTransientToRecycle(priority);
             if (entry == null)
             {
                 return null;
@@ -267,6 +320,7 @@ internal sealed class CombatVfxPool
         entry.IsPersistent = persistent;
         entry.IsActive = true;
         entry.Sequence = ++nextSequence;
+        entry.Priority = priority;
         entry.GameObject.SetActive(true);
         ActiveCount++;
         return line;
@@ -285,24 +339,28 @@ internal sealed class CombatVfxPool
         return null;
     }
 
-    private Entry FindOldestTransient()
+    private Entry FindTransientToRecycle(CombatVfxPriority incomingPriority)
     {
-        Entry oldest = null;
+        Entry candidateToRecycle = null;
         for (int i = 0; i < entries.Count; i++)
         {
             Entry candidate = entries[i];
-            if (!candidate.IsActive || candidate.IsPersistent)
+            if (!candidate.IsActive || candidate.IsPersistent ||
+                candidate.Priority > incomingPriority)
             {
                 continue;
             }
 
-            if (oldest == null || candidate.Sequence < oldest.Sequence)
+            if (candidateToRecycle == null ||
+                candidate.Priority < candidateToRecycle.Priority ||
+                (candidate.Priority == candidateToRecycle.Priority &&
+                 candidate.Sequence < candidateToRecycle.Sequence))
             {
-                oldest = candidate;
+                candidateToRecycle = candidate;
             }
         }
 
-        return oldest;
+        return candidateToRecycle;
     }
 
     private Entry CreateEntry()
@@ -350,6 +408,7 @@ internal sealed class CombatVfxPool
         entry.IsActive = false;
         entry.IsPersistent = false;
         entry.Remaining = 0f;
+        entry.Priority = CombatVfxPriority.RepeatedHit;
         entry.Line.positionCount = 0;
         entry.GameObject.SetActive(false);
         ActiveCount = Mathf.Max(0, ActiveCount - 1);

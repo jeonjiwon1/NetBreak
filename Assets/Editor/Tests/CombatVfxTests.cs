@@ -388,9 +388,229 @@ public sealed class CombatVfxTests
         Assert.That(manager.CreatedCombatVfxCount, Is.EqualTo(48));
     }
 
+    [Test]
+    public void StormOrbShowsShortStrikeAndHitOnlyForActualTarget()
+    {
+        CreateMainCamera();
+        RunItemInventory inventory = new();
+        AssertAcquire(inventory, ItemCatalog.StormOrbId);
+        BindInventory(inventory);
+        FishController target = CreateFish(Vector2.zero, 100f, true);
+
+        InvokePrivate(manager, "ActivateStormOrb");
+
+        Assert.That(target.CurrentResistance, Is.EqualTo(88f));
+        Assert.That(CountActiveLines("StormOrbStrikeVisual"), Is.EqualTo(1));
+        Assert.That(CountActiveLines("StormOrbHitVisual"), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void CapacitorCoilShowsOnlySuccessfulAdditionalTargetsAndNoFakeHit()
+    {
+        CreateMainCamera();
+        FishController source = CreateFish(Vector2.zero, 100f, true);
+
+        InvokePrivate(manager, "ActivateCapacitorCoil", Vector2.zero, source);
+        Assert.That(manager.ActiveCombatVfxCount, Is.Zero);
+
+        FishController target = CreateFish(Vector2.right, 100f, true);
+        InvokePrivate(manager, "ActivateCapacitorCoil", Vector2.zero, source);
+
+        Assert.That(target.CurrentResistance, Is.EqualTo(92f));
+        Assert.That(CountActiveLines("CapacitorCoilDischargeVisual"), Is.EqualTo(1));
+        Assert.That(CountActiveLines("CapacitorCoilHitVisual"), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void SwordItemsUseDistinctSuccessfulHitVisualsWithoutChangingDamage()
+    {
+        CreateMainCamera();
+        RunItemInventory inventory = new();
+        AssertAcquire(inventory, ItemCatalog.SpectralScabbardId);
+        AssertAcquire(inventory, ItemCatalog.AutonomousSwordArrayId);
+        BindInventory(inventory);
+        FishController target = CreateFish(Vector2.zero, 100f, true);
+
+        InvokePrivate(manager, "ActivateSpectralScabbard", target, Vector2.zero);
+        Assert.That(target.CurrentResistance, Is.EqualTo(84f));
+        Assert.That(CountActiveLines("ItemSpectralSwordVisual"), Is.EqualTo(1));
+
+        InvokePrivate(manager, "ActivateSwordArray");
+        Assert.That(target.CurrentResistance, Is.EqualTo(66f));
+        Assert.That(CountActiveLines("ItemSwordArrayVisual"), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void FrostItemsTrackActualModifierLifetimeAndUseDistinctVisuals()
+    {
+        CreateMainCamera();
+        RunItemInventory inventory = new();
+        AssertAcquire(inventory, ItemCatalog.FrostSigilId);
+        AssertAcquire(inventory, ItemCatalog.FrostCrystalId);
+        BindInventory(inventory);
+        SetPrivateField(manager, "frostSigilRequiredHits", 1);
+        SetPrivateField(manager, "frostCrystalTargetRadius", 100f);
+        FishController target = CreateFish(Vector2.zero, 100f, true);
+
+        manager.HandleCombatDamage(CreateDamageResult(
+            target,
+            CombatDamageContext.Tool("test.frost.sigil", null),
+            1f));
+        Assert.That(CountActiveLines("FrostSigilStatusVisual"), Is.EqualTo(1));
+
+        InvokePrivate(manager, "ActivateFrostCrystal");
+        Assert.That(target.CurrentResistance, Is.EqualTo(95f));
+        Assert.That(CountActiveLines("FrostCrystalHitVisual"), Is.EqualTo(1));
+        Assert.That(CountActiveLines("FrostCrystalStatusVisual"), Is.EqualTo(1));
+
+        FishMovement movement = target.GetComponent<FishMovement>();
+        movement.RemoveTimedSpeedModifier(ItemCatalog.FrostSigilId);
+        movement.RemoveTimedSpeedModifier(ItemCatalog.FrostCrystalId);
+        InvokePrivate(manager, "UpdateSynergyStatusVisuals");
+
+        Assert.That(CountActiveLines("FrostSigilStatusVisual"), Is.Zero);
+        Assert.That(CountActiveLines("FrostCrystalStatusVisual"), Is.Zero);
+    }
+
+    [Test]
+    public void ConductiveMarkReusesVisualAndExpiresWithActualRuntimeState()
+    {
+        SetActiveCombinedSynergy(CombinedSynergyId.ThunderSwordResonance);
+        FishController target = CreateFish(Vector2.zero, 100f, true);
+
+        InvokePrivate(manager, "HandleCombinedElectricChainHit", target, Vector2.zero, false);
+        InvokePrivate(manager, "HandleCombinedElectricChainHit", target, Vector2.zero, false);
+
+        Assert.That(CountActiveLines("ConductiveMarkStatusVisual"), Is.EqualTo(1));
+        CombinedSynergyCombatRuntime runtime =
+            GetPrivateField<CombinedSynergyCombatRuntime>(manager, "combinedSynergyRuntime");
+        Assert.That(runtime.ConductiveMarkCount, Is.EqualTo(1));
+
+        runtime.HasConductiveMark(
+            new SynergyTargetKey(target.GetInstanceID(), target.LifecycleVersion),
+            Time.time + 100f);
+        InvokePrivate(manager, "UpdateSynergyStatusVisuals");
+        Assert.That(CountActiveLines("ConductiveMarkStatusVisual"), Is.Zero);
+    }
+
+    [Test]
+    public void ThunderSwordConsumesMarkOnceAndShowsOnlyActualResonanceHits()
+    {
+        CreateMainCamera();
+        SetActiveCombinedSynergy(CombinedSynergyId.ThunderSwordResonance);
+        FishController source = CreateFish(Vector2.zero, 100f, true);
+        FishController secondary = CreateFish(Vector2.right, 100f, true);
+
+        InvokePrivate(manager, "HandleCombinedElectricChainHit", source, Vector2.zero, false);
+        InvokePrivate(manager, "HandleCombinedSoulSlashHit", source, Vector2.zero, false);
+
+        Assert.That(source.CurrentResistance, Is.EqualTo(82f));
+        Assert.That(secondary.CurrentResistance, Is.EqualTo(92f));
+        Assert.That(CountActiveLines("ConductiveMarkStatusVisual"), Is.Zero);
+        Assert.That(CountActiveLines("ThunderSwordBurstVisual"), Is.EqualTo(1));
+        Assert.That(CountActiveLines("ThunderSwordResonanceHitVisual"), Is.EqualTo(1));
+
+        InvokePrivate(manager, "HandleCombinedElectricChainHit", source, Vector2.zero, false);
+        InvokePrivate(manager, "HandleCombinedSoulSlashHit", source, Vector2.zero, false);
+        Assert.That(source.CurrentResistance, Is.EqualTo(82f));
+        Assert.That(CountActiveLines("ThunderSwordBurstVisual"), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void SuperconductivityRequiresActiveIdAndActualIceSynergyControl()
+    {
+        CreateMainCamera();
+        FishController source = CreateFish(Vector2.zero, 100f, true);
+        FishController secondary = CreateFish(Vector2.right, 100f, true);
+
+        InvokePrivate(manager, "HandleCombinedElectricChainHit", source, Vector2.zero, true);
+        Assert.That(secondary.CurrentResistance, Is.EqualTo(100f));
+
+        SetActiveCombinedSynergy(CombinedSynergyId.Superconductivity);
+        InvokePrivate(manager, "HandleCombinedElectricChainHit", source, Vector2.zero, false);
+        Assert.That(secondary.CurrentResistance, Is.EqualTo(100f));
+
+        InvokePrivate(manager, "HandleCombinedElectricChainHit", source, Vector2.zero, true);
+        Assert.That(secondary.CurrentResistance, Is.EqualTo(92f));
+        Assert.That(CountActiveLines("SuperconductivityVisual"), Is.EqualTo(1));
+        Assert.That(CountActiveLines("SuperconductivityVisualHit"), Is.EqualTo(1));
+
+        InvokePrivate(manager, "HandleCombinedElectricChainHit", source, Vector2.zero, true);
+        Assert.That(secondary.CurrentResistance, Is.EqualTo(92f));
+    }
+
+    [Test]
+    public void FrostSwordShowsOnlyActualAdditionalHitsAndKeepsExistingModifier()
+    {
+        CreateMainCamera();
+        SetActiveCombinedSynergy(CombinedSynergyId.FrostSwordResonance);
+        FishController source = CreateFish(Vector2.zero, 100f, true);
+        FishController secondary = CreateFish(Vector2.right, 100f, true);
+
+        InvokePrivate(manager, "HandleCombinedSoulSlashHit", source, Vector2.zero, true);
+
+        Assert.That(secondary.CurrentResistance, Is.EqualTo(90f));
+        Assert.That(CountActiveLines("FrostSwordPropagationVisual"), Is.EqualTo(1));
+        Assert.That(CountActiveLines("FrostSwordHitVisual"), Is.EqualTo(1));
+        Assert.That(
+            secondary.GetComponent<FishMovement>()
+                .HasTimedSpeedModifier("combined_synergy.frost_sword.slow"),
+            Is.True);
+
+        InvokePrivate(manager, "HandleCombinedSoulSlashHit", source, Vector2.zero, true);
+        Assert.That(secondary.CurrentResistance, Is.EqualTo(90f));
+    }
+
+    [Test]
+    public void ConductiveMarkClearsOnFishReuseAndCombinedSelectionChange()
+    {
+        SetActiveCombinedSynergy(CombinedSynergyId.ThunderSwordResonance);
+        FishController target = CreateFish(Vector2.zero, 100f, true);
+        InvokePrivate(manager, "HandleCombinedElectricChainHit", target, Vector2.zero, false);
+        Assert.That(CountActiveLines("ConductiveMarkStatusVisual"), Is.EqualTo(1));
+
+        target.Initialize(target.Data);
+        Assert.That(CountActiveLines("ConductiveMarkStatusVisual"), Is.Zero);
+
+        InvokePrivate(manager, "HandleCombinedElectricChainHit", target, Vector2.zero, false);
+        SetActiveCombinedSynergy(CombinedSynergyId.Superconductivity);
+        InvokePrivate(manager, "ObserveActiveCombinedSynergy");
+        Assert.That(CountActiveLines("ConductiveMarkStatusVisual"), Is.Zero);
+    }
+
+    [Test]
+    public void CombinedVisualPriorityReplacesRepeatedVisualAtPoolCap()
+    {
+        for (int i = 0; i < 24; i++)
+        {
+            manager.ShowSquidInkAttack(Vector2.zero, new Vector2(i, 0f));
+        }
+        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(48));
+
+        InvokePrivate(
+            manager,
+            "CreateThunderSwordBurst",
+            Vector2.zero,
+            new List<Vector2> { Vector2.right });
+
+        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(48));
+        Assert.That(CountActiveLines("ThunderSwordBurstVisual"), Is.EqualTo(1));
+        Assert.That(CountActiveLines("ThunderSwordResonanceHitVisual"), Is.EqualTo(1));
+    }
+
     private void BindInventory(RunItemInventory inventory)
     {
         SetPrivateField(manager, "boundInventory", inventory);
+    }
+
+    private void SetActiveCombinedSynergy(CombinedSynergyId id)
+    {
+        GameObject runObject = Own(new GameObject("Combat VFX Test Run Manager"));
+        RunManager runManager = runObject.AddComponent<RunManager>();
+        RunGrowthState growth = new();
+        SetAutoProperty(runManager, "GrowthState", growth);
+        SetAutoProperty(growth.CombinedSynergy, "ActiveId", id);
+        SetStaticAutoProperty(typeof(RunManager), "Instance", runManager);
     }
 
     private Camera CreateMainCamera()
@@ -683,6 +903,24 @@ public sealed class CombatVfxTests
             BindingFlags.NonPublic);
         Assert.That(field, Is.Not.Null, fieldName);
         field.SetValue(target, value);
+    }
+
+    private static void SetAutoProperty<T>(object target, string propertyName, T value)
+    {
+        FieldInfo field = target.GetType().GetField(
+            $"<{propertyName}>k__BackingField",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null, propertyName);
+        field.SetValue(target, value);
+    }
+
+    private static void SetStaticAutoProperty<T>(Type type, string propertyName, T value)
+    {
+        FieldInfo field = type.GetField(
+            $"<{propertyName}>k__BackingField",
+            BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.That(field, Is.Not.Null, propertyName);
+        field.SetValue(null, value);
     }
 }
 #endif

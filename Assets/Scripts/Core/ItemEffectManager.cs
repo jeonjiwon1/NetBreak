@@ -178,6 +178,15 @@ public sealed class ItemEffectManager : MonoBehaviour
         SwordRain
     }
 
+    private enum StatusVisualStyle
+    {
+        ElectricStun,
+        IceFreeze,
+        FrostSigil,
+        FrostCrystal,
+        ConductiveMark
+    }
+
     public static ItemEffectManager Instance { get; private set; }
 
     private const string ElectricChainDamageId = "electric_synergy.chain_discharge";
@@ -202,10 +211,17 @@ public sealed class ItemEffectManager : MonoBehaviour
     private readonly Dictionary<ContinuousHitKey, float> continuousHitTimes = new();
     private readonly HashSet<string> knownOwnedItems = new(StringComparer.Ordinal);
     private readonly List<CombatDamageResult> pendingDamageResults = new();
+    private readonly List<Vector2> combinedHitPositions = new();
     private readonly Dictionary<FishController, SynergyStatusVisual>
         electricStunVisuals = new();
     private readonly Dictionary<FishController, SynergyStatusVisual>
         iceFreezeVisuals = new();
+    private readonly Dictionary<FishController, SynergyStatusVisual>
+        frostSigilVisuals = new();
+    private readonly Dictionary<FishController, SynergyStatusVisual>
+        frostCrystalVisuals = new();
+    private readonly Dictionary<FishController, SynergyStatusVisual>
+        conductiveMarkVisuals = new();
     private readonly List<FishController> staleStatusVisuals = new();
     private readonly ElectricSynergyRuntimeState electricSynergyRuntime = new();
     private readonly SwordSynergyRuntimeState swordSynergyRuntime = new();
@@ -253,6 +269,9 @@ public sealed class ItemEffectManager : MonoBehaviour
                 ActiveCombatVfxCount > 0 ||
                 electricStunVisuals.Count > 0 ||
                 iceFreezeVisuals.Count > 0 ||
+                frostSigilVisuals.Count > 0 ||
+                frostCrystalVisuals.Count > 0 ||
+                conductiveMarkVisuals.Count > 0 ||
                 pendingDamageResults.Count > 0)
             {
                 ClearRuntimeState(false);
@@ -309,7 +328,8 @@ public sealed class ItemEffectManager : MonoBehaviour
             settings.SquidTrajectoryDuration,
             settings.SquidTrajectoryColor,
             0.13f,
-            "SquidInkTrajectoryVisual");
+            "SquidInkTrajectoryVisual",
+            CombatVfxPriority.RepeatedHit);
 
         CreateImpactMarker(
             target,
@@ -317,7 +337,8 @@ public sealed class ItemEffectManager : MonoBehaviour
             0.45f,
             0.11f,
             settings.SquidImpactDuration,
-            "SquidInkImpactVisual");
+            "SquidInkImpactVisual",
+            CombatVfxPriority.RepeatedHit);
     }
 
     public bool CanUpgradeItem(string itemId, out ItemUpgradeResult result)
@@ -712,15 +733,18 @@ public sealed class ItemEffectManager : MonoBehaviour
 
         if (triggerSigil && IsEligibleFish(result.Target))
         {
-            ApplySlow(
+            if (ApplySlow(
                 result.Target,
                 ItemCatalog.FrostSigilId,
                 frostSigilSlowPercentage,
-                GetEffectiveSlowDuration(ItemCatalog.FrostSigilId));
-            CreateFrostMarker(
-                result.Target.transform.position,
-                0.65f,
-                GetEffectiveSlowDuration(ItemCatalog.FrostSigilId));
+                GetEffectiveSlowDuration(ItemCatalog.FrostSigilId)))
+            {
+                ShowStatusVisual(
+                    frostSigilVisuals,
+                    result.Target,
+                    GetCombatVfxSettings().FrostSigilColor,
+                    "FrostSigilStatusVisual");
+            }
         }
     }
 
@@ -799,6 +823,9 @@ public sealed class ItemEffectManager : MonoBehaviour
         movement?.RemoveTimedSpeedModifier(FrostSwordSlowModifierId);
         RemoveStatusVisual(electricStunVisuals, fish);
         RemoveStatusVisual(iceFreezeVisuals, fish);
+        RemoveStatusVisual(frostSigilVisuals, fish);
+        RemoveStatusVisual(frostCrystalVisuals, fish);
+        RemoveStatusVisual(conductiveMarkVisuals, fish);
 
         int fishId = fish.GetInstanceID();
         List<ContinuousHitKey> staleKeys = null;
@@ -1005,13 +1032,31 @@ public sealed class ItemEffectManager : MonoBehaviour
             ItemCatalog.StormOrbId,
             stormOrbResistanceDamage,
             stormOrbDamageBonusPerLevel);
-        DealItemDamage(
+        if (!DealItemDamage(
             target,
             ItemCatalog.StormOrbId,
-            effectiveDamage);
+            effectiveDamage))
+        {
+            return;
+        }
+
+        CombatVfxSettings vfx = GetCombatVfxSettings();
         CreateLightning(
-            new[] { position + Vector2.up * 1.8f, position },
-            stormOrbVisualDuration);
+            position + Vector2.up * 1.8f,
+            position,
+            stormOrbVisualDuration,
+            vfx.StormOrbColor,
+            0.13f,
+            "StormOrbStrikeVisual",
+            CombatVfxPriority.RepeatedHit);
+        CreateImpactMarker(
+            position,
+            vfx.StormOrbColor,
+            0.25f,
+            0.07f,
+            Mathf.Min(stormOrbVisualDuration, vfx.HitEmphasisDuration),
+            "StormOrbHitVisual",
+            CombatVfxPriority.RepeatedHit);
     }
 
     private void ActivateCapacitorCoil(Vector2 origin, FishController triggeringFish)
@@ -1037,27 +1082,39 @@ public sealed class ItemEffectManager : MonoBehaviour
 
         if (targetCount == 0)
         {
-            CreateLightning(
-                new[] { origin, origin + Vector2.up * 0.45f },
-                capacitorVisualDuration);
+            return;
         }
-        else
+
+        CombatVfxSettings vfx = GetCombatVfxSettings();
+        for (int i = 0; i < targetCount; i++)
         {
-            Vector2[] points = new Vector2[targetCount + 1];
-            points[0] = origin;
-            for (int i = 0; i < targetCount; i++)
-            {
-                FishController target = fish[i];
-                points[i + 1] = target.transform.position;
-                DealItemDamage(
+            FishController target = fish[i];
+            Vector2 targetPosition = target.transform.position;
+            if (!DealItemDamage(
                     target,
                     ItemCatalog.CapacitorCoilId,
-                    effectiveDamage);
+                    effectiveDamage))
+            {
+                continue;
             }
 
-            CreateLightning(points, capacitorVisualDuration);
+            CreateLightning(
+                origin,
+                targetPosition,
+                capacitorVisualDuration,
+                vfx.CapacitorCoilColor,
+                0.09f,
+                "CapacitorCoilDischargeVisual",
+                CombatVfxPriority.Item);
+            CreateImpactMarker(
+                targetPosition,
+                vfx.CapacitorCoilColor,
+                0.2f,
+                0.06f,
+                Mathf.Min(capacitorVisualDuration, vfx.HitEmphasisDuration),
+                "CapacitorCoilHitVisual",
+                CombatVfxPriority.Item);
         }
-
     }
 
     private void ActivateIndependentElectricSynergy(CombatDamageResult result)
@@ -1143,7 +1200,8 @@ public sealed class ItemEffectManager : MonoBehaviour
                     0.32f,
                     0.08f,
                     vfx.HitEmphasisDuration,
-                    "ElectricChainHitVisual");
+                    "ElectricChainHitVisual",
+                    CombatVfxPriority.SingleSynergy);
             }
             if (state.IsLevel6Active && IsEligibleFish(target))
             {
@@ -1156,7 +1214,8 @@ public sealed class ItemEffectManager : MonoBehaviour
             settings.ChainVisualDuration,
             vfx.ElectricChainColor,
             0.15f,
-            "ElectricChainDischargeVisual");
+            "ElectricChainDischargeVisual",
+            CombatVfxPriority.SingleSynergy);
     }
 
     private void ActivateElectricThunderstorm(
@@ -1184,14 +1243,16 @@ public sealed class ItemEffectManager : MonoBehaviour
                 settings.ThunderstormVisualDuration,
                 vfx.ThunderstormColor,
                 0.24f,
-                "ElectricThunderstormVisual");
+                "ElectricThunderstormVisual",
+                CombatVfxPriority.SingleSynergy);
             CreateImpactMarker(
                 position,
                 vfx.ThunderstormColor,
                 0.52f,
                 0.12f,
                 vfx.HitEmphasisDuration,
-                "ElectricThunderstormHitVisual");
+                "ElectricThunderstormHitVisual",
+                CombatVfxPriority.SingleSynergy);
         }
     }
 
@@ -1506,17 +1567,17 @@ public sealed class ItemEffectManager : MonoBehaviour
 
     private void ActivateSpectralScabbard(FishController target, Vector2 position)
     {
-        if (IsEligibleFish(target))
-        {
+        if (IsEligibleFish(target) &&
             DealItemDamage(
                 target,
                 ItemCatalog.SpectralScabbardId,
                 GetEffectiveDamage(
                     ItemCatalog.SpectralScabbardId,
                     scabbardResistanceDamage,
-                    scabbardDamageBonusPerLevel));
+                    scabbardDamageBonusPerLevel)))
+        {
+            CreateSwordMarker(position, scabbardVisualDuration, false);
         }
-        CreateSwordMarker(position, scabbardVisualDuration, false);
     }
 
     private void ActivateSwordArray()
@@ -1542,17 +1603,17 @@ public sealed class ItemEffectManager : MonoBehaviour
 
         FishController target = fish[0];
         Vector2 position = target.transform.position;
-        if (IsEligibleFish(target))
-        {
+        if (IsEligibleFish(target) &&
             DealItemDamage(
                 target,
                 ItemCatalog.AutonomousSwordArrayId,
                 GetEffectiveDamage(
                     ItemCatalog.AutonomousSwordArrayId,
                     swordArrayResistanceDamage,
-                    swordArrayDamageBonusPerLevel));
+                    swordArrayDamageBonusPerLevel)))
+        {
+            CreateSwordMarker(position, swordArrayVisualDuration, true);
         }
-        CreateSwordMarker(position, swordArrayVisualDuration, true);
     }
 
     private void ActivateFrostCrystal()
@@ -1574,53 +1635,51 @@ public sealed class ItemEffectManager : MonoBehaviour
         }
 
         int targetCount = Mathf.Min(frostCrystalMaximumTargets, fish.Count);
-        List<Vector2> affectedPositions = new(targetCount);
+        CombatVfxSettings vfx = GetCombatVfxSettings();
         for (int i = 0; i < targetCount; i++)
         {
             FishController target = fish[i];
             Vector2 position = target.transform.position;
-            affectedPositions.Add(position);
-            DealItemDamage(
+            if (!DealItemDamage(
                 target,
                 ItemCatalog.FrostCrystalId,
-                frostCrystalResistanceDamage);
+                frostCrystalResistanceDamage))
+            {
+                continue;
+            }
+
+            CreateFrostCrystalHit(position, frostCrystalVisualDuration);
             if (!IsEligibleFish(target))
             {
                 continue;
             }
 
-            ApplySlow(
+            if (ApplySlow(
                 target,
                 ItemCatalog.FrostCrystalId,
                 frostCrystalSlowPercentage,
-                GetEffectiveSlowDuration(ItemCatalog.FrostCrystalId));
-        }
-
-        CreateFrostMarker(
-            center,
-            frostCrystalTargetRadius,
-            frostCrystalVisualDuration);
-        for (int i = 0; i < affectedPositions.Count; i++)
-        {
-            CreateFrostMarker(
-                affectedPositions[i],
-                0.55f,
-                Mathf.Max(
-                    frostCrystalVisualDuration,
-                    GetEffectiveSlowDuration(ItemCatalog.FrostCrystalId)));
+                GetEffectiveSlowDuration(ItemCatalog.FrostCrystalId)))
+            {
+                ShowStatusVisual(
+                    frostCrystalVisuals,
+                    target,
+                    vfx.FrostCrystalColor,
+                    "FrostCrystalStatusVisual");
+            }
         }
     }
 
-    private void DealItemDamage(FishController fish, string itemId, float damage)
+    private bool DealItemDamage(FishController fish, string itemId, float damage)
     {
         if (!IsEligibleFish(fish) || damage <= 0f)
         {
-            return;
+            return false;
         }
 
         fish.TakeCaptureDamage(
             damage,
             CombatDamageContext.Item(itemId, this));
+        return true;
     }
 
     private bool DealSynergyDamage(
@@ -1648,10 +1707,21 @@ public sealed class ItemEffectManager : MonoBehaviour
         CombinedSynergyCombatSettings settings = GetCombinedSynergyCombatSettings();
         if (active == CombinedSynergyId.ThunderSwordResonance && IsEligibleFish(target))
         {
+            SynergyTargetKey key = new(
+                target.GetInstanceID(),
+                target.LifecycleVersion);
             combinedSynergyRuntime.ApplyConductiveMark(
-                new SynergyTargetKey(target.GetInstanceID(), target.LifecycleVersion),
+                key,
                 Time.time,
                 settings.ConductiveMarkDuration);
+            if (combinedSynergyRuntime.HasConductiveMark(key, Time.time))
+            {
+                ShowStatusVisual(
+                    conductiveMarkVisuals,
+                    target,
+                    GetCombatVfxSettings().ConductiveMarkColor,
+                    "ConductiveMarkStatusVisual");
+            }
             return;
         }
 
@@ -1672,7 +1742,7 @@ public sealed class ItemEffectManager : MonoBehaviour
                     target.Data.SpecialType));
         }
 
-        DamageAdditionalCombinedTargets(
+        IReadOnlyList<Vector2> hitPositions = DamageAdditionalCombinedTargets(
             hitPosition,
             target,
             GetElectricSynergySettings().ChainRadius,
@@ -1680,6 +1750,11 @@ public sealed class ItemEffectManager : MonoBehaviour
             settings.SuperconductivityDamage,
             SuperconductivityDamageId,
             false);
+        CreateCombinedChainVisual(
+            hitPosition,
+            hitPositions,
+            GetCombatVfxSettings().SuperconductivityColor,
+            "SuperconductivityVisual");
     }
 
     private void HandleCombinedSoulSlashHit(
@@ -1702,8 +1777,12 @@ public sealed class ItemEffectManager : MonoBehaviour
                 return;
             }
 
-            DealSynergyDamage(target, ThunderSwordPrimaryDamageId, settings.ThunderSwordPrimaryDamage);
-            DamageAdditionalCombinedTargets(
+            RemoveStatusVisual(conductiveMarkVisuals, target);
+            bool primaryHit = DealSynergyDamage(
+                target,
+                ThunderSwordPrimaryDamageId,
+                settings.ThunderSwordPrimaryDamage);
+            IReadOnlyList<Vector2> hitPositions = DamageAdditionalCombinedTargets(
                 hitPosition,
                 target,
                 GetSwordSynergySettings().FallbackRadius,
@@ -1711,6 +1790,10 @@ public sealed class ItemEffectManager : MonoBehaviour
                 settings.ThunderSwordAdditionalDamage,
                 ThunderSwordSplashDamageId,
                 false);
+            if (primaryHit)
+            {
+                CreateThunderSwordBurst(hitPosition, hitPositions);
+            }
             return;
         }
 
@@ -1720,7 +1803,7 @@ public sealed class ItemEffectManager : MonoBehaviour
             return;
         }
 
-        DamageAdditionalCombinedTargets(
+        IReadOnlyList<Vector2> frostHitPositions = DamageAdditionalCombinedTargets(
             hitPosition,
             target,
             GetSwordSynergySettings().FallbackRadius,
@@ -1728,9 +1811,10 @@ public sealed class ItemEffectManager : MonoBehaviour
             settings.FrostSwordDamage,
             FrostSwordDamageId,
             true);
+        CreateFrostSwordPropagation(hitPosition, frostHitPositions);
     }
 
-    private void DamageAdditionalCombinedTargets(
+    private IReadOnlyList<Vector2> DamageAdditionalCombinedTargets(
         Vector2 origin,
         FishController source,
         float radius,
@@ -1739,8 +1823,9 @@ public sealed class ItemEffectManager : MonoBehaviour
         string damageId,
         bool applyFrostSwordSlow)
     {
+        combinedHitPositions.Clear();
         Camera camera = Camera.main;
-        if (camera == null) return;
+        if (camera == null) return combinedHitPositions;
 
         HashSet<FishController> excluded = new();
         if (source != null) excluded.Add(source);
@@ -1750,8 +1835,14 @@ public sealed class ItemEffectManager : MonoBehaviour
         for (int i = 0; i < targets.Count; i++)
         {
             FishController target = targets[i];
-            if (!DealSynergyDamage(target, damageId, damage) ||
-                !applyFrostSwordSlow || !IsEligibleFish(target) || target.Data == null)
+            Vector2 targetPosition = target.transform.position;
+            if (!DealSynergyDamage(target, damageId, damage))
+            {
+                continue;
+            }
+
+            combinedHitPositions.Add(targetPosition);
+            if (!applyFrostSwordSlow || !IsEligibleFish(target) || target.Data == null)
             {
                 continue;
             }
@@ -1766,6 +1857,8 @@ public sealed class ItemEffectManager : MonoBehaviour
                     settings.FrostSwordSlowDuration,
                     target.Data.SpecialType));
         }
+
+        return combinedHitPositions;
     }
 
     private static bool HasIceSynergySlow(FishController fish)
@@ -1794,6 +1887,7 @@ public sealed class ItemEffectManager : MonoBehaviour
         }
 
         combinedSynergyRuntime.Reset();
+        ClearStatusVisuals(conductiveMarkVisuals);
         lastObservedCombinedSynergy = active;
         return active;
     }
@@ -1886,7 +1980,7 @@ public sealed class ItemEffectManager : MonoBehaviour
         return owned != null && owned.Level > 0 ? owned.Level : 0;
     }
 
-    private void ApplySlow(
+    private bool ApplySlow(
         FishController fish,
         string modifierId,
         float slowPercentage,
@@ -1894,7 +1988,7 @@ public sealed class ItemEffectManager : MonoBehaviour
     {
         if (!IsEligibleFish(fish))
         {
-            return;
+            return false;
         }
 
         FishMovement movement = fish.GetComponent<FishMovement>();
@@ -1904,7 +1998,7 @@ public sealed class ItemEffectManager : MonoBehaviour
             duration);
         if (movement == null)
         {
-            return;
+            return false;
         }
 
         if (string.Equals(modifierId, ItemCatalog.FrostSigilId, StringComparison.Ordinal))
@@ -1915,6 +2009,8 @@ public sealed class ItemEffectManager : MonoBehaviour
         {
             frostCrystalSlowedFish.Add(fish);
         }
+
+        return movement.HasTimedSpeedModifier(modifierId);
     }
 
     private bool CanCountContinuousHit(
@@ -2259,20 +2355,30 @@ public sealed class ItemEffectManager : MonoBehaviour
 
     private void UpdateSynergyStatusVisuals()
     {
+        ObserveActiveCombinedSynergy();
         UpdateStatusVisuals(
             electricStunVisuals,
             ElectricStunModifierId,
-            false);
+            StatusVisualStyle.ElectricStun);
         UpdateStatusVisuals(
             iceFreezeVisuals,
             IceFreezeModifierId,
-            true);
+            StatusVisualStyle.IceFreeze);
+        UpdateStatusVisuals(
+            frostSigilVisuals,
+            ItemCatalog.FrostSigilId,
+            StatusVisualStyle.FrostSigil);
+        UpdateStatusVisuals(
+            frostCrystalVisuals,
+            ItemCatalog.FrostCrystalId,
+            StatusVisualStyle.FrostCrystal);
+        UpdateConductiveMarkVisuals();
     }
 
     private void UpdateStatusVisuals(
         Dictionary<FishController, SynergyStatusVisual> visuals,
         string modifierId,
-        bool freezeStyle)
+        StatusVisualStyle style)
     {
         if (visuals.Count == 0)
         {
@@ -2297,18 +2403,7 @@ public sealed class ItemEffectManager : MonoBehaviour
                 continue;
             }
 
-            if (freezeStyle)
-            {
-                SetFreezeStatusGeometry(
-                    visual.Line,
-                    fish.transform.position);
-            }
-            else
-            {
-                SetStunStatusGeometry(
-                    visual.Line,
-                    fish.transform.position);
-            }
+            SetStatusGeometry(visual.Line, fish.transform.position, style);
         }
 
         for (int i = 0; i < staleStatusVisuals.Count; i++)
@@ -2318,6 +2413,68 @@ public sealed class ItemEffectManager : MonoBehaviour
                 staleStatusVisuals[i]);
         }
         staleStatusVisuals.Clear();
+    }
+
+    private void UpdateConductiveMarkVisuals()
+    {
+        if (conductiveMarkVisuals.Count == 0)
+        {
+            return;
+        }
+
+        staleStatusVisuals.Clear();
+        foreach (KeyValuePair<FishController, SynergyStatusVisual> pair in conductiveMarkVisuals)
+        {
+            FishController fish = pair.Key;
+            SynergyStatusVisual visual = pair.Value;
+            SynergyTargetKey key = fish != null
+                ? new SynergyTargetKey(fish.GetInstanceID(), visual.LifecycleVersion)
+                : default;
+            if (!IsEligibleFish(fish) ||
+                fish.LifecycleVersion != visual.LifecycleVersion ||
+                !combinedSynergyRuntime.HasConductiveMark(key, Time.time) ||
+                visual.Line == null)
+            {
+                staleStatusVisuals.Add(fish);
+                continue;
+            }
+
+            SetStatusGeometry(
+                visual.Line,
+                fish.transform.position,
+                StatusVisualStyle.ConductiveMark);
+        }
+
+        for (int i = 0; i < staleStatusVisuals.Count; i++)
+        {
+            RemoveStatusVisual(conductiveMarkVisuals, staleStatusVisuals[i]);
+        }
+        staleStatusVisuals.Clear();
+    }
+
+    private void SetStatusGeometry(
+        LineRenderer line,
+        Vector2 position,
+        StatusVisualStyle style)
+    {
+        switch (style)
+        {
+            case StatusVisualStyle.IceFreeze:
+                SetFreezeStatusGeometry(line, position);
+                break;
+            case StatusVisualStyle.FrostSigil:
+                SetFrostSigilStatusGeometry(line, position);
+                break;
+            case StatusVisualStyle.FrostCrystal:
+                SetFrostCrystalStatusGeometry(line, position);
+                break;
+            case StatusVisualStyle.ConductiveMark:
+                SetConductiveMarkGeometry(line, position);
+                break;
+            default:
+                SetStunStatusGeometry(line, position);
+                break;
+        }
     }
 
     private void SetStunStatusGeometry(
@@ -2359,6 +2516,48 @@ public sealed class ItemEffectManager : MonoBehaviour
         line.SetPosition(8, center + Vector2.up * size);
     }
 
+    private void SetFrostSigilStatusGeometry(LineRenderer line, Vector2 position)
+    {
+        float size = 0.38f * GetCombatVfxSettings().EffectSizeMultiplier;
+        for (int i = 0; i < 9; i++)
+        {
+            float angle = (i % 8) * Mathf.PI * 2f / 8f;
+            float radius = i % 2 == 0 ? size : size * 0.48f;
+            line.SetPosition(i, position + new Vector2(
+                Mathf.Cos(angle) * radius,
+                Mathf.Sin(angle) * radius));
+        }
+    }
+
+    private void SetFrostCrystalStatusGeometry(LineRenderer line, Vector2 position)
+    {
+        float size = 0.44f * GetCombatVfxSettings().EffectSizeMultiplier;
+        line.SetPosition(0, position + Vector2.up * size);
+        line.SetPosition(1, position + Vector2.right * size * 0.35f);
+        line.SetPosition(2, position + Vector2.down * size);
+        line.SetPosition(3, position + Vector2.left * size * 0.35f);
+        line.SetPosition(4, position + Vector2.up * size);
+        line.SetPosition(5, position + Vector2.right * size);
+        line.SetPosition(6, position);
+        line.SetPosition(7, position + Vector2.left * size);
+        line.SetPosition(8, position);
+    }
+
+    private void SetConductiveMarkGeometry(LineRenderer line, Vector2 position)
+    {
+        float size = 0.36f * GetCombatVfxSettings().EffectSizeMultiplier;
+        Vector2 center = position + Vector2.up * size * 1.45f;
+        line.SetPosition(0, center + new Vector2(-size * 0.25f, size));
+        line.SetPosition(1, center + new Vector2(size * 0.25f, size * 0.28f));
+        line.SetPosition(2, center + new Vector2(-size * 0.05f, size * 0.28f));
+        line.SetPosition(3, center + new Vector2(size * 0.28f, -size));
+        line.SetPosition(4, center + new Vector2(-size * 0.3f, -size * 0.15f));
+        line.SetPosition(5, center + new Vector2(size * 0.02f, -size * 0.15f));
+        line.SetPosition(6, center + new Vector2(-size * 0.25f, size));
+        line.SetPosition(7, center + new Vector2(size * 0.25f, size * 0.28f));
+        line.SetPosition(8, center + new Vector2(-size * 0.05f, size * 0.28f));
+    }
+
     private void RemoveStatusVisual(
         Dictionary<FishController, SynergyStatusVisual> visuals,
         FishController fish)
@@ -2374,6 +2573,16 @@ public sealed class ItemEffectManager : MonoBehaviour
         visuals.Remove(fish);
     }
 
+    private void ClearStatusVisuals(
+        Dictionary<FishController, SynergyStatusVisual> visuals)
+    {
+        foreach (SynergyStatusVisual visual in visuals.Values)
+        {
+            combatVfxPool?.Release(visual.Line);
+        }
+        visuals.Clear();
+    }
+
     private void ClearRuntimeState(bool resetKnownOwnership)
     {
         capacitorHitCount = 0;
@@ -2383,6 +2592,7 @@ public sealed class ItemEffectManager : MonoBehaviour
         frostCrystalSlowedFish.Clear();
         continuousHitTimes.Clear();
         pendingDamageResults.Clear();
+        combinedHitPositions.Clear();
         electricSynergyRuntime.Reset();
         swordSynergyRuntime.Reset();
         iceSynergyRuntime.Reset();
@@ -2395,6 +2605,9 @@ public sealed class ItemEffectManager : MonoBehaviour
         combatVfxPool?.Clear();
         electricStunVisuals.Clear();
         iceFreezeVisuals.Clear();
+        frostSigilVisuals.Clear();
+        frostCrystalVisuals.Clear();
+        conductiveMarkVisuals.Clear();
         staleStatusVisuals.Clear();
 
         FishMovement[] movements = FindObjectsByType<FishMovement>(
@@ -2457,22 +2670,13 @@ public sealed class ItemEffectManager : MonoBehaviour
         return count;
     }
 
-    private void CreateLightning(IReadOnlyList<Vector2> points, float duration)
-    {
-        CreateLightning(
-            points,
-            duration,
-            new Color(0.35f, 0.85f, 1f, 0.95f),
-            0.11f,
-            "ItemElectricVisual");
-    }
-
     private void CreateLightning(
         IReadOnlyList<Vector2> points,
         float duration,
         Color color,
         float width,
-        string objectName)
+        string objectName,
+        CombatVfxPriority priority = CombatVfxPriority.Item)
     {
         if (points == null || points.Count < 2)
         {
@@ -2484,7 +2688,8 @@ public sealed class ItemEffectManager : MonoBehaviour
             color,
             width,
             points.Count,
-            duration);
+            duration,
+            priority);
         if (line == null)
         {
             return;
@@ -2502,14 +2707,16 @@ public sealed class ItemEffectManager : MonoBehaviour
         float duration,
         Color color,
         float width,
-        string objectName)
+        string objectName,
+        CombatVfxPriority priority = CombatVfxPriority.Item)
     {
         LineRenderer line = AcquireLineVisual(
             objectName,
             color,
             width,
             2,
-            duration);
+            duration,
+            priority);
         if (line == null)
         {
             return;
@@ -2521,14 +2728,16 @@ public sealed class ItemEffectManager : MonoBehaviour
 
     private void CreateSwordMarker(Vector2 position, float duration, bool arrayStyle)
     {
+        CombatVfxSettings vfx = GetCombatVfxSettings();
         LineRenderer line = AcquireLineVisual(
             arrayStyle ? "ItemSwordArrayVisual" : "ItemSpectralSwordVisual",
             arrayStyle
-                ? new Color(1f, 0.45f, 0.25f, 0.95f)
-                : new Color(0.85f, 0.75f, 1f, 0.95f),
+                ? vfx.SwordArrayColor
+                : vfx.SpectralScabbardColor,
             0.12f,
             arrayStyle ? 5 : 3,
-            duration);
+            duration,
+            arrayStyle ? CombatVfxPriority.RepeatedHit : CombatVfxPriority.Item);
         if (line == null)
         {
             return;
@@ -2538,11 +2747,11 @@ public sealed class ItemEffectManager : MonoBehaviour
         line.useWorldSpace = false;
         if (arrayStyle)
         {
-            line.SetPosition(0, new Vector3(-0.8f, 0.7f));
-            line.SetPosition(1, new Vector3(0.8f, -0.7f));
-            line.SetPosition(2, new Vector3(0f, 0f));
-            line.SetPosition(3, new Vector3(0.75f, 0.75f));
-            line.SetPosition(4, new Vector3(-0.75f, -0.75f));
+            line.SetPosition(0, new Vector3(-0.15f, 1.25f));
+            line.SetPosition(1, new Vector3(0.1f, 0.2f));
+            line.SetPosition(2, new Vector3(-0.22f, -0.45f));
+            line.SetPosition(3, new Vector3(0.28f, -0.45f));
+            line.SetPosition(4, new Vector3(0.1f, 0.2f));
         }
         else
         {
@@ -2573,7 +2782,8 @@ public sealed class ItemEffectManager : MonoBehaviour
                     : vfx.SoulSlashColor,
             rainStyle ? 0.16f : additionalStyle ? 0.1f : 0.13f,
             rainStyle ? 7 : 3,
-            duration);
+            duration,
+            CombatVfxPriority.SingleSynergy);
         if (line == null)
         {
             return;
@@ -2605,30 +2815,168 @@ public sealed class ItemEffectManager : MonoBehaviour
         }
     }
 
-    private void CreateFrostMarker(Vector2 position, float radius, float duration)
+    private void CreateFrostCrystalHit(Vector2 position, float duration)
     {
-        const int segments = 32;
+        CombatVfxSettings vfx = GetCombatVfxSettings();
         LineRenderer line = AcquireLineVisual(
-            "ItemFrostVisual",
-            new Color(0.55f, 0.9f, 1f, 0.9f),
-            0.08f,
-            segments + 1,
-            duration);
+            "FrostCrystalHitVisual",
+            vfx.FrostCrystalColor,
+            0.1f,
+            7,
+            duration,
+            CombatVfxPriority.RepeatedHit);
         if (line == null)
         {
             return;
         }
 
-        line.loop = false;
+        float size = 0.58f * vfx.EffectSizeMultiplier;
         line.transform.position = position;
         line.useWorldSpace = false;
-        for (int i = 0; i <= segments; i++)
+        line.SetPosition(0, Vector2.up * size);
+        line.SetPosition(1, Vector2.right * size * 0.35f);
+        line.SetPosition(2, Vector2.down * size);
+        line.SetPosition(3, Vector2.left * size * 0.35f);
+        line.SetPosition(4, Vector2.up * size);
+        line.SetPosition(5, Vector2.right * size * 0.75f);
+        line.SetPosition(6, Vector2.left * size * 0.75f);
+    }
+
+    private void CreateCombinedChainVisual(
+        Vector2 origin,
+        IReadOnlyList<Vector2> hitPositions,
+        Color color,
+        string objectName)
+    {
+        if (hitPositions == null)
         {
-            float angle = i * Mathf.PI * 2f / segments;
-            line.SetPosition(i, new Vector3(
-                Mathf.Cos(angle) * radius,
-                Mathf.Sin(angle) * radius,
-                0f));
+            return;
+        }
+
+        CombatVfxSettings vfx = GetCombatVfxSettings();
+        for (int i = 0; i < hitPositions.Count; i++)
+        {
+            Vector2 hitPosition = hitPositions[i];
+            CreateLightning(
+                origin,
+                hitPosition,
+                vfx.CombinedBurstDuration,
+                color,
+                0.16f,
+                objectName,
+                CombatVfxPriority.CombinedSynergy);
+            CreateImpactMarker(
+                hitPosition,
+                color,
+                0.38f,
+                0.1f,
+                vfx.CombinedHitDuration,
+                objectName + "Hit",
+                CombatVfxPriority.CombinedSynergy);
+        }
+    }
+
+    private void CreateThunderSwordBurst(
+        Vector2 origin,
+        IReadOnlyList<Vector2> hitPositions)
+    {
+        CombatVfxSettings vfx = GetCombatVfxSettings();
+        CreateCombinedBurstMarker(
+            origin,
+            vfx.ThunderSwordColor,
+            "ThunderSwordBurstVisual",
+            true);
+        if (hitPositions == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < hitPositions.Count; i++)
+        {
+            CreateImpactMarker(
+                hitPositions[i],
+                vfx.ThunderSwordColor,
+                0.36f,
+                0.11f,
+                vfx.CombinedHitDuration,
+                "ThunderSwordResonanceHitVisual",
+                CombatVfxPriority.CombinedSynergy);
+        }
+    }
+
+    private void CreateFrostSwordPropagation(
+        Vector2 origin,
+        IReadOnlyList<Vector2> hitPositions)
+    {
+        if (hitPositions == null)
+        {
+            return;
+        }
+
+        CombatVfxSettings vfx = GetCombatVfxSettings();
+        for (int i = 0; i < hitPositions.Count; i++)
+        {
+            Vector2 hitPosition = hitPositions[i];
+            CreateLightning(
+                origin,
+                hitPosition,
+                vfx.CombinedBurstDuration,
+                vfx.FrostSwordColor,
+                0.11f,
+                "FrostSwordPropagationVisual",
+                CombatVfxPriority.CombinedSynergy);
+            CreateCombinedBurstMarker(
+                hitPosition,
+                vfx.FrostSwordColor,
+                "FrostSwordHitVisual",
+                false);
+        }
+    }
+
+    private void CreateCombinedBurstMarker(
+        Vector2 position,
+        Color color,
+        string objectName,
+        bool electricSwordStyle)
+    {
+        CombatVfxSettings vfx = GetCombatVfxSettings();
+        LineRenderer line = AcquireLineVisual(
+            objectName,
+            color,
+            electricSwordStyle ? 0.17f : 0.13f,
+            electricSwordStyle ? 9 : 7,
+            vfx.CombinedBurstDuration,
+            CombatVfxPriority.CombinedSynergy);
+        if (line == null)
+        {
+            return;
+        }
+
+        float size = (electricSwordStyle ? 0.9f : 0.68f) *
+            vfx.EffectSizeMultiplier;
+        line.transform.position = position;
+        line.useWorldSpace = false;
+        if (electricSwordStyle)
+        {
+            line.SetPosition(0, new Vector2(-size, size * 0.72f));
+            line.SetPosition(1, new Vector2(size, -size * 0.72f));
+            line.SetPosition(2, new Vector2(size * 0.18f, -size * 0.35f));
+            line.SetPosition(3, new Vector2(-size * 0.16f, size));
+            line.SetPosition(4, new Vector2(size * 0.22f, size * 0.12f));
+            line.SetPosition(5, new Vector2(-size * 0.06f, size * 0.12f));
+            line.SetPosition(6, new Vector2(size * 0.2f, -size));
+            line.SetPosition(7, new Vector2(-size * 0.24f, -size * 0.12f));
+            line.SetPosition(8, new Vector2(size * 0.02f, -size * 0.12f));
+        }
+        else
+        {
+            line.SetPosition(0, new Vector2(-size, size * 0.7f));
+            line.SetPosition(1, new Vector2(size, -size * 0.7f));
+            line.SetPosition(2, new Vector2(size * 0.18f, -size * 0.32f));
+            line.SetPosition(3, new Vector2(0f, size));
+            line.SetPosition(4, new Vector2(size * 0.22f, 0f));
+            line.SetPosition(5, new Vector2(0f, -size));
+            line.SetPosition(6, new Vector2(-size * 0.22f, 0f));
         }
     }
 
@@ -2647,7 +2995,8 @@ public sealed class ItemEffectManager : MonoBehaviour
                 : vfx.ColdWaveColor,
             frostBurst ? 0.14f : 0.1f,
             segments + 1,
-            duration);
+            duration,
+            CombatVfxPriority.SingleSynergy);
         if (line == null)
         {
             return;
@@ -2679,7 +3028,8 @@ public sealed class ItemEffectManager : MonoBehaviour
         float radius,
         float width,
         float duration,
-        string objectName)
+        string objectName,
+        CombatVfxPriority priority = CombatVfxPriority.Item)
     {
         const int segments = 12;
         LineRenderer line = AcquireLineVisual(
@@ -2687,7 +3037,8 @@ public sealed class ItemEffectManager : MonoBehaviour
             color,
             width,
             segments + 1,
-            duration);
+            duration,
+            priority);
         if (line == null)
         {
             return;
@@ -2718,7 +3069,8 @@ public sealed class ItemEffectManager : MonoBehaviour
         Color color,
         float width,
         int positionCount,
-        float duration)
+        float duration,
+        CombatVfxPriority priority = CombatVfxPriority.Item)
     {
         combatVfxPool ??= new CombatVfxPool(
             transform,
@@ -2729,7 +3081,8 @@ public sealed class ItemEffectManager : MonoBehaviour
             width,
             positionCount,
             duration,
-            28);
+            28,
+            priority);
     }
 
     private void OnDisable()
