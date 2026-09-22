@@ -22,7 +22,7 @@
 ## 엔지니어링
 - 입력은 New Input System만 사용한다(`Keyboard.current`, `Mouse.current`). `Input.GetKey*`, `Input.GetMouseButton*`, `Input.mousePosition` 등 Legacy API를 추가하지 않는다.
 - 플레이어 노출 콘텐츠는 한국어, 코드 식별자는 영어다. 새 파일은 UTF-8. 기존 파일은 원본 인코딩을 확인한 후 건드리는 문자열만 안전하게 복원한다. 무관한 대량 인코딩 변환은 하지 않는다.
-- UI는 Canvas + TextMeshPro + Button을 사용한다. Legacy Text를 추가하지 않는다. Slice 글꼴 방향은 NanumGothic-Bold SDF, Dynamic atlas다.
+- UI는 Canvas + TextMeshPro + Button을 사용한다. Legacy Text를 추가하지 않는다. 현재 적용 폰트는 NanumGothic-Bold SDF, Dynamic atlas이며, 정식 픽셀아트 UI는 갈무리 9를 우선 후보로 검토한다. 실제 이관과 장문 가독성·라이선스 검증은 후속 작업이다.
 - 직렬화된 필드/씬/프리팹 참조와 `.meta` GUID를 보존하며 점진적으로 이관한다. 중복 Manager를 만들지 않는다.
 - `FishSpecialType` 순서 `None, Pufferfish, Squid, MiniBoss, Boss`를 절대 바꾸지 않는다. 다른 직렬화 enum도 재정렬하지 않는다.
 - 도구 구조 작업 중 기존 보스 다중 회유를 불필요하게 재설계하거나 관련 없는 밸런스 값을 바꾸지 않는다.

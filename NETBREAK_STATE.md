@@ -1,12 +1,12 @@
 # NETBREAK 인수인계
 
-기준일: 2026-09-22. 현재 마일스톤: **G6-C2와 현재 버전 최소 안정화 수동 검증 완료. UX-F1 구현·자동·수동 검증 완료. UX-F2-A 전투 VFX 구현·자동 검증 완료, Unity 수동 시각 검증 대기**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 장기 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
+기준일: 2026-09-22. 현재 마일스톤: **G6-C2와 현재 버전 최소 안정화 수동 검증 완료. UX-F1 및 UX-F2-A/B 임시 전투 피드백 구현·자동·수동 검증 완료. VS-2 아트 방향 1차 확정 및 아트 가이드 작성 완료. 다음 단계는 기존 Unity 화면·제작 규격 조사와 첫 에셋 프로토타입 제작**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 아트 기준은 `Docs/NETBREAK_ART_GUIDE.md`, 장기 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경
 - 저장소: `C:\game_dev\unity\NetBreak`, 브랜치 `vertical-slice`.
 - origin: `https://github.com/jeonjiwon1/NetBreak.git`.
-- 현재 확인한 HEAD: `5b595e0` (`Add squid ink interference visual feedback`), `origin/vertical-slice`와 동일하다. UX-F1 코드·테스트·문서가 이 커밋에 포함되어 있다. Windows Build Profile과 Main Scene 등록은 앞선 `99e2031`에 포함되어 있다.
-- UX-F2-A 시작 전 확인한 미커밋 사용자 변경: `Assets/DefaultVolumeProfile.asset`, `Assets/Settings/UniversalRP.asset`, `Assets/UniversalRenderPipelineGlobalSettings.asset`, `ProjectSettings/ProjectSettings.asset`, `ProjectSettings/UnityConnectSettings.asset`. 최근 Windows 빌드·수동 검증 과정의 변경으로 보고 UX-F2-A에서 수정하거나 삭제하지 않았다.
+- 이번 문서 작업 시작 시 확인한 HEAD: `3bc311c` (`Add item and combined synergy VFX`), `origin/vertical-slice`와 동일했고 작업 트리는 깨끗했다. UX-F2-B 코드·테스트·문서와 당시 작업 트리에 있던 URP 및 ProjectSettings 관련 변경이 같은 커밋으로 push되어 있다. 이 Git 사실은 해당 설정을 Unity에서 별도로 재검증했다는 뜻이 아니다.
+- Windows Build Profile과 Main Scene 등록은 앞선 `99e2031`, UX-F1은 `5b595e0`, UX-F2-A는 `c1d75fe`, UX-F2-B는 `3bc311c`에 포함되어 있다. `3bc311c`에는 `Assets/DefaultVolumeProfile.asset`, `Assets/Settings/UniversalRP.asset`, `Assets/UniversalRenderPipelineGlobalSettings.asset`, `ProjectSettings/ProjectSettings.asset`, `ProjectSettings/TimeManager.asset`, `ProjectSettings/UnityConnectSettings.asset` 변경도 함께 포함되어 있다. 이번 문서 작업에서 이를 되돌리거나 수정하지 않았다.
 - Unity `6000.3.11f1`, URP `17.3.0`, Input System `1.19.0`, Test Framework `1.6.0`. `activeInputHandler: 1`.
 - 추적 파일 242개. 주요 구조: Assets/Scripts/{Core,Fish,Gear,UI}, Assets/Editor, Assets/Scenes, Assets/Prefabs/{Fish,Gear}, Assets/UI/Fonts, Packages, ProjectSettings, Docs. Library/Logs/UserSettings는 로컬 Unity 산출물이다.
 
@@ -370,7 +370,7 @@
 - 최신 개발 순서는 `현재 버전 최소 안정화 → 최소 온보딩·전투 피드백 → 소규모 외부 플레이테스트 → G7/G8 성장·경제 연결 → Area 2 제작 및 확장성 검증 → 점진적 도구·아이템/Area 3~6 확장 → 충분한 콘텐츠 이후 전체 정밀 밸런스·Meta·Hard Mode·출시 준비`다.
 - G9 Legacy 정리는 관련 시스템 대체와 회귀가 확인된 범위만 수행한다. 현재 콘텐츠 제작을 막지 않는 휴면 코드의 대규모 정리는 우선하지 않는다.
 - 현재 최소 안정화의 통과 조건은 G6-C2 버전 대표 Area 1 성공 Run, MiniBoss/Boss 주요 실패 경로, 결과 화면 재시작, 새 Run 성장 초기화, 치명적인 입력·모달·참조 오류 확인이다. 여러 Full Run을 반복하는 정밀 밸런스는 현재 통과 조건이 아니다.
-- Windows Build Profile과 Main Scene 등록 수정은 커밋 `99e2031`로 `origin/vertical-slice`에 반영되어 있다. 사용자는 Windows 빌드 생성과 EXE 실행을 확인했다. 현재 미커밋 URP·ProjectSettings 변경 5개는 빌드 검증 과정의 사용자 변경이며 이번 문서 개정에서 보존했다. EXE 실행 확인을 Area 1 성공 Run, 결과 화면 재시작 또는 새 Run 초기화 검증으로 확대 해석하지 않는다.
+- Windows Build Profile과 Main Scene 등록 수정은 커밋 `99e2031`로 `origin/vertical-slice`에 반영되어 있다. 사용자는 Windows 빌드 생성과 EXE 실행을 확인했다. 이 기획 변경 당시에는 빌드 검증 과정의 URP·ProjectSettings 변경이 미커밋 상태였고 문서 작업에서 보존했다. 이후 해당 설정 변경은 UX-F2-B와 함께 `3bc311c`로 push됐지만, 설정 자체의 별도 Unity 재검증 완료로 확대 해석하지 않는다. EXE 실행 확인도 당시 Area 1 성공 Run, 결과 화면 재시작 또는 새 Run 초기화 검증을 뜻하지 않았다.
 - 이번 작업은 기획 문서 개정만 수행했다. Unity, 게임 코드, Scene/Prefab, Inspector, Build Profile과 ProjectSettings를 수정하거나 새 테스트를 실행하지 않았다. 문서 commit/push는 사용자가 수행한다.
 
 ## 최신 검증 — G6-C2 Area 1 성공 Run과 오징어 낚싯대 방해 조사
@@ -406,11 +406,11 @@
 - `ItemEffectManager > Combat VFX / 전투 시각 효과`의 코드 기본값은 활성 표시 상한 48, 선 굵기 배율 1, 크기 배율 1, 먹물 궤적 0.22초, 먹물 적중 0.3초, 공통 적중 강조 0.22초와 효과별 색상이다. 기존 Main 직렬화 값인 연쇄 방전 0.45초, 천둥 폭풍 0.65초, 영혼 참격 0.45초, 검의 비 0.65초, 냉기 파동 0.5초, 서리 폭발 0.7초를 유지했다. Scene/Prefab/YAML과 Gameplay 수치는 수정하지 않았다.
 - 변경 파일은 `Assets/Scripts/Core/CombatVfxPool.cs`와 `.meta`, `ItemEffectManager.cs`, `Assets/Scripts/Fish/SquidController.cs`, `Assets/Scripts/Gear/FishingRodController.cs`, 신규 `Assets/Editor/Tests/CombatVfxTests.cs`와 `.meta`, `NETBREAK_STATE.md`다.
 - Unity 6000.3.11f1에서 Runtime 및 Editor/Test 컴파일에 성공했다. 신규 UX-F2-A EditMode 테스트 10/10과 기존 테스트 129개를 합친 전체 회귀 139/139가 통과했다. 실제 이벤트·대상 없음·대상 위치 일치·Collider 중복 제거·여러 오징어·상태 만료와 Pool 반환·Pause·Run 종료·풀 상한과 재사용·Resistance 피해·추가 피해 재귀 방지를 검증했으며 삭제·Skip한 기존 테스트는 없다.
-- Unity Play Mode에서 색상·굵기·크기·가독성, 대규모 어군에서의 화면 밀도와 성능, 실제 개발용 아이템 강화 상태의 각 단계 연출, Pause·Run 종료·재시작의 시각 잔상은 아직 수동 검증하지 않았다. UX-F2-A를 실제 시각 품질 검증 완료로 기록하지 않는다. UX-F2-B의 구체 범위는 아직 확정된 문서가 없으므로 이번 작업에서 추측하거나 선행 구현하지 않았다.
+- 사용자는 Unity Play Mode에서 UX-F2-A의 임시 단일 시너지 VFX를 수동 검증했다. 이는 현재 임시 피드백의 동작 확인이며 정식 아트·정식 VFX 품질 완료를 뜻하지 않는다. 대규모 어군 성능과 정식 연출 적용 뒤의 화면 밀도·잔상은 버티컬 슬라이스 통합 검증에서 다시 확인한다.
 
 ### UX-F2-A 수동 확인 보충
 
-- 사용자는 UX-F2-A Play Mode에서 개별 기능이 대체로 정상이고 명백한 전투 오류가 없음을 확인했다. 여러 표시가 동시에 발생할 때 각 효과를 정확히 구분할 수 있는지와 화면 가독성은 아직 확인 완료로 기록하지 않는다.
+- 사용자는 UX-F2-A Play Mode에서 개별 기능이 대체로 정상이고 명백한 전투 오류가 없음을 확인했다. 여러 표시가 동시에 발생할 때 뚜렷한 가독성 문제는 보고되지 않았지만, 정식 VFX 적용 뒤 효과 구분과 UI 가독성을 다시 검증한다.
 
 ## 최근 변경 — UX-F2-B 아이템·복합 시너지 VFX
 
@@ -421,4 +421,16 @@
 - `CombatVfxSettings`에 아이템 6종 및 복합 시너지 3종 색상, 복합 발동 기본 0.42초와 추가 적중 기본 0.28초를 추가했다. 기존 활성 상한 48, 선 굵기·크기 배율 1과 아이템별 기존 VFX 지속시간, 모든 Gameplay Inspector 값은 유지했다. 상태형 표시는 VFX 지속시간이 아니라 실제 modifier/전도 표식 수명을 따른다. Scene/Prefab/YAML과 별도 Editor 설정 메뉴는 추가하거나 수정하지 않았다.
 - 변경 파일은 `Assets/Scripts/Core/CombatVfxPool.cs`, `Assets/Scripts/Core/ItemEffectManager.cs`, `Assets/Editor/Tests/CombatVfxTests.cs`, `NETBREAK_STATE.md`다. 신규 UX-F2-B EditMode 테스트 10개를 추가해 아이템 6종의 실제 대상/피해/상태 만료, 대상 없음, 복합 시너지 Active ID, 전도 표식 재부여·소비·만료·Pool 재사용·조합 변경 정리, 실제 공명/초전도/빙검 추가 대상, 내부 쿨다운, 풀 포화 우선순위를 검증했다. 기존 테스트는 삭제하거나 Skip하지 않았다.
 - Unity 6000.3.11f1 Editor에서 Runtime 및 Editor/Test 스크립트 컴파일에 성공했다. 전체 EditMode 테스트 149/149가 통과했고 최종 Console은 로그 3, 경고 0, 오류 0이었다. 헤드리스 배치 실행은 Editor 라이선스가 없어 테스트 시작 전에 중단됐으며, 같은 버전의 열린 Unity Editor Test Runner에서 전체 검증을 완료했다.
-- UX-F2-B의 실제 Play Mode 시각 품질은 아직 수동 검증하지 않았다. 개발용 아이템 획득·강화로 6종을 발동하고 복합 시너지를 각각 활성화해 색상·형태 구분, 여러 효과 동시 발동 시 HUD/성장 UI 가독성, 대규모 어군 성능, Pause·포획·도주·재시작 잔상을 확인해야 한다. UX-F3/F4의 명칭과 구체 범위는 현재 최신 문서에서 확정되지 않았으므로 미정 미래 작업으로 남기며 구현 완료로 기록하지 않는다.
+- 사용자는 Play Mode에서 개별 아이템 6종과 복합 시너지 3종의 임시 VFX를 수동 검증했다. 동시 발동에서도 뚜렷한 가독성 문제는 보고되지 않았으나, 이는 임시 연출 검증이며 정식 VFX 적용 뒤 HUD/성장 UI 가독성, 대규모 어군 성능, Pause·포획·도주·재시작 잔상을 다시 확인한다.
+
+## 최신 계획 — 버티컬 슬라이스 아트·피드백 및 외부 테스트 준비
+
+- UX-F3는 새 E/R 또는 보스 연출을 만드는 단계가 아니라 **기존 E/R 및 MiniBoss/Boss 피드백 점검**이다. MiniBoss의 감속 후 돌진, Boss의 3회 회유와 안내, 기존 E/R 기능을 실제 플레이에서 먼저 확인하고 정보 전달 문제가 확인된 항목만 최소 수정한다. 문제가 없으면 별도 구현 없이 종료하며 기존 연출을 중복 구현하지 않는다.
+- 정상 Area 1은 Boss 포획 뒤 R을 얻고 곧 결과로 진행하므로 R을 사용할 후속 전투가 없다. R 전투 연출의 완성도는 Area 2 등 후속 전투 구간이 실제로 연결된 뒤 다시 검증한다. UX-F3는 대규모 구현이나 이후 아트 작업의 필수 차단 단계가 아니다.
+- 외부 플레이테스트 전 순서는 `VS-1 기존 피드백 최소 점검 → VS-2 Area 1 아트 방향 확정·별도 아트 기획서 작성 → VS-3 기본 아트·애니메이션 제작/적용 → VS-4 정식 핵심 VFX → VS-5 SFX·최소 BGM → VS-6 UX-F4 최소 튜토리얼 → VS-7 통합 검증 → VS-8 소규모 외부 플레이테스트`다. 상세 범위와 통과 기준은 `Docs/NETBREAK_ROADMAP.md`를 따른다.
+- VS-2에서 정식 아트의 1차 방향을 **밝고 읽기 쉬운 탑다운 픽셀아트**로 확정했다. 간결한 표현을 기본으로 하고 특수어·MiniBoss·Boss·주요 전투 연출에는 포인트 디테일을 사용한다. `Docs/NETBREAK_ART_GUIDE.md`에 확정 원칙, 권장 초안, 미정 규격과 검증 계획을 기록했다.
+- 현재 적용 폰트는 NanumGothic-Bold SDF, Dynamic atlas다. 정식 픽셀아트 UI는 갈무리 9를 우선 후보로 검토하지만 폰트 임포트, TMP Font Asset 생성, 기존 UI 교체와 공식 라이선스 검증은 아직 수행하지 않았다.
+- 실제 Sprite·배경·아이콘 제작과 Unity 적용은 수행하지 않았다. 세부 Sprite 크기, PPU, Pixel Perfect Camera, 내부 해상도, 최종 팔레트와 애니메이션 규격도 미정이다. 다음 작업은 현재 Camera·Sprite·PPU·UI Scaling 조사와 일반 물고기 1종, 오징어, 낚싯대, 바다 배경, 기본 UI 아이콘 일부의 첫 프로토타입 제작이다.
+- 정식 VFX, SFX와 BGM은 아직 완료되지 않았다. 이번 문서 작업은 Unity 실행·검증을 추가하지 않았고 기존 UX-F2-A/B 검증 결과를 변경하지 않는다.
+- 외부 테스트 뒤에는 확인된 구조적 문제를 먼저 처리하고 G7 상점·Gold 경제, G8 해역별 성장·보상, Area 2와 해역 전환, 새 도구·아이템·스킬·시너지, Area 3~6, Meta·Hard Mode, 전체 밸런스·최적화·출시 준비 순으로 진행한다. 새 콘텐츠는 가능한 한 gameplay, 아트·애니메이션, VFX, SFX, UI와 검증을 한 단위로 묶고 최종 폴리싱·오디오 믹싱은 출시 준비에 남긴다.
+- 이번 변경은 Markdown 계획 갱신만 수행했다. Unity 실행·테스트, 코드, Scene/Prefab, 에셋, ProjectSettings, Git add/commit/push는 수행하지 않았다.
