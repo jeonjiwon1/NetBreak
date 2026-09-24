@@ -133,6 +133,9 @@ internal sealed class CombatVfxPool
     {
         public GameObject GameObject;
         public LineRenderer Line;
+        public SpriteRenderer Sprite;
+        public Sprite[] Frames;
+        public float TotalDuration;
         public float Remaining;
         public bool IsActive;
         public bool IsPersistent;
@@ -183,6 +186,52 @@ internal sealed class CombatVfxPool
             priority);
     }
 
+    public SpriteRenderer AcquireSpriteTransient(
+        string objectName, Sprite[] frames, Vector2 position, float duration,
+        float size, int sortingOrder, CombatVfxPriority priority)
+    {
+        if (owner == null || frames == null || frames.Length == 0 || duration <= 0f)
+            return null;
+
+        Entry entry = FindInactive(true);
+        if (entry == null && entries.Count >= settings.MaximumActiveVisuals)
+            entry = FindInactive(false);
+        if (entry == null && ActiveCount < settings.MaximumActiveVisuals)
+            entry = CreateEntry(true);
+        if (entry == null)
+        {
+            entry = FindTransientToRecycle(priority);
+            if (entry == null) return null;
+            Release(entry);
+        }
+        if (entry.Sprite == null)
+        {
+            if (entry.Line != null) entry.Line.enabled = false;
+            DestroyObject(entry.Line);
+            entry.Line = null;
+            entry.Sprite = entry.GameObject.AddComponent<SpriteRenderer>();
+        }
+
+        entry.GameObject.name = objectName;
+        entry.GameObject.transform.SetParent(owner, false);
+        entry.GameObject.transform.position = position;
+        entry.GameObject.transform.localRotation = Quaternion.identity;
+        entry.GameObject.transform.localScale = Vector3.one * size * settings.EffectSizeMultiplier;
+        entry.Sprite.sprite = frames[0];
+        entry.Sprite.color = Color.white;
+        entry.Sprite.sortingOrder = sortingOrder;
+        entry.Frames = frames;
+        entry.TotalDuration = duration;
+        entry.Remaining = duration;
+        entry.IsPersistent = false;
+        entry.IsActive = true;
+        entry.Sequence = ++nextSequence;
+        entry.Priority = priority;
+        entry.GameObject.SetActive(true);
+        ActiveCount++;
+        return entry.Sprite;
+    }
+
     public LineRenderer AcquirePersistent(
         string objectName,
         Color color,
@@ -218,6 +267,12 @@ internal sealed class CombatVfxPool
             if (entry.Remaining <= 0f)
             {
                 Release(entry);
+            }
+            else if (entry.Sprite != null && entry.Frames != null)
+            {
+                int index = Mathf.Min(entry.Frames.Length - 1,
+                    Mathf.FloorToInt((1f - entry.Remaining / entry.TotalDuration) * entry.Frames.Length));
+                entry.Sprite.sprite = entry.Frames[index];
             }
         }
     }
@@ -279,10 +334,12 @@ internal sealed class CombatVfxPool
             return null;
         }
 
-        Entry entry = FindInactive();
+        Entry entry = FindInactive(false);
+        if (entry == null && entries.Count >= settings.MaximumActiveVisuals)
+            entry = FindInactive(true);
         if (entry == null && ActiveCount < settings.MaximumActiveVisuals)
         {
-            entry = CreateEntry();
+            entry = CreateEntry(false);
         }
 
         if (entry == null)
@@ -294,6 +351,13 @@ internal sealed class CombatVfxPool
             }
 
             Release(entry);
+        }
+        if (entry.Line == null)
+        {
+            if (entry.Sprite != null) entry.Sprite.enabled = false;
+            DestroyObject(entry.Sprite);
+            entry.Sprite = null;
+            entry.Line = entry.GameObject.AddComponent<LineRenderer>();
         }
 
         entry.GameObject.name = string.IsNullOrEmpty(objectName)
@@ -326,11 +390,11 @@ internal sealed class CombatVfxPool
         return line;
     }
 
-    private Entry FindInactive()
+    private Entry FindInactive(bool sprite)
     {
         for (int i = 0; i < entries.Count; i++)
         {
-            if (!entries[i].IsActive)
+            if (!entries[i].IsActive && (entries[i].Sprite != null) == sprite)
             {
                 return entries[i];
             }
@@ -363,7 +427,7 @@ internal sealed class CombatVfxPool
         return candidateToRecycle;
     }
 
-    private Entry CreateEntry()
+    private Entry CreateEntry(bool sprite)
     {
         GameObject visual = new("CombatVfx");
         visual.transform.SetParent(owner, false);
@@ -372,7 +436,8 @@ internal sealed class CombatVfxPool
         Entry entry = new()
         {
             GameObject = visual,
-            Line = visual.AddComponent<LineRenderer>()
+            Line = sprite ? null : visual.AddComponent<LineRenderer>(),
+            Sprite = sprite ? visual.AddComponent<SpriteRenderer>() : null
         };
 
         entries.Add(entry);
@@ -409,7 +474,10 @@ internal sealed class CombatVfxPool
         entry.IsPersistent = false;
         entry.Remaining = 0f;
         entry.Priority = CombatVfxPriority.RepeatedHit;
-        entry.Line.positionCount = 0;
+        if (entry.Line != null) entry.Line.positionCount = 0;
+        if (entry.Sprite != null) entry.Sprite.sprite = null;
+        entry.Frames = null;
+        entry.TotalDuration = 0f;
         entry.GameObject.SetActive(false);
         ActiveCount = Mathf.Max(0, ActiveCount - 1);
     }

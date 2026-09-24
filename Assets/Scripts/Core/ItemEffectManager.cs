@@ -230,6 +230,10 @@ public sealed class ItemEffectManager : MonoBehaviour
 
     private RunItemInventory boundInventory;
     private CombatVfxPool combatVfxPool;
+    private AudioSource squidInkAudio;
+    private float lastSquidInkSoundTime = float.NegativeInfinity;
+    private bool squidInkAudioPaused;
+    private const float SquidInkSoundCooldown = 0.08f;
     private bool runWasActive;
     private int capacitorHitCount;
     private float stormOrbRemaining;
@@ -261,6 +265,7 @@ public sealed class ItemEffectManager : MonoBehaviour
     {
         BindInventoryIfNeeded();
         combatVfxPool?.Tick(Time.deltaTime);
+        UpdateSquidInkAudioPause();
 
         bool isRunActive = IsRunActive();
         if (!isRunActive)
@@ -339,6 +344,45 @@ public sealed class ItemEffectManager : MonoBehaviour
             settings.SquidImpactDuration,
             "SquidInkImpactVisual",
             CombatVfxPriority.RepeatedHit);
+    }
+
+    public void ShowSquidInkBurst(Vector2 origin, SquidInkPresentationProfile presentation)
+    {
+        if (presentation == null || !presentation.HasPuff) return;
+        combatVfxPool ??= new CombatVfxPool(transform, GetCombatVfxSettings());
+        combatVfxPool.AcquireSpriteTransient(
+            "SquidInkBurstVisual", presentation.PuffFrames, origin,
+            0.32f, 1.6f, 29, CombatVfxPriority.RepeatedHit);
+    }
+
+    public bool PlaySquidInkSound(SquidInkPresentationProfile presentation)
+    {
+        if (presentation == null || presentation.InkClip == null ||
+            Time.timeScale <= 0f ||
+            Time.time - lastSquidInkSoundTime < SquidInkSoundCooldown)
+            return false;
+
+        if (squidInkAudio == null)
+        {
+            squidInkAudio = GetComponent<AudioSource>();
+            if (squidInkAudio == null) squidInkAudio = gameObject.AddComponent<AudioSource>();
+            squidInkAudio.playOnAwake = false;
+            squidInkAudio.loop = false;
+            squidInkAudio.spatialBlend = 0f;
+        }
+        squidInkAudio.PlayOneShot(presentation.InkClip, presentation.InkVolume);
+        lastSquidInkSoundTime = Time.time;
+        return true;
+    }
+
+    private void UpdateSquidInkAudioPause()
+    {
+        if (squidInkAudio == null) return;
+        bool paused = Time.timeScale <= 0f;
+        if (paused == squidInkAudioPaused) return;
+        if (paused) squidInkAudio.Pause();
+        else squidInkAudio.UnPause();
+        squidInkAudioPaused = paused;
     }
 
     public bool CanUpgradeItem(string itemId, out ItemUpgradeResult result)
@@ -2603,6 +2647,9 @@ public sealed class ItemEffectManager : MonoBehaviour
         frostCrystalRemaining = frostCrystalAttackInterval;
 
         combatVfxPool?.Clear();
+        if (squidInkAudio != null) squidInkAudio.Stop();
+        lastSquidInkSoundTime = float.NegativeInfinity;
+        squidInkAudioPaused = false;
         electricStunVisuals.Clear();
         iceFreezeVisuals.Clear();
         frostSigilVisuals.Clear();

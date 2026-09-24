@@ -1,5 +1,18 @@
 # NETBREAK 인수인계
 
+## VS-2C-1 — 오징어 먹물 공격 Presentation (2026-09-24, Unity 수동 검증 완료)
+
+- 시작 HEAD `a042316`, `vertical-slice`, 기존 작업 트리 깨끗함. 이번 요청에 따라 Git add/commit/push를 수행하지 않는다.
+- `SquidController.ReleaseInk`의 기존 OverlapCircleAll, 그물/낚싯대 중복 제거, DisableTemporarily, InkRange·InkInterval·FirstInkDelay·InkDisableDuration을 보존한다. 영향을 받은 대상이 있을 때 방해 적용 직후 Presentation을 한 번 시작한다. Animation Event는 게임플레이 판정을 만들지 않는다.
+- 기존 승인된 `Squid_Swim.png`는 변경하지 않았다. 별도 `Squid_InkAttack.png`는 64×64 셀, E/N/NE/NW 4축×4프레임, 8 FPS의 내부 생성 Prototype이다. `FishVisualController`는 시작 방향을 잠그고 frame 2에서 VFX/SFX를 호출한 뒤 현재 이동 방향의 Swim으로 복귀한다. Pool 재초기화/비활성화에서 special state를 지운다.
+- `Squid_InkPuff.png`는 32px×4프레임의 짙은 검보라 구름이다. `CombatVfxPool`에 SpriteRenderer transient를 추가해 기존 48개 공용 상한과 RepeatedHit 우선순위를 사용한다. 낚싯대 대상의 기존 궤적/타격 표시를 함께 Release 프레임에 보여준다. 결과 상태 표시 UI는 유지한다.
+- `Squid_InkRelease.wav`는 프로젝트 내부 생성 44.1 kHz/16-bit/mono/0.28초 one-shot Prototype이다. `ItemEffectManager`의 재사용 AudioSource에서 Profile 볼륨(기본 0.38)으로 재생하고 같은 소리의 전역 0.08초 cooldown만 적용한다. Pause 시 AudioSource를 Pause/UnPause하고 Run 상태 정리 시 Stop한다.
+- `SquidInkArtSetup.Setup`/`Validate` 메뉴로 새 두 시트를 분할하고 `Assets/Resources/SquidInkPresentation.asset`에 16+4 Sprite와 AudioClip을 연결했다. 메뉴 성공 로그를 확인했다. Scene/Prefab YAML은 수정하지 않았다. 프로필 누락 시 기존 방해 Gameplay는 유지하고 특수 애니메이션/먹물 구름/소리는 생략된다.
+- 신규 `SquidInkPresentationTests`는 성공 트리거, 즉시 Gameplay 분리, 방향 잠금, 4프레임 진행/Swim 복귀, VFX 시점·반환, Pause, Pool 재사용, 누락 Profile, 오디오 중복 방지 등을 대상으로 작성했다. 기존 Fish directional 및 먹물 수치 검사는 유지했다.
+- 자동 검증 상태: 생성 PNG는 256×256/128×32 RGBA, alpha 0/255만 사용하고 WAV는 44.1 kHz/16-bit/mono/0.28초임을 확인했다. 정상 패키지 상태의 Unity 배치 실행에서 Runtime/Editor 스크립트 빌드 성공, `Setup Squid Ink Presentation`의 16+4 분할·Profile/Audio 링크 및 Validate 성공 로그를 확인했다. 첫 전체 EditMode 실행의 테스트 fixture Collider 설정과 기존 VFX 개수 기대값을 수정하고 자산 연결 검사를 추가한 뒤 **전체 EditMode 190/190 통과, 실패 0, skip 0**. 초기 Unity 배치 시도는 Package Manager IPC, `-noUpm` 시도는 Licensing Client/패키지 참조 문제로 실패했고 정상 재실행으로 해결했다.
+- 사용자 Unity 수동 검증 완료: compile 정상, Console Error 0, 전체 EditMode 190/190 통과. 먹물 방해 판정 즉시 적용, E/N/NE/NW 및 반대 방향의 공격 애니메이션, 현재 방향 Swim 복귀, VFX 발동·Pool 반환, SFX 1회·다중 오징어 중복 보호, 영향 대상 없음의 무연출, Pool/비활성화·Pause·Run 재시작 초기화를 확인했다. 기존 Fish Swim·Resistance·포획·UI·VFX도 정상이다. **Squid Ink Animation/VFX/SFX Prototype Approval: Approved. Final Production Art/VFX/Audio Approval: Pending.** 현재 볼륨·cooldown·loudness·Mixer 정책은 최종 확정값이 아니다.
+- `git diff --check` 종료 코드 0. 새 미추적 텍스트·메타데이터의 trailing whitespace도 별도로 확인했다. 기존 수영 시트/프로필, FishData 수치, Scene/Prefab, ProjectSettings에는 diff가 없다.
+
 기준일: 2026-09-24. 현재 마일스톤: **G6-C2와 현재 버전 최소 안정화 수동 검증 완료. UX-F1 및 UX-F2-A/B 임시 전투 피드백 구현·자동·수동 검증 완료. VS-2 아트 방향 1차 확정. VS-2B-1~3의 12프레임 프로토타입은 당시 Unity 수동 검증과 승인을 완료했고, VS-2B-4의 16프레임 방향 규칙은 Unity 수동 검증 및 전체 EditMode 183/183 통과로 현재 프로토타입 승인**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 아트 기준은 `Docs/NETBREAK_ART_GUIDE.md`, 장기 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경

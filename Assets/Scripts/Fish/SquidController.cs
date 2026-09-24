@@ -1,10 +1,14 @@
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(FishController))]
 public class SquidController : MonoBehaviour
 {
     private FishController fishController;
+    private FishVisualController visualController;
+    private SquidInkPresentationProfile presentationProfile;
+    public event Action<SquidController> InkPresentationTriggered;
 
     private float inkTimer;
 
@@ -12,11 +16,19 @@ public class SquidController : MonoBehaviour
     {
         fishController =
             GetComponent<FishController>();
+        visualController = GetComponent<FishVisualController>();
+        presentationProfile = Resources.Load<SquidInkPresentationProfile>(
+            "SquidInkPresentation");
     }
 
     private void OnEnable()
     {
         ResetInkTimer();
+    }
+
+    private void OnDisable()
+    {
+        InkPresentationTriggered = null;
     }
 
     private void Update()
@@ -139,27 +151,28 @@ public class SquidController : MonoBehaviour
             }
         }
 
-        ItemEffectManager vfx =
-            ItemEffectManager.Instance;
-
-        if (vfx == null)
+        if (affectedNets.Count > 0 || affectedRods.Count > 0)
         {
-            return;
-        }
+            Vector2 origin = transform.position;
+            List<Vector2> rodPositions = new List<Vector2>(affectedRods.Count);
+            foreach (FishingRodController rod in affectedRods)
+                if (rod != null) rodPositions.Add(rod.transform.position);
 
-        Vector2 origin =
-            transform.position;
-
-        foreach (FishingRodController rod
-                 in affectedRods)
-        {
-            if (rod != null)
+            InkPresentationTriggered?.Invoke(this);
+            Action releasePresentation = () =>
             {
-                vfx.ShowSquidInkAttack(
-                    origin,
-                    rod.transform.position
-                );
-            }
+                ItemEffectManager effects = ItemEffectManager.Instance;
+                if (effects == null) return;
+                effects.ShowSquidInkBurst(origin, presentationProfile);
+                for (int i = 0; i < rodPositions.Count; i++)
+                    effects.ShowSquidInkAttack(origin, rodPositions[i]);
+                effects.PlaySquidInkSound(presentationProfile);
+            };
+            if (visualController == null)
+                visualController = GetComponent<FishVisualController>();
+            if (visualController == null ||
+                !visualController.PlaySpecial(presentationProfile, releasePresentation))
+                releasePresentation();
         }
     }
 

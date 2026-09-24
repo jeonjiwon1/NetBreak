@@ -83,7 +83,8 @@ public sealed class CombatVfxTests
 
         ReleaseInk(first);
 
-        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(2));
+        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(3));
+        Assert.That(CountActiveLines("SquidInkBurstVisual"), Is.EqualTo(1));
         Assert.That(CountActiveLines("SquidInkTrajectoryVisual"), Is.EqualTo(1));
         Assert.That(CountActiveLines("SquidInkImpactVisual"), Is.EqualTo(1));
 
@@ -100,7 +101,7 @@ public sealed class CombatVfxTests
         Assert.That(
             GetPrivateField<float>(rod, "specialDisabledUntil"),
             Is.GreaterThan(firstDeadline + 2f));
-        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(4));
+        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(6));
         Assert.That(
             rod.GetComponentsInChildren<TMPro.TextMeshPro>(true).Length,
             Is.EqualTo(1));

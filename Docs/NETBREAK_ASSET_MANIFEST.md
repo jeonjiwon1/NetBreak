@@ -1,5 +1,25 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## VS-2C-1 신규 Prototype (2026-09-24)
+
+| 필드 | 오징어 먹물 공격 Sprite | 오징어 먹물 Burst VFX | 오징어 먹물 SFX |
+|---|---|---|---|
+| Asset ID | FISH-SQUID-INK-ANIM-001 | VFX-SQUID-INK-BURST-001 | SFX-SQUID-INK-RELEASE-001 |
+| Display Name | 오징어 먹물 공격 | 오징어 먹물 분출 구름 | 오징어 먹물 분사음 |
+| Category | Special Fish Animation | Special Fish VFX | Special Fish SFX |
+| File Path | `Assets/Art/Fish/Squid/Squid_InkAttack.png` | `Assets/Art/VFX/Squid/Squid_InkPuff.png` | `Assets/Audio/SFX/SpecialFish/Squid_InkRelease.wav` |
+| Production Method | 기존 승인된 수영 시트를 바탕으로 64px 픽셀 그리드에서 몸통·눈을 보존하고 촉수/먹물만 직접 생성 | 32px 픽셀 그리드에 4단계 검보라 구름을 직접 생성 | Python에서 저역 노이즈·짧은 물방울 성분을 합성해 직접 생성 |
+| Source | NETBREAK 프로젝트 내부 원본 수영 시트 | NETBREAK 프로젝트 내부 생성 | NETBREAK 프로젝트 내부 생성 |
+| License | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 |
+| Unity Linked | Yes — Editor Setup/Validate가 Profile의 16개 공격 Sprite 연결 확인 | Yes — 같은 Profile의 puffFrames 4개 연결 확인 | Yes — 같은 Profile의 inkClip 연결 확인 |
+| Automated Validation | PNG 256×256 RGBA, 4축×4셀·alpha 0/255 정적 규격 확인; Unity 메뉴 Validate 및 EditMode 전체 통과 | PNG 128×32 RGBA, 4셀·alpha 0/255 정적 규격 확인; Unity 메뉴 Validate 및 EditMode 전체 통과 | PCM WAV mono/44.1kHz/16-bit/0.28초 정적 규격 확인; Unity 메뉴 Validate 및 EditMode 전체 통과 |
+| Manual Validation | Manual Visual Validation: Passed — E/N/NE/NW·반대 방향, 특수 프레임과 현재 방향 Swim 복귀 확인 | Manual Validation: Passed — 발동·Pool 반환, 영향 대상 없음, Pause·Run 재시작 확인 | Manual Audio Validation: Passed — 1회 재생, 다중 오징어 중복 보호, Pause·Run 재시작 확인 |
+| Prototype Approval | Approved | Approved | Approved |
+| Final Approval | Final Production Art Approval: Pending | Final Production VFX Approval: Pending | Final Production Audio Approval: Pending |
+| Notes | 기존 `Squid_Swim.png`와 16프레임 Swim Profile은 변경하지 않음. Profile 경로 `Assets/Resources/SquidInkPresentation.asset` | `CombatVfxPool` 공용 상한 48, RepeatedHit 우선순위. 기존 방해 상태 UI와 별도 공격 원인 표시 | 첫 실제 프로젝트 내부 생성 Prototype SFX. 기본 Profile 볼륨 0.38, 전역 0.08초 재생 제한 |
+
+위 세 에셋의 Unity 분할·연결, 전체 EditMode 190/190, 사용자 Play Mode 수동 검증을 확인했고 현재 Prototype 품질을 승인했다. 최종 출시용 Art/VFX/Audio 승인은 Pending이며 현재 볼륨·cooldown·loudness·Mixer 정책은 최종 확정값이 아니다. 기존 먹물 Gameplay 수치는 변경하지 않았다.
+
 실제 도입한 에셋의 출처와 검증 상태를 기록한다. 외부 에셋은 도입 전에 원본 위치, 제작자, 라이선스 원문과 상업 이용·수정·재배포 조건을 별도로 확인한다. 프로토타입 승인은 최종 출시용 아트 승인을 뜻하지 않는다.
 
 VS-2B-4 현재 파일은 아래의 16프레임 시트다. 이전 163/168/173 Test Runner 통과와 수동 승인 기록은 **12프레임 버전의 역사적 결과**다. 현재 다섯 시트의 픽셀·메타데이터 정적 검사 5/5와 사용자 Unity 컴파일·Console Error 0·전체 EditMode **183/183 통과** 및 Play Mode 수동 시각 검증을 완료했다. E/N/NE/NW 원본 4축×4프레임과 반대 방향 flipX+flipY가 현재 승인된 프로토타입 규칙이다. Final Production Art Approval은 다섯 어종 모두 Pending이며 PPU 83·8 FPS·셀 크기·Pixel Perfect Camera를 프로젝트 전체 최종 규격으로 확정하지 않는다.
@@ -92,4 +112,4 @@ VS-2B-4 현재 파일은 아래의 16프레임 시트다. 이전 163/168/173 Tes
 | Manual Visual Validation / 수동 시각 검증 | Passed — VS-2B-4 방향·South 배색·flipX+flipY·4프레임·먹물 방해 Gameplay 확인, Console Error 0 |
 | Prototype Approval / 프로토타입 승인 | Approved — VS-2B-4 4방향축×4프레임 수영 프로토타입 |
 | Final Production Art Approval / 최종 출시용 아트 승인 | Pending |
-| 비고 | 몸통·촉수 수영 리듬만 포함. 기존 먹물 방해 Gameplay 유지; 발사 전용 애니메이션·VFX/SFX 미구현 |
+| 비고 | 이 Asset은 몸통·촉수 수영 리듬만 포함한다. 기존 먹물 방해 Gameplay는 유지하며 발사 전용 애니메이션·VFX/SFX는 위 VS-2C-1 별도 Asset으로 구현·검증했다 |

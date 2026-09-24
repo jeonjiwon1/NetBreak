@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 // The root renderer and collider remain the existing prototype/gameplay representation.
@@ -11,9 +12,17 @@ public sealed class FishVisualController : MonoBehaviour
     private FishVisualSet currentSet;
     private int frameIndex;
     private float frameTimer;
+    private SquidInkPresentationProfile specialProfile;
+    private Action specialRelease;
+    private FishVisualDirection lockedDirection;
+    private int specialFrame;
+    private float specialTimer;
 
     public bool UsesCustomVisual => profile != null;
     public int FrameIndex => frameIndex;
+    public bool IsPlayingSpecial => specialProfile != null;
+    public int SpecialFrame => specialFrame;
+    public FishVisualHeading SpecialHeading => lockedDirection.Heading;
 
     public void Initialize(FishData data, SpriteRenderer rootRenderer)
     {
@@ -25,6 +34,7 @@ public sealed class FishVisualController : MonoBehaviour
         currentSet = FishVisualSet.Horizontal;
         frameIndex = 0;
         frameTimer = 0f;
+        ResetSpecial();
 
         if (prototypeRenderer == null) return;
 
@@ -79,6 +89,12 @@ public sealed class FishVisualController : MonoBehaviour
     {
         if (profile == null || customRenderer == null) return;
 
+        if (specialProfile != null)
+        {
+            TickSpecial(scaledDeltaTime);
+            return;
+        }
+
         FishVisualDirection direction = FishVisualDirectionResolver.Resolve(
             movementDirection, heading);
         heading = direction.Heading;
@@ -98,5 +114,69 @@ public sealed class FishVisualController : MonoBehaviour
         frameTimer -= steps * interval;
         frameIndex = (frameIndex + steps) % 4;
         customRenderer.sprite = profile.GetFrames(currentSet)[frameIndex];
+    }
+
+    public bool PlaySpecial(SquidInkPresentationProfile presentation, Action onRelease)
+    {
+        if (profile == null || customRenderer == null ||
+            presentation == null || !presentation.HasAnimation)
+            return false;
+
+        Vector2 direction = movement != null ? movement.LastMovementDirection : Vector2.right;
+        lockedDirection = FishVisualDirectionResolver.Resolve(direction, heading);
+        specialProfile = presentation;
+        specialRelease = onRelease;
+        specialFrame = 0;
+        specialTimer = 0f;
+        ShowSpecialFrame();
+        return true;
+    }
+
+    private void TickSpecial(float scaledDeltaTime)
+    {
+        if (scaledDeltaTime <= 0f) return;
+        specialTimer += scaledDeltaTime;
+        float interval = 1f / specialProfile.FramesPerSecond;
+        while (specialProfile != null && specialTimer >= interval)
+        {
+            specialTimer -= interval;
+            specialFrame++;
+            if (specialFrame == 2)
+            {
+                Action release = specialRelease;
+                specialRelease = null;
+                release?.Invoke();
+            }
+            if (specialFrame >= 4)
+            {
+                ResetSpecial();
+                // Resolve current movement on the same frame as the return to swimming.
+                customRenderer.sprite = profile.GetFrames(currentSet)[frameIndex];
+                Tick(0f, movement != null ? movement.LastMovementDirection : Vector2.right);
+                return;
+            }
+            ShowSpecialFrame();
+        }
+    }
+
+    private void ShowSpecialFrame()
+    {
+        customRenderer.sprite = specialProfile.GetFrames(lockedDirection.Set)[specialFrame];
+        customRenderer.flipX = lockedDirection.FlipX;
+        customRenderer.flipY = lockedDirection.FlipY;
+    }
+
+    private void ResetSpecial()
+    {
+        specialProfile = null;
+        specialRelease = null;
+        specialFrame = 0;
+        specialTimer = 0f;
+        lockedDirection = new FishVisualDirection(FishVisualHeading.East);
+    }
+
+    private void OnDisable()
+    {
+        ResetSpecial();
     }
 }
