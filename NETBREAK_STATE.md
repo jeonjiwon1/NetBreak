@@ -1,6 +1,6 @@
 # NETBREAK 인수인계
 
-기준일: 2026-09-24. 현재 마일스톤: **G6-C2와 현재 버전 최소 안정화 수동 검증 완료. UX-F1 및 UX-F2-A/B 임시 전투 피드백 구현·자동·수동 검증 완료. VS-2 아트 방향 1차 확정. VS-2B-1 정어리 Sprite Pipeline 자동 검증과 Unity 수동 시각 검증 완료, 후속 일반 어종 제작의 기준으로 사용할 첫 프로토타입 승인**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 아트 기준은 `Docs/NETBREAK_ART_GUIDE.md`, 장기 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
+기준일: 2026-09-24. 현재 마일스톤: **G6-C2와 현재 버전 최소 안정화 수동 검증 완료. UX-F1 및 UX-F2-A/B 임시 전투 피드백 구현·자동·수동 검증 완료. VS-2 아트 방향 1차 확정. VS-2B-1~3의 12프레임 프로토타입은 당시 Unity 수동 검증과 승인을 완료했고, VS-2B-4의 16프레임 방향 규칙은 Unity 수동 검증 및 전체 EditMode 183/183 통과로 현재 프로토타입 승인**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 아트 기준은 `Docs/NETBREAK_ART_GUIDE.md`, 장기 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경
 - 저장소: `C:\game_dev\unity\NetBreak`, 브랜치 `vertical-slice`.
@@ -435,7 +435,7 @@
 - 외부 테스트 뒤에는 확인된 구조적 문제를 먼저 처리하고 G7 상점·Gold 경제, G8 해역별 성장·보상, Area 2와 해역 전환, 새 도구·아이템·스킬·시너지, Area 3~6, Meta·Hard Mode, 전체 밸런스·최적화·출시 준비 순으로 진행한다. 새 콘텐츠는 가능한 한 gameplay, 아트·애니메이션, VFX, SFX, UI와 검증을 한 단위로 묶고 최종 폴리싱·오디오 믹싱은 출시 준비에 남긴다.
 - 이번 변경은 Markdown 계획 갱신만 수행했다. Unity 실행·테스트, 코드, Scene/Prefab, 에셋, ProjectSettings, Git add/commit/push는 수행하지 않았다.
 
-## 최근 변경 — VS-2B-1 정어리 방향별 Sprite Pipeline 프로토타입
+## 이전 변경 — VS-2B-1 정어리 방향별 Sprite Pipeline 프로토타입 (역사적 12프레임 기록)
 
 - `Assets/Art/Fish/Sardine/Sardine_Swim.png`에 128×96 RGBA 정어리 시트를 직접 픽셀 격자로 제작했다. 32×32 셀 3방향(동·북·북동)×4프레임이며 투명 여백이 있다. 현재 정어리 이미지는 후속 일반 어종 제작의 기준으로 사용할 **첫 프로토타입으로 승인**됐다. 최종 출시용 Art Lock은 아니며 32×32 셀·PPU 83·8 FPS와 Pixel Perfect 정책을 전체 프로젝트의 최종 규격으로 확정한 것은 아니다.
 - `FishData`에 선택적 `FishVisualProfile` 참조를 추가하고 정어리에만 연결했다. `FishVisualDirectionResolver`는 실제 이동 방향을 8방향으로 분류해 3세트와 flipX/Y에 매핑하며 경계 히스테리시스와 저속 방향 유지를 적용한다. `FishVisualController`는 scaled time 4프레임 flipbook과 풀 재사용 초기화를 맡는다. 다른 어종은 기존 사각형 Sprite와 visualScale/visualColor를 유지한다.
@@ -445,10 +445,30 @@
 - `Docs/NETBREAK_SPRITE_PIPELINE.md`, `Docs/NETBREAK_ASSET_MANIFEST.md`를 추가하고 아트 가이드를 갱신했다. 사용자가 Unity Play Mode에서 컴파일 정상과 Console Error 0을 확인했다. 정어리 Sprite와 가로·세로·대각선, 반대 방향 flip, 4프레임 헤엄이 정상이며 방향 전환에 심각한 jitter가 없음을 확인했다. 여러 정어리의 동시 표시와 기존 대비 화면 크기, 다른 어종의 Prototype fallback, 정어리↔다른 어종의 양방향 Pool 재사용, Pause/선택 상태, 기존 VFX·Resistance·포획·UI, Run 재시작 후 시각 초기화도 정상으로 확인했다. 사용자는 현재 정어리 Prototype 이미지 방향에 만족한다고 밝혔다. 이는 **VS-2B-1 수동 시각 검증 완료 및 첫 프로토타입 승인**이며 최종 출시용 아트 승인이나 전체 프로젝트 Sprite 규격 확정은 아니다.
 - Git add/commit/push는 사용자 지시에 따라 수행하지 않았다.
 
-## 현재 변경 — VS-2B-2 고등어·참치 방향별 Sprite 확장 (미커밋)
+## 이전 변경 — VS-2B-2 고등어·참치 방향별 Sprite 확장 (역사적 12프레임 기록)
 
 - 정어리 승인 프로토타입을 기준으로 고등어 192×144(48×48 셀)와 참치 256×192(64×64 셀) RGBA 시트를 픽셀 격자에서 직접 제작했다. 각 시트는 가로·세로·대각선 4프레임씩 12프레임이다. 공통 PPU 83, Point/무압축/Full Rect/Clamp, 기본 8 FPS와 프로필 (1,1) 크기·흰색 Tint를 사용한다. 가로 실루엣은 정어리 약 31×15px, 고등어 약 43×21px, 참치 약 59×29~31px이다. 이 값은 프로토타입이며 전체 최종 Sprite 규격이 아니다.
 - `NETBREAK/Art/Setup Mackerel And Tuna`를 Unity 6000.3.11f1 Editor에서 실행해 각 12개 Sprite 분할, 신규 프로필 생성과 고등어·참치 FishData 연결을 완료했다. `Validate Fish Sprite Pipeline`은 세 어종과 나머지 fallback을 검사해 통과했다. 정어리 시트·프로필·FishData 연결은 보존했다. 고등어·참치 FishData에는 Unity가 누락된 기존 기본 직렬화 필드 8개를 추가 기록했으나 기존 값·게임플레이 설정은 바뀌지 않았다.
 - Runtime `FishVisualController`, 방향 판정, `FishMovement`, Pool, 게임플레이 로직과 Scene/Prefab은 변경하지 않았다. 신규 EditMode 테스트 5개는 시트/프로필/연결, 정어리·미적용 어종 보존, 두 어종 게임플레이 수치, 정어리→고등어→참치→Prototype→고등어→참치→Prototype→참치→정어리 풀 재사용에서 Sprite·프레임·flip·scale·Tint·Resistance·Collider 초기화를 확인한다. Unity의 전체 EditMode 168/168이 통과했고 Console 경고 0, 오류 0이었다.
 - 사용자가 VS-2B-2 Unity Play Mode 수동 시각 검증을 완료했다. Unity 컴파일과 전체 EditMode 테스트가 정상이고 Console Error는 0이었다. 정어리·고등어·참치의 크기 계층과 실루엣 구분, 고등어·참치의 가로·세로·대각 방향, 반대 방향 flip, 4프레임 헤엄, 심각한 방향 jitter 없음, 다수 개체와 어군 가독성, 적절한 참치 크기를 확인했다. 복어·오징어 Prototype fallback, 종간 Pool 재사용 초기화, Pause/선택 상태 애니메이션, 기존 VFX·Resistance·포획·UI와 Run 재시작 뒤 시각 상태도 정상으로 확인했다. 사용자는 고등어·참치 이미지가 현재 아트 방향으로 만족스럽다고 밝혔다.
 - 고등어와 참치는 **정어리 기준 Directional Fish Sprite Pipeline을 성공적으로 확장한 승인된 프로토타입**이다. 서로 다른 32×32·48×48·64×64 셀을 공통 PPU 83과 3방향×4프레임 구조로 사용해 일반 어종의 자연스러운 상대 크기와 파이프라인 재사용을 확인했다. 이는 PPU 83, 8 FPS, 셀 크기, Pixel Perfect Camera, 향후 모든 어종의 프레임 수, 특수어·Boss 규격의 전체 프로젝트 최종 확정은 아니다. 정어리의 기존 승인 상태는 유지하며 세 어종의 최종 출시용 아트 승인은 Pending이다. 이번 수동 결과 문서 반영에서는 Unity 실행·테스트와 Git add/commit/push를 수행하지 않았다.
+
+## 이전 변경 — VS-2B-3 복어·오징어 방향별 수영 Sprite 확장 (역사적 12프레임 기록)
+
+- 복어 192×144 RGBA(48×48 셀), 오징어 256×192 RGBA(64×64 셀) 시트를 `Tools/generate_pufferfish_squid_sprites.py`의 픽셀 격자 제작으로 추가했다. 각각 가로·세로·대각선 4프레임씩 12프레임이고 반대 방향은 기존 flip 매핑을 사용한다. 복어는 둥근 몸통을 유지하며 꼬리·지느러미가 움직이고 오징어는 몸통·촉수·측면 지느러미의 수영 리듬을 표현한다. 공통 PPU 83, Point/무압축/Full Rect/Clamp, 중심 Pivot과 프로필 8 FPS·(1,1) 크기·흰색 Tint는 기존 프로토타입 기준이다.
+- 새 Sprite Import 설정 파일, `Pufferfish_VisualProfile.asset`, `Squid_VisualProfile.asset`과 각 FishData 참조를 저장소 파일에 작성했다. 기존 검증된 고등어/참치 메타 형식을 기반으로 고유 GUID를 부여했고, `NETBREAK/Art/Setup Pufferfish And Squid` 메뉴로 Unity에서 다시 분할·연결할 수 있게 했다. 공용 `Validate Fish Sprite Pipeline`은 다섯 어종과 MiniBoss/Boss fallback을 검사하도록 확장했다. `FishVisualController`, `FishVisualDirectionResolver`, `FishMovement`, 게임플레이 루트·Collider·Resistance·이동·먹물 방해와 Scene/Prefab은 변경하지 않았다.
+- `FishVisualExpansionTests`에 두 종의 정확한 셀/12개 프레임/프로필 연결, 특수 능력·Resistance·보상 수치 보존, 다섯 어종과 MiniBoss/Boss 간 Pool 재사용 경로를 추가했다. PNG와 참조의 정적 검증은 별도로 수행했다. 최초 구현 작업 당시 Unity 창 자동 조작은 승인 검토에서 거부되어 Editor 확인을 사용자에게 남겼다.
+- 사용자가 VS-2B-3 Unity 수동 검증을 완료했다. Unity 컴파일 정상, Console Error 0, 전체 EditMode Test Runner **173/173 통과**를 확인했다. 복어·오징어 각각 가로·세로·대각선, 반대 방향 flip, 4프레임 수영, 방향 전환 시 심각한 jitter 없음, 기존 정어리·고등어·참치 정상, 다수 어종 동시 표시와 가독성, 종간 Pool 재사용 초기화, Pause, 기존 오징어 먹물 방해 Gameplay, VFX·Resistance·포획·UI, Run 재시작 후 시각 초기화를 확인했다. 두 어종은 **Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending**이다.
+- 복어 팽창·가시 강화·특수 상태 전용 애니메이션과 오징어 먹물 발사 전용 프레임·애니메이션/VFX/SFX는 구현하지 않았다. 오징어의 기존 먹물 방해 Gameplay는 유지한다. 최종 VFX/SFX와 출시용 아트 승인은 후속이다. 사용자 Unity 검증 순서는 `Docs/NETBREAK_SPRITE_PIPELINE.md`에 기록했다. Git add/commit/push는 사용자 지시에 따라 수행하지 않는다.
+
+## 현재 변경 — VS-2B-4 다섯 어종 방향별 16프레임 확장 (수동 검증 완료·미커밋)
+
+- 정어리 128×96→128×128(32×32 셀), 고등어 192×144→192×192(48×48), 참치 256×192→256×256(64×64), 복어 192×144→192×192(48×48), 오징어 256×192→256×256(64×64) RGBA 시트로 확장했다. 세 기존 생성 스크립트가 각 시트의 NW 4프레임을 동일 팔레트·실루엣·꼬리 리듬으로 추가한다. 다섯 시트 모두 기존 첫 12프레임의 RGBA 해시가 변경 전과 같다.
+- `FishVisualSet`에 NW 축을 기존 enum 순서를 보존하며 끝에 추가했다. E/N/NE/NW는 원본 프레임, W/S/SW/SE는 각각 E/N/NE/NW에 flipX+flipY를 함께 적용한다. 북쪽 원본의 배색 중심이 오른쪽인 5종 모두 남쪽에서 180도 반전 후 배색 중심이 왼쪽이다. `FishVisualProfile`은 4×4 완전한 프로필만 사용하고, 기존 `FishVisualController`의 프레임·타이머·방향·flip·Tint·Custom/Fallback 초기화 경로는 유지했다.
+- 다섯 `*_Swim.png.meta`의 기존 12개 Sprite ID와 파일 ID를 보존하면서 4개 NW 분할을 추가하고, 다섯 `*_VisualProfile.asset`에 새 프레임 참조를 연결했다. `Tools/extend_fish_sprite_imports.py`는 검사한 메타데이터 형식을 엄격히 확인하는 이관 도구다. 공용·어종별 Editor Setup과 Validate는 16분할을 사용한다. FishData의 기존 VisualProfile 연결은 보존했다.
+- 이번 작업의 수정 파일: `Assets/Art/Fish/{Sardine,Mackerel,Tuna,Pufferfish,Squid}/`의 각 `*_Swim.png`, `*_Swim.png.meta`, `*_VisualProfile.asset`; `Assets/Scripts/Fish/{FishVisualProfile,FishVisualDirectionResolver}.cs`; `Assets/Editor/{FishArtSetup,SardineArtSetup}.cs`; `Assets/Editor/Tests/{FishVisualPipelineTests,FishVisualExpansionTests}.cs`; `Tools/generate_sardine_sprite.py`, `Tools/generate_mackerel_tuna_sprites.py`, `Tools/generate_pufferfish_squid_sprites.py`; 이관 도구 `Tools/extend_fish_sprite_imports.py`와 정적 검사 `Tools/validate_fish_visual_sheets.py`; `NETBREAK_STATE.md` 및 Docs의 아트 가이드·Sprite Pipeline·Asset Manifest. 시작 전부터 있던 두 FishData 연결 및 NanumGothic 폰트 변경은 이번 작업에서 수정하지 않았다.
+- `FishVisualPipelineTests`와 `FishVisualExpansionTests`를 8방향 원본 선택/두 축 flip, NE와 NW 구분, 다섯 어종의 16분할·배색 중심, 풀 재사용에 맞춰 갱신했다. 게임플레이 수치·이동·Resistance·Collider·먹물·Boss, Scene/Prefab, ProjectSettings/URP는 수정하지 않았다.
+- 정적 검사: 다섯 PNG 규격·기존 12프레임 해시·16개 Sprite 이름/ID·프로필 참조 **5/5 통과**. 다섯 어종의 북쪽 배색 중심이 오른쪽, 남쪽 180도 변환 중심이 왼쪽인 픽셀 검사 **5/5 통과**. 이전 비대화형 배치 시도는 Editor 잠금과 Unity Package Manager IPC 연결 문제로 중단됐으나, 이후 사용자가 Unity에서 컴파일 정상·Console Error 0·전체 EditMode Test Runner **183/183 통과**를 확인했다. 실패 0; skip 수는 별도로 전달받지 않았다.
+- 사용자 Play Mode 수동 검증 완료: 정어리·고등어·참치·복어·오징어의 E/W/N/S 및 NE/NW/SE/SW 방향, 서로 다른 NE/NW 원본 Sprite Set, 반대 방향 flipX+flipY, 4프레임 수영이 정상이다. S에서 배가 화면 왼쪽이며 E→SE→S 전환에서 배/등 방향이 자연스럽게 이어진다. 종간 Pool 재사용의 Sprite·frame·flip·tint·scale 잔상이 없고, 오징어 먹물 방해·Resistance·Collider·포획·VFX·UI·Pause·Run 재시작도 정상이다. 다섯 어종의 4방향축×4프레임 규칙은 **현재 프로토타입으로 승인**됐고 Final Production Art Approval은 Pending이다. PPU 83·8 FPS·셀 크기·Pixel Perfect Camera는 프로젝트 전체 최종 규격으로 확정하지 않았다.
+- `git diff --check`는 전체 작업 트리에서 종료 코드 2다. 이번 문서 갱신 시작 전부터 변경된 `Assets/Art/Fish/Mackerel/Mackerel_Swim.png.meta`의 공백 8곳과 `Assets/UI/Fonts/NanumGothic-Bold SDF.asset`의 공백 3곳이 지적됐다. 이번에 수정한 네 문서만 대상으로 한 `git diff --check`는 종료 코드 0이다. 두 기존 파일은 수정하지 않았다.
+- 문서 `Docs/NETBREAK_ART_GUIDE.md`, `Docs/NETBREAK_SPRITE_PIPELINE.md`, `Docs/NETBREAK_ASSET_MANIFEST.md`에 현재 규격, 역사적 12프레임 결과와의 구분, Unity Play Mode 수동 검증 순서를 반영했다. Git add/commit/push는 요청에 따라 수행하지 않는다.

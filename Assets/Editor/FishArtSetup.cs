@@ -29,8 +29,28 @@ public static class FishArtSetup
     private static readonly Species Sardine = new Species("Sardine", "정어리", 32);
     private static readonly Species Mackerel = new Species("Mackerel", "고등어", 48);
     private static readonly Species Tuna = new Species("Tuna", "참치", 64);
-    private static readonly Species[] All = { Sardine, Mackerel, Tuna };
-    private static readonly string[] Directions = { "horizontal", "vertical", "diagonal" };
+    private static readonly Species Pufferfish = new Species("Pufferfish", "복어", 48);
+    private static readonly Species Squid = new Species("Squid", "오징어", 64);
+    private static readonly Species[] All = { Sardine, Mackerel, Tuna, Pufferfish, Squid };
+    private static readonly string[] Directions = { "horizontal", "vertical", "diagonal", "diagonal_nw" };
+
+    [MenuItem("NETBREAK/Art/Setup All Fish Visuals")]
+    public static void SetupAll()
+    {
+        FishData[] data = new FishData[All.Length];
+        for (int i = 0; i < All.Length; i++)
+        {
+            if (!TryGetData(All[i], out data[i]) ||
+                AssetImporter.GetAtPath(All[i].Sheet) is not TextureImporter)
+            {
+                Debug.LogError($"{All[i].Name} setup aborted: exact FishData or sprite sheet missing.");
+                return;
+            }
+        }
+        for (int i = 0; i < All.Length; i++) SetupOne(All[i], data[i]);
+        AssetDatabase.SaveAssets();
+        Validate();
+    }
 
     [MenuItem("NETBREAK/Art/Setup Mackerel And Tuna")]
     public static void SetupMackerelAndTuna()
@@ -47,6 +67,25 @@ public static class FishArtSetup
 
         SetupOne(Mackerel, mackerel);
         SetupOne(Tuna, tuna);
+        AssetDatabase.SaveAssets();
+        Validate();
+    }
+
+    [MenuItem("NETBREAK/Art/Setup Pufferfish And Squid")]
+    public static void SetupPufferfishAndSquid()
+    {
+        // Resolve both destinations before writing either asset.
+        if (!TryGetData(Pufferfish, out FishData pufferfish) ||
+            !TryGetData(Squid, out FishData squid) ||
+            AssetImporter.GetAtPath(Pufferfish.Sheet) is not TextureImporter ||
+            AssetImporter.GetAtPath(Squid.Sheet) is not TextureImporter)
+        {
+            Debug.LogError("Pufferfish/Squid setup aborted: exact FishData or sprite sheet missing.");
+            return;
+        }
+
+        SetupOne(Pufferfish, pufferfish);
+        SetupOne(Squid, squid);
         AssetDatabase.SaveAssets();
         Validate();
     }
@@ -78,6 +117,7 @@ public static class FishArtSetup
         SetFrames(profileObject.FindProperty("horizontalFrames"), frames, 0);
         SetFrames(profileObject.FindProperty("verticalFrames"), frames, 4);
         SetFrames(profileObject.FindProperty("diagonalFrames"), frames, 8);
+        SetFrames(profileObject.FindProperty("diagonalNorthWestFrames"), frames, 12);
         profileObject.ApplyModifiedProperties();
         EditorUtility.SetDirty(profile);
 
@@ -89,7 +129,7 @@ public static class FishArtSetup
             fishObject.ApplyModifiedProperties();
             EditorUtility.SetDirty(data);
         }
-        Debug.Log($"{species.Name} art setup complete: 12 slices, {species.Cell}px cells, profile and FishData link. Import changed: {changed}");
+        Debug.Log($"{species.Name} art setup complete: 16 slices, {species.Cell}px cells, profile and FishData link. Import changed: {changed}");
     }
 
     public static void Validate()
@@ -108,7 +148,7 @@ public static class FishArtSetup
             Sprite[] frames = LoadFrames(species);
             FishVisualProfile profile = AssetDatabase.LoadAssetAtPath<FishVisualProfile>(species.Profile);
             bool oneValid = importer != null && sheet != null && frames != null && profile != null &&
-                            sheet.width == species.Cell * 4 && sheet.height == species.Cell * 3 &&
+                            sheet.width == species.Cell * 4 && sheet.height == species.Cell * 4 &&
                             profile.IsValid && data.VisualProfile == profile &&
                             importer.textureType == TextureImporterType.Sprite &&
                             importer.spriteImportMode == SpriteImportMode.Multiple &&
@@ -121,12 +161,12 @@ public static class FishArtSetup
                 TextureImporterSettings settings = new TextureImporterSettings();
                 importer.ReadTextureSettings(settings);
                 oneValid &= settings.spriteMeshType == SpriteMeshType.FullRect;
-                for (int row = 0; row < 3; row++)
+                for (int row = 0; row < 4; row++)
                 for (int col = 0; col < 4; col++)
                 {
                     Sprite frame = frames[row * 4 + col];
                     oneValid &= frame.rect == new Rect(col * species.Cell,
-                        (2 - row) * species.Cell, species.Cell, species.Cell);
+                        (3 - row) * species.Cell, species.Cell, species.Cell);
                     oneValid &= frame.pivot == new Vector2(species.Cell / 2f, species.Cell / 2f);
                     oneValid &= profile.GetFrames((FishVisualSet)row)[col] == frame;
                 }
@@ -147,7 +187,7 @@ public static class FishArtSetup
             if (data == null) continue;
             valid &= data.VisualProfile == (expectedData.TryGetValue(data, out FishVisualProfile profile) ? profile : null);
         }
-        if (valid) Debug.Log("Fish sprite pipeline valid: Sardine, Mackerel and Tuna each have 12 slices, import settings and FishData links; remaining species use fallback.");
+        if (valid) Debug.Log("Fish sprite pipeline valid: Sardine, Mackerel, Tuna, Pufferfish and Squid each have 16 slices, import settings and FishData links; remaining species use fallback.");
         else Debug.LogError("Fish sprite pipeline validation failed. Check import, frame references, FishData links and fallback species.");
     }
 
@@ -191,8 +231,8 @@ public static class FishArtSetup
         {
             if (!byName.TryAdd(rect.name, rect)) changed = true;
         }
-        SpriteRect[] wanted = new SpriteRect[12];
-        for (int row = 0; row < 3; row++)
+        SpriteRect[] wanted = new SpriteRect[16];
+        for (int row = 0; row < 4; row++)
         for (int col = 0; col < 4; col++)
         {
             string name = $"{species.Prefix}_{Directions[row]}_{col}";
@@ -201,7 +241,7 @@ public static class FishArtSetup
                 rect = new SpriteRect { name = name, spriteID = GUID.Generate() };
                 changed = true;
             }
-            Rect bounds = new Rect(col * species.Cell, (2 - row) * species.Cell,
+            Rect bounds = new Rect(col * species.Cell, (3 - row) * species.Cell,
                 species.Cell, species.Cell);
             if (rect.rect != bounds || rect.alignment != SpriteAlignment.Center ||
                 rect.pivot != new Vector2(0.5f, 0.5f)) changed = true;
@@ -210,7 +250,7 @@ public static class FishArtSetup
             rect.pivot = new Vector2(0.5f, 0.5f);
             wanted[row * 4 + col] = rect;
         }
-        if (existing.Length != 12) changed = true;
+        if (existing.Length != 16) changed = true;
         if (changed)
         {
             provider.SetSpriteRects(wanted);
@@ -225,13 +265,13 @@ public static class FishArtSetup
     private static Sprite[] LoadFrames(Species species)
     {
         Sprite[] sprites = AssetDatabase.LoadAllAssetsAtPath(species.Sheet).OfType<Sprite>().ToArray();
-        if (sprites.Length != 12)
+        if (sprites.Length != 16)
         {
-            Debug.LogError($"Expected 12 sprites at {species.Sheet}; found {sprites.Length}.");
+            Debug.LogError($"Expected 16 sprites at {species.Sheet}; found {sprites.Length}.");
             return null;
         }
-        Sprite[] ordered = new Sprite[12];
-        for (int row = 0; row < 3; row++)
+        Sprite[] ordered = new Sprite[16];
+        for (int row = 0; row < 4; row++)
         for (int col = 0; col < 4; col++)
         {
             ordered[row * 4 + col] = sprites.SingleOrDefault(sprite =>

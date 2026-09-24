@@ -1,43 +1,43 @@
 fileFormatVersion: 2
-guid: 37ce05fe435d94546be9788393987b09
+guid: 6ec8b5657ccb428482dc3e4159a32102
 TextureImporter:
   internalIDToNameTable:
   - first:
       213: 6466426932441235616
-    second: Mackerel_Swim_0
+    second: Pufferfish_Swim_0
   - first:
       213: -3854619175620378885
-    second: Mackerel_Swim_1
+    second: Pufferfish_Swim_1
   - first:
       213: 4381906796871753392
-    second: Mackerel_Swim_2
+    second: Pufferfish_Swim_2
   - first:
       213: -129405915819922274
-    second: Mackerel_Swim_3
+    second: Pufferfish_Swim_3
   - first:
       213: 4891496843163450320
-    second: Mackerel_Swim_4
+    second: Pufferfish_Swim_4
   - first:
       213: 4417312966064252296
-    second: Mackerel_Swim_5
+    second: Pufferfish_Swim_5
   - first:
       213: 462537331645399567
-    second: Mackerel_Swim_6
+    second: Pufferfish_Swim_6
   - first:
       213: 5067424310516444370
-    second: Mackerel_Swim_7
+    second: Pufferfish_Swim_7
   - first:
       213: -4450810931503436102
-    second: Mackerel_Swim_8
+    second: Pufferfish_Swim_8
   - first:
       213: 3974368128014921945
-    second: Mackerel_Swim_9
+    second: Pufferfish_Swim_9
   - first:
       213: 680178282399703549
-    second: Mackerel_Swim_10
+    second: Pufferfish_Swim_10
   - first:
       213: -2689127854944485874
-    second: Mackerel_Swim_11
+    second: Pufferfish_Swim_11
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -133,7 +133,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: mackerel_horizontal_0
+      name: pufferfish_horizontal_0
       rect:
         serializedVersion: 2
         x: 0
@@ -155,7 +155,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_horizontal_1
+      name: pufferfish_horizontal_1
       rect:
         serializedVersion: 2
         x: 48
@@ -177,7 +177,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_horizontal_2
+      name: pufferfish_horizontal_2
       rect:
         serializedVersion: 2
         x: 96
@@ -199,7 +199,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_horizontal_3
+      name: pufferfish_horizontal_3
       rect:
         serializedVersion: 2
         x: 144
@@ -221,7 +221,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_vertical_0
+      name: pufferfish_vertical_0
       rect:
         serializedVersion: 2
         x: 0
@@ -243,7 +243,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_vertical_1
+      name: pufferfish_vertical_1
       rect:
         serializedVersion: 2
         x: 48
@@ -265,7 +265,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_vertical_2
+      name: pufferfish_vertical_2
       rect:
         serializedVersion: 2
         x: 96
@@ -287,7 +287,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_vertical_3
+      name: pufferfish_vertical_3
       rect:
         serializedVersion: 2
         x: 144
@@ -309,7 +309,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_0
+      name: pufferfish_diagonal_0
       rect:
         serializedVersion: 2
         x: 0
@@ -331,7 +331,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_1
+      name: pufferfish_diagonal_1
       rect:
         serializedVersion: 2
         x: 48
@@ -353,7 +353,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_2
+      name: pufferfish_diagonal_2
       rect:
         serializedVersion: 2
         x: 96
@@ -375,7 +375,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_3
+      name: pufferfish_diagonal_3
       rect:
         serializedVersion: 2
         x: 144
@@ -397,7 +397,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_nw_0
+      name: pufferfish_diagonal_nw_0
       rect:
         serializedVersion: 2
         x: 0
@@ -412,14 +412,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 63ad115392bab1347b5509c4eb00682a
-      internalID: -2026823086
+      spriteID: 77d2b892a6921b34ab02b46f53705d1b
+      internalID: 1150254558
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_nw_1
+      name: pufferfish_diagonal_nw_1
       rect:
         serializedVersion: 2
         x: 48
@@ -434,14 +434,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7d8f5c60a9c45b045becabbf0930f3b8
-      internalID: -2138143752
+      spriteID: 1c66036af5e8b9e42badf7916b77b14e
+      internalID: 847135694
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_nw_2
+      name: pufferfish_diagonal_nw_2
       rect:
         serializedVersion: 2
         x: 96
@@ -456,14 +456,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7a814399b1cf72240a26969c1669df0a
-      internalID: -1842631007
+      spriteID: 322b333bb92dc774588af676ef9addc5
+      internalID: -452192021
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_nw_3
+      name: pufferfish_diagonal_nw_3
       rect:
         serializedVersion: 2
         x: 144
@@ -478,8 +478,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9dae1478c2b40f942a4921b746eae945
-      internalID: -327720785
+      spriteID: 0128f535fdb8e114fabf6eb419d3591f
+      internalID: -1379666579
       vertices: []
       indices: 
       edges: []
@@ -498,22 +498,22 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      mackerel_diagonal_0: -1037762955
-      mackerel_diagonal_1: 587306548
-      mackerel_diagonal_2: 484755120
-      mackerel_diagonal_3: -468110951
-      mackerel_diagonal_nw_0: -2026823086
-      mackerel_diagonal_nw_1: -2138143752
-      mackerel_diagonal_nw_2: -1842631007
-      mackerel_diagonal_nw_3: -327720785
-      mackerel_horizontal_0: -82075109
-      mackerel_horizontal_1: -78763568
-      mackerel_horizontal_2: 636082817
-      mackerel_horizontal_3: 969545076
-      mackerel_vertical_0: 141790107
-      mackerel_vertical_1: -985602786
-      mackerel_vertical_2: -1360502889
-      mackerel_vertical_3: 1395206681
+      pufferfish_diagonal_0: -1037762955
+      pufferfish_diagonal_1: 587306548
+      pufferfish_diagonal_2: 484755120
+      pufferfish_diagonal_3: -468110951
+      pufferfish_diagonal_nw_0: 1150254558
+      pufferfish_diagonal_nw_1: 847135694
+      pufferfish_diagonal_nw_2: -452192021
+      pufferfish_diagonal_nw_3: -1379666579
+      pufferfish_horizontal_0: -82075109
+      pufferfish_horizontal_1: -78763568
+      pufferfish_horizontal_2: 636082817
+      pufferfish_horizontal_3: 969545076
+      pufferfish_vertical_0: 141790107
+      pufferfish_vertical_1: -985602786
+      pufferfish_vertical_2: -1360502889
+      pufferfish_vertical_3: 1395206681
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

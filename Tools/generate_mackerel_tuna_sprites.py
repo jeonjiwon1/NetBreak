@@ -5,7 +5,8 @@ from PIL import Image, ImageDraw
 
 
 ROOT = Path(__file__).resolve().parents[1] / "Assets/Art/Fish"
-DIRECTIONS = ((1, 0), (0, -1), (0.70710678, -0.70710678))
+DIRECTIONS = ((1, 0), (0, -1), (0.70710678, -0.70710678),
+              (-0.70710678, -0.70710678))
 
 
 def make_frame(species, cell, forward, phase):
@@ -101,7 +102,7 @@ def make_frame(species, cell, forward, phase):
 
 
 for species, cell in (("Mackerel", 48), ("Tuna", 64)):
-    sheet = Image.new("RGBA", (4 * cell, 3 * cell), (0, 0, 0, 0))
+    sheet = Image.new("RGBA", (4 * cell, 4 * cell), (0, 0, 0, 0))
     for row, direction in enumerate(DIRECTIONS):
         for col in range(4):
             sheet.alpha_composite(make_frame(species, cell, direction, col),

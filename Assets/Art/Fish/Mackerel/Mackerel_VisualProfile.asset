@@ -27,6 +27,11 @@ MonoBehaviour:
   - {fileID: 587306548, guid: 37ce05fe435d94546be9788393987b09, type: 3}
   - {fileID: 484755120, guid: 37ce05fe435d94546be9788393987b09, type: 3}
   - {fileID: -468110951, guid: 37ce05fe435d94546be9788393987b09, type: 3}
+  diagonalNorthWestFrames:
+  - {fileID: -2026823086, guid: 37ce05fe435d94546be9788393987b09, type: 3}
+  - {fileID: -2138143752, guid: 37ce05fe435d94546be9788393987b09, type: 3}
+  - {fileID: -1842631007, guid: 37ce05fe435d94546be9788393987b09, type: 3}
+  - {fileID: -327720785, guid: 37ce05fe435d94546be9788393987b09, type: 3}
   framesPerSecond: 8
   visualScale: {x: 1, y: 1}
   tint: {r: 1, g: 1, b: 1, a: 1}

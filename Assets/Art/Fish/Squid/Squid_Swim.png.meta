@@ -1,43 +1,43 @@
 fileFormatVersion: 2
-guid: 37ce05fe435d94546be9788393987b09
+guid: df55caa729f74cddb407d930014e7a97
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6466426932441235616
-    second: Mackerel_Swim_0
+      213: -8482352868151164102
+    second: Squid_Swim_0
   - first:
-      213: -3854619175620378885
-    second: Mackerel_Swim_1
+      213: 5529478911509617276
+    second: Squid_Swim_1
   - first:
-      213: 4381906796871753392
-    second: Mackerel_Swim_2
+      213: 3182547514120424787
+    second: Squid_Swim_2
   - first:
-      213: -129405915819922274
-    second: Mackerel_Swim_3
+      213: 8546357796191929220
+    second: Squid_Swim_3
   - first:
-      213: 4891496843163450320
-    second: Mackerel_Swim_4
+      213: -1053577501094728383
+    second: Squid_Swim_4
   - first:
-      213: 4417312966064252296
-    second: Mackerel_Swim_5
+      213: -7291392841039565490
+    second: Squid_Swim_5
   - first:
-      213: 462537331645399567
-    second: Mackerel_Swim_6
+      213: 7211123184787304119
+    second: Squid_Swim_6
   - first:
-      213: 5067424310516444370
-    second: Mackerel_Swim_7
+      213: -6881404440286447420
+    second: Squid_Swim_7
   - first:
-      213: -4450810931503436102
-    second: Mackerel_Swim_8
+      213: -8672103171751024305
+    second: Squid_Swim_8
   - first:
-      213: 3974368128014921945
-    second: Mackerel_Swim_9
+      213: -7034437593176542026
+    second: Squid_Swim_9
   - first:
-      213: 680178282399703549
-    second: Mackerel_Swim_10
+      213: 345753016227022515
+    second: Squid_Swim_10
   - first:
-      213: -2689127854944485874
-    second: Mackerel_Swim_11
+      213: 8850843149307062618
+    second: Squid_Swim_11
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -133,13 +133,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: mackerel_horizontal_0
+      name: squid_horizontal_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 144
-        width: 48
-        height: 48
+        y: 192
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -148,20 +148,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 97d34a0f5bf7c284bbd0f4764f5401c2
-      internalID: -82075109
+      spriteID: aa1eb1bb7cb1c2a45a54f5f1d6c7eb69
+      internalID: -610843559
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_horizontal_1
+      name: squid_horizontal_1
       rect:
         serializedVersion: 2
-        x: 48
-        y: 144
-        width: 48
-        height: 48
+        x: 64
+        y: 192
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -170,20 +170,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2b874c3cfde95e94e9edc1d13da68e47
-      internalID: -78763568
+      spriteID: 66d34e7d7aefaee4ba7388b45c8b2752
+      internalID: -1645590909
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_horizontal_2
+      name: squid_horizontal_2
       rect:
         serializedVersion: 2
-        x: 96
-        y: 144
-        width: 48
-        height: 48
+        x: 128
+        y: 192
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -192,20 +192,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: bc938a616b269f140a45ced304d95c3b
-      internalID: 636082817
+      spriteID: bd65b685f8e47c444a8a919724c1cfe4
+      internalID: 1370416806
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_horizontal_3
+      name: squid_horizontal_3
       rect:
         serializedVersion: 2
-        x: 144
-        y: 144
-        width: 48
-        height: 48
+        x: 192
+        y: 192
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -214,108 +214,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7c461277ceaf0d144b3ab2a77cbda2ee
-      internalID: 969545076
+      spriteID: e2a0c2374e20c0e41b7044894dbc9157
+      internalID: -531268053
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_vertical_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 96
-        width: 48
-        height: 48
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a99aa2493aa59664995de6c4fc0e8996
-      internalID: 141790107
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: mackerel_vertical_1
-      rect:
-        serializedVersion: 2
-        x: 48
-        y: 96
-        width: 48
-        height: 48
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: b86a49191910b514ba242dd57d04bc4f
-      internalID: -985602786
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: mackerel_vertical_2
-      rect:
-        serializedVersion: 2
-        x: 96
-        y: 96
-        width: 48
-        height: 48
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 309613bf84e83544c9f69dfe424be004
-      internalID: -1360502889
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: mackerel_vertical_3
-      rect:
-        serializedVersion: 2
-        x: 144
-        y: 96
-        width: 48
-        height: 48
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 9aa4d0e51bb32a54e8f2019bb0e216b1
-      internalID: 1395206681
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: mackerel_diagonal_0
+      name: squid_vertical_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 48
-        width: 48
-        height: 48
+        y: 128
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -324,20 +236,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 98def26161c9abd4797204815ab9fc3a
-      internalID: -1037762955
+      spriteID: 600a122b5f37cfb40ae6379811072ef0
+      internalID: -407684030
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_1
+      name: squid_vertical_1
       rect:
         serializedVersion: 2
-        x: 48
-        y: 48
-        width: 48
-        height: 48
+        x: 64
+        y: 128
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -346,20 +258,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b9a2cd3e036ef3f4c9b5b403701ed2ca
-      internalID: 587306548
+      spriteID: b151efbf077d319438832e32b64a4431
+      internalID: -101490933
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_2
+      name: squid_vertical_2
       rect:
         serializedVersion: 2
-        x: 96
-        y: 48
-        width: 48
-        height: 48
+        x: 128
+        y: 128
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -368,20 +280,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d4d84e276ae807e4a914531c5fd85da1
-      internalID: 484755120
+      spriteID: a867f8133e115654cb3d6e243f5a224f
+      internalID: -1711303058
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_3
+      name: squid_vertical_3
       rect:
         serializedVersion: 2
-        x: 144
-        y: 48
-        width: 48
-        height: 48
+        x: 192
+        y: 128
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -390,20 +302,108 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 55acde98fbdcce74bbacaf9205c0d829
-      internalID: -468110951
+      spriteID: 76c9c5dcbc5b9c44bad922720a0d5896
+      internalID: -1362374785
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_nw_0
+      name: squid_diagonal_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cd454fd4c9a303947a7843ac8dd27f25
+      internalID: -740312269
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: squid_diagonal_1
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 64
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c66d2aaf874a4a64eaba70d82c4b06ef
+      internalID: 1454248464
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: squid_diagonal_2
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 64
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 17f55c676f093134c8b9ba020829e16a
+      internalID: 438995047
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: squid_diagonal_3
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 64
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dad540c0fa3b8ee42bfa532e4abc3e8a
+      internalID: -157130808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: squid_diagonal_nw_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 48
-        height: 48
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -412,20 +412,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 63ad115392bab1347b5509c4eb00682a
-      internalID: -2026823086
+      spriteID: 460f6b9139bdbe741860f5902af5c855
+      internalID: -732097872
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_nw_1
+      name: squid_diagonal_nw_1
       rect:
         serializedVersion: 2
-        x: 48
+        x: 64
         y: 0
-        width: 48
-        height: 48
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -434,20 +434,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7d8f5c60a9c45b045becabbf0930f3b8
-      internalID: -2138143752
+      spriteID: ebf9cd0e50d5c8948be3dd1942e8db00
+      internalID: 284890327
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_nw_2
+      name: squid_diagonal_nw_2
       rect:
         serializedVersion: 2
-        x: 96
+        x: 128
         y: 0
-        width: 48
-        height: 48
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -456,20 +456,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 7a814399b1cf72240a26969c1669df0a
-      internalID: -1842631007
+      spriteID: 907fff4ddde8d86478daa042e381a813
+      internalID: -297336067
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: mackerel_diagonal_nw_3
+      name: squid_diagonal_nw_3
       rect:
         serializedVersion: 2
-        x: 144
+        x: 192
         y: 0
-        width: 48
-        height: 48
+        width: 64
+        height: 64
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -478,8 +478,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 9dae1478c2b40f942a4921b746eae945
-      internalID: -327720785
+      spriteID: e8234b1e9f165804795ec66ae3a87acf
+      internalID: 1843757242
       vertices: []
       indices: 
       edges: []
@@ -488,7 +488,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 4705540c1dea636408c85b686815f0f8
+    spriteID: b9e7fb3d80b947d4196420042f60c0d4
     internalID: 0
     vertices: []
     indices: 
@@ -498,22 +498,22 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      mackerel_diagonal_0: -1037762955
-      mackerel_diagonal_1: 587306548
-      mackerel_diagonal_2: 484755120
-      mackerel_diagonal_3: -468110951
-      mackerel_diagonal_nw_0: -2026823086
-      mackerel_diagonal_nw_1: -2138143752
-      mackerel_diagonal_nw_2: -1842631007
-      mackerel_diagonal_nw_3: -327720785
-      mackerel_horizontal_0: -82075109
-      mackerel_horizontal_1: -78763568
-      mackerel_horizontal_2: 636082817
-      mackerel_horizontal_3: 969545076
-      mackerel_vertical_0: 141790107
-      mackerel_vertical_1: -985602786
-      mackerel_vertical_2: -1360502889
-      mackerel_vertical_3: 1395206681
+      squid_diagonal_0: -740312269
+      squid_diagonal_1: 1454248464
+      squid_diagonal_2: 438995047
+      squid_diagonal_3: -157130808
+      squid_diagonal_nw_0: -732097872
+      squid_diagonal_nw_1: 284890327
+      squid_diagonal_nw_2: -297336067
+      squid_diagonal_nw_3: 1843757242
+      squid_horizontal_0: -610843559
+      squid_horizontal_1: -1645590909
+      squid_horizontal_2: 1370416806
+      squid_horizontal_3: -531268053
+      squid_vertical_0: -407684030
+      squid_vertical_1: -101490933
+      squid_vertical_2: -1711303058
+      squid_vertical_3: -1362374785
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

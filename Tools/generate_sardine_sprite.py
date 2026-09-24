@@ -1,11 +1,11 @@
-"""Draw the VS-2B-1 sardine sheet directly on a 32-pixel grid."""
+"""Draw the sardine sheet directly on a 32-pixel grid."""
 
 from pathlib import Path
 from PIL import Image, ImageDraw
 
 
 CELL = 32
-SHEET = Image.new("RGBA", (128, 96), (0, 0, 0, 0))
+SHEET = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
 INK = (24, 49, 68, 255)
 BACK = (42, 108, 125, 255)
 TEAL = (66, 153, 157, 255)
@@ -55,7 +55,8 @@ def frame(forward, phase):
     return image
 
 
-directions = ((1, 0), (0, -1), (0.70710678, -0.70710678))
+directions = ((1, 0), (0, -1), (0.70710678, -0.70710678),
+              (-0.70710678, -0.70710678))
 for row, direction in enumerate(directions):
     for col in range(4):
         SHEET.alpha_composite(frame(direction, col), (col * CELL, row * CELL))

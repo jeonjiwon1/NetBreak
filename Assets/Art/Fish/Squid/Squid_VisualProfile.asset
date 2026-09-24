@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 322c9df7ab22468448445424e3adbc4e, type: 3}
+  m_Name: Squid_VisualProfile
+  m_EditorClassIdentifier: Assembly-CSharp::FishVisualProfile
+  horizontalFrames:
+  - {fileID: -610843559, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  - {fileID: -1645590909, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  - {fileID: 1370416806, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  - {fileID: -531268053, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  verticalFrames:
+  - {fileID: -407684030, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  - {fileID: -101490933, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  - {fileID: -1711303058, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  - {fileID: -1362374785, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  diagonalFrames:
+  - {fileID: -740312269, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  - {fileID: 1454248464, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  - {fileID: 438995047, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  - {fileID: -157130808, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  diagonalNorthWestFrames:
+  - {fileID: -732097872, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  - {fileID: 284890327, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  - {fileID: -297336067, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  - {fileID: 1843757242, guid: df55caa729f74cddb407d930014e7a97, type: 3}
+  framesPerSecond: 8
+  visualScale: {x: 1, y: 1}
+  tint: {r: 1, g: 1, b: 1, a: 1}

@@ -20,8 +20,10 @@ public sealed class FishVisualPipelineTests
     [SetUp]
     public void SetUp()
     {
-        Texture2D texture = Own(new Texture2D(5, 1, TextureFormat.RGBA32, false));
-        texture.SetPixels(new[] { Color.white, Color.red, Color.green, Color.blue, Color.yellow });
+        Texture2D texture = Own(new Texture2D(17, 1, TextureFormat.RGBA32, false));
+        Color[] pixels = new Color[17];
+        for (int i = 0; i < pixels.Length; i++) pixels[i] = Color.white;
+        texture.SetPixels(pixels);
         texture.Apply();
         prototypeSprite = Own(Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f)));
         frames = new Sprite[4];
@@ -30,11 +32,17 @@ public sealed class FishVisualPipelineTests
 
         profile = Own(ScriptableObject.CreateInstance<FishVisualProfile>());
         SerializedObject visualData = new SerializedObject(profile);
-        foreach (string name in new[] { "horizontalFrames", "verticalFrames", "diagonalFrames" })
+        string[] names = { "horizontalFrames", "verticalFrames", "diagonalFrames", "diagonalNorthWestFrames" };
+        for (int row = 0; row < names.Length; row++)
         {
-            SerializedProperty array = visualData.FindProperty(name);
+            SerializedProperty array = visualData.FindProperty(names[row]);
             array.arraySize = 4;
-            for (int i = 0; i < 4; i++) array.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
+            for (int i = 0; i < 4; i++)
+            {
+                Sprite sprite = row == 0 ? frames[i] :
+                    Own(Sprite.Create(texture, new Rect(row * 4 + i + 1, 0, 1, 1), new Vector2(0.5f, 0.5f)));
+                array.GetArrayElementAtIndex(i).objectReferenceValue = sprite;
+            }
         }
         visualData.ApplyModifiedPropertiesWithoutUndo();
 
@@ -71,12 +79,12 @@ public sealed class FishVisualPipelineTests
     }
 
     [TestCase(1f, 0f, FishVisualSet.Horizontal, false, false)]
-    [TestCase(-1f, 0f, FishVisualSet.Horizontal, true, false)]
+    [TestCase(-1f, 0f, FishVisualSet.Horizontal, true, true)]
     [TestCase(0f, 1f, FishVisualSet.Vertical, false, false)]
-    [TestCase(0f, -1f, FishVisualSet.Vertical, false, true)]
+    [TestCase(0f, -1f, FishVisualSet.Vertical, true, true)]
     [TestCase(1f, 1f, FishVisualSet.Diagonal, false, false)]
-    [TestCase(-1f, 1f, FishVisualSet.Diagonal, true, false)]
-    [TestCase(1f, -1f, FishVisualSet.Diagonal, false, true)]
+    [TestCase(-1f, 1f, FishVisualSet.DiagonalNorthWest, false, false)]
+    [TestCase(1f, -1f, FishVisualSet.DiagonalNorthWest, true, true)]
     [TestCase(-1f, -1f, FishVisualSet.Diagonal, true, true)]
     public void DirectionMapping(float x, float y, FishVisualSet set, bool flipX, bool flipY)
     {
@@ -85,6 +93,29 @@ public sealed class FishVisualPipelineTests
         Assert.That(result.Set, Is.EqualTo(set));
         Assert.That(result.FlipX, Is.EqualTo(flipX));
         Assert.That(result.FlipY, Is.EqualTo(flipY));
+    }
+
+    [Test]
+    public void AllHeadingsChooseDistinctSourceAxesAndResetDirectionOnReuse()
+    {
+        fish.Initialize(sardine);
+        SpriteRenderer pixel = PixelRenderer();
+        visual.Tick(0f, Vector2.up);
+        Assert.That(pixel.sprite, Is.SameAs(profile.VerticalFrames[0]));
+        visual.Tick(0f, Vector2.down);
+        Assert.That(pixel.sprite, Is.SameAs(profile.VerticalFrames[0]));
+        Assert.That(pixel.flipX && pixel.flipY, Is.True);
+        visual.Tick(0f, new Vector2(-1, 1));
+        Assert.That(pixel.sprite, Is.SameAs(profile.DiagonalNorthWestFrames[0]));
+        Assert.That(pixel.flipX || pixel.flipY, Is.False);
+        visual.Tick(0f, new Vector2(1, -1));
+        Assert.That(pixel.sprite, Is.SameAs(profile.DiagonalNorthWestFrames[0]));
+        Assert.That(pixel.flipX && pixel.flipY, Is.True);
+
+        fish.Initialize(sardine);
+        Assert.That(pixel.sprite, Is.SameAs(profile.HorizontalFrames[0]));
+        Assert.That(pixel.flipX || pixel.flipY, Is.False);
+        Assert.That(visual.FrameIndex, Is.Zero);
     }
 
     [Test]

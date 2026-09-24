@@ -10,7 +10,7 @@ public static class SardineArtSetup
     private const string SheetPath = "Assets/Art/Fish/Sardine/Sardine_Swim.png";
     private const string ProfilePath = "Assets/Art/Fish/Sardine/Sardine_VisualProfile.asset";
     private const string SardineDataPath = "Assets/Data/Fish/FishData_Sardine.asset";
-    private static readonly string[] Directions = { "horizontal", "vertical", "diagonal" };
+    private static readonly string[] Directions = { "horizontal", "vertical", "diagonal", "diagonal_nw" };
 
     [MenuItem("NETBREAK/Art/Setup Sardine Prototype")]
     public static void Setup()
@@ -47,6 +47,7 @@ public static class SardineArtSetup
         SetFrames(profileObject.FindProperty("horizontalFrames"), sprites, 0);
         SetFrames(profileObject.FindProperty("verticalFrames"), sprites, 4);
         SetFrames(profileObject.FindProperty("diagonalFrames"), sprites, 8);
+        SetFrames(profileObject.FindProperty("diagonalNorthWestFrames"), sprites, 12);
         profileObject.ApplyModifiedProperties();
         EditorUtility.SetDirty(profile);
 
@@ -59,7 +60,7 @@ public static class SardineArtSetup
             EditorUtility.SetDirty(sardine);
         }
         AssetDatabase.SaveAssets();
-        Debug.Log($"Sardine art setup complete: 12 slices, profile {ProfilePath}, FishData link. Import changed: {importChanged}");
+        Debug.Log($"Sardine art setup complete: 16 slices, profile {ProfilePath}, FishData link. Import changed: {importChanged}");
         Validate();
     }
 
@@ -121,8 +122,8 @@ public static class SardineArtSetup
             if (existingByName.ContainsKey(rect.name)) changed = true;
             else existingByName.Add(rect.name, rect);
         }
-        SpriteRect[] wanted = new SpriteRect[12];
-        for (int row = 0; row < 3; row++)
+        SpriteRect[] wanted = new SpriteRect[16];
+        for (int row = 0; row < 4; row++)
         for (int col = 0; col < 4; col++)
         {
             string name = $"sardine_{Directions[row]}_{col}";
@@ -131,7 +132,7 @@ public static class SardineArtSetup
                 rect = new SpriteRect { name = name, spriteID = GUID.Generate() };
                 changed = true;
             }
-            Rect bounds = new Rect(col * 32, (2 - row) * 32, 32, 32);
+            Rect bounds = new Rect(col * 32, (3 - row) * 32, 32, 32);
             if (rect.rect != bounds || rect.alignment != SpriteAlignment.Center || rect.pivot != new Vector2(0.5f, 0.5f))
                 changed = true;
             rect.rect = bounds;
@@ -139,7 +140,7 @@ public static class SardineArtSetup
             rect.pivot = new Vector2(0.5f, 0.5f);
             wanted[row * 4 + col] = rect;
         }
-        if (existing.Length != 12) changed = true;
+        if (existing.Length != 16) changed = true;
         if (changed)
         {
             provider.SetSpriteRects(wanted);
@@ -153,19 +154,19 @@ public static class SardineArtSetup
     private static Sprite[] LoadFrames()
     {
         Sprite[] sprites = AssetDatabase.LoadAllAssetsAtPath(SheetPath).OfType<Sprite>().ToArray();
-        if (sprites.Length != 12)
+        if (sprites.Length != 16)
         {
-            Debug.LogError($"Expected 12 sardine sprites at {SheetPath}; found {sprites.Length}.");
+            Debug.LogError($"Expected 16 sardine sprites at {SheetPath}; found {sprites.Length}.");
             return null;
         }
-        Sprite[] ordered = new Sprite[12];
-        for (int row = 0; row < 3; row++)
+        Sprite[] ordered = new Sprite[16];
+        for (int row = 0; row < 4; row++)
         for (int col = 0; col < 4; col++)
         {
             ordered[row * 4 + col] = sprites.SingleOrDefault(sprite => sprite.name == $"sardine_{Directions[row]}_{col}");
             if (ordered[row * 4 + col] == null)
             {
-                Debug.LogError("Sardine sprite names do not match the 3 x 4 convention.");
+                Debug.LogError("Sardine sprite names do not match the 4 x 4 convention.");
                 return null;
             }
         }

@@ -36,3 +36,4 @@ MonoBehaviour:
   schoolSpawnSpreadY: 1.7
   visualScale: {x: 0.6, y: 0.35}
   visualColor: {r: 0.745283, g: 0.27069238, b: 0.6959855, a: 1}
+  visualProfile: {fileID: 11400000, guid: afc9b512c6e644f589e820afd4be4085, type: 2}

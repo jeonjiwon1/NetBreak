@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum FishVisualSet { Horizontal, Vertical, Diagonal }
+public enum FishVisualSet { Horizontal, Vertical, Diagonal, DiagonalNorthWest }
 public enum FishVisualHeading { East, NorthEast, North, NorthWest, West, SouthWest, South, SouthEast }
 
 public readonly struct FishVisualDirection
@@ -14,10 +14,12 @@ public readonly struct FishVisualDirection
     {
         Heading = heading;
         int bucket = (int)heading;
-        Set = bucket % 2 == 1 ? FishVisualSet.Diagonal :
+        // 원본 E/N/NE/NW와 반대 방향은 같은 두 축을 함께 뒤집는다.
+        Set = bucket == 1 || bucket == 5 ? FishVisualSet.Diagonal :
+              bucket == 3 || bucket == 7 ? FishVisualSet.DiagonalNorthWest :
               bucket == 2 || bucket == 6 ? FishVisualSet.Vertical : FishVisualSet.Horizontal;
-        FlipX = bucket == 3 || bucket == 4 || bucket == 5;
-        FlipY = bucket == 5 || bucket == 6 || bucket == 7;
+        FlipX = bucket >= 4;
+        FlipY = bucket >= 4;
     }
 }
 
