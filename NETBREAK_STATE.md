@@ -1,6 +1,6 @@
 # NETBREAK 인수인계
 
-기준일: 2026-09-22. 현재 마일스톤: **G6-C2와 현재 버전 최소 안정화 수동 검증 완료. UX-F1 및 UX-F2-A/B 임시 전투 피드백 구현·자동·수동 검증 완료. VS-2 아트 방향 1차 확정 및 아트 가이드 작성 완료. 다음 단계는 기존 Unity 화면·제작 규격 조사와 첫 에셋 프로토타입 제작**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 아트 기준은 `Docs/NETBREAK_ART_GUIDE.md`, 장기 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
+기준일: 2026-09-24. 현재 마일스톤: **G6-C2와 현재 버전 최소 안정화 수동 검증 완료. UX-F1 및 UX-F2-A/B 임시 전투 피드백 구현·자동·수동 검증 완료. VS-2 아트 방향 1차 확정. VS-2B-1 정어리 Sprite Pipeline 자동 검증과 Unity 수동 시각 검증 완료, 후속 일반 어종 제작의 기준으로 사용할 첫 프로토타입 승인**. 목표 설계는 `Docs/NETBREAK_DESIGN.md`, 성장 설계는 `Docs/NETBREAK_GROWTH_SYSTEM.md`, 아트 기준은 `Docs/NETBREAK_ART_GUIDE.md`, 장기 순서는 `Docs/NETBREAK_ROADMAP.md`, 작업 규칙은 `AGENTS.md`를 읽는다. 구현의 기준은 Git이며 현재 개발 상태의 기준은 이 문서다.
 
 ## Git·환경
 - 저장소: `C:\game_dev\unity\NetBreak`, 브랜치 `vertical-slice`.
@@ -434,3 +434,13 @@
 - 정식 VFX, SFX와 BGM은 아직 완료되지 않았다. 이번 문서 작업은 Unity 실행·검증을 추가하지 않았고 기존 UX-F2-A/B 검증 결과를 변경하지 않는다.
 - 외부 테스트 뒤에는 확인된 구조적 문제를 먼저 처리하고 G7 상점·Gold 경제, G8 해역별 성장·보상, Area 2와 해역 전환, 새 도구·아이템·스킬·시너지, Area 3~6, Meta·Hard Mode, 전체 밸런스·최적화·출시 준비 순으로 진행한다. 새 콘텐츠는 가능한 한 gameplay, 아트·애니메이션, VFX, SFX, UI와 검증을 한 단위로 묶고 최종 폴리싱·오디오 믹싱은 출시 준비에 남긴다.
 - 이번 변경은 Markdown 계획 갱신만 수행했다. Unity 실행·테스트, 코드, Scene/Prefab, 에셋, ProjectSettings, Git add/commit/push는 수행하지 않았다.
+
+## 최근 변경 — VS-2B-1 정어리 방향별 Sprite Pipeline 프로토타입
+
+- `Assets/Art/Fish/Sardine/Sardine_Swim.png`에 128×96 RGBA 정어리 시트를 직접 픽셀 격자로 제작했다. 32×32 셀 3방향(동·북·북동)×4프레임이며 투명 여백이 있다. 현재 정어리 이미지는 후속 일반 어종 제작의 기준으로 사용할 **첫 프로토타입으로 승인**됐다. 최종 출시용 Art Lock은 아니며 32×32 셀·PPU 83·8 FPS와 Pixel Perfect 정책을 전체 프로젝트의 최종 규격으로 확정한 것은 아니다.
+- `FishData`에 선택적 `FishVisualProfile` 참조를 추가하고 정어리에만 연결했다. `FishVisualDirectionResolver`는 실제 이동 방향을 8방향으로 분류해 3세트와 flipX/Y에 매핑하며 경계 히스테리시스와 저속 방향 유지를 적용한다. `FishVisualController`는 scaled time 4프레임 flipbook과 풀 재사용 초기화를 맡는다. 다른 어종은 기존 사각형 Sprite와 visualScale/visualColor를 유지한다.
+- 기존 Fish 루트·CircleCollider2D·프리팹·씬은 변경하지 않았다. 정어리 시각 전용 자식은 런타임에만 생성하고 루트 배율을 보정해 Custom Visual 크기를 적용한다. FishMovement 경로·속도·판정은 그대로이며 실제 적용한 방향만 시각계에 노출한다.
+- Unity 6000.3.11f1 배치 Editor에서 `NETBREAK/Art/Setup Sardine Prototype`을 실행해 12개 Sprite 분할·Import 설정·프로필·정어리 FishData 연결을 완료했다. `Validate Fish Sprite Pipeline` 메뉴가 통과했고 Setup 재실행 시 `Import changed: False`를 확인했다. 메뉴가 정어리 asset에 누락된 기존 기본 직렬화 필드 8개를 기록했으나 값은 코드 기본값과 같다.
+- Runtime/Editor/Test 스크립트는 Unity에서 컴파일됐다. 신규 EditMode 테스트 14개와 기존 테스트 149개를 합친 전체 163/163이 실제 Test Runner에서 통과했다. 방향 8개·저속/경계·4프레임/일시정지·fallback·양방향 풀 재사용·크기/색/flip·Resistance/Collider 보존을 확인했다. 기존 테스트는 삭제하거나 Skip하지 않았다.
+- `Docs/NETBREAK_SPRITE_PIPELINE.md`, `Docs/NETBREAK_ASSET_MANIFEST.md`를 추가하고 아트 가이드를 갱신했다. 사용자가 Unity Play Mode에서 컴파일 정상과 Console Error 0을 확인했다. 정어리 Sprite와 가로·세로·대각선, 반대 방향 flip, 4프레임 헤엄이 정상이며 방향 전환에 심각한 jitter가 없음을 확인했다. 여러 정어리의 동시 표시와 기존 대비 화면 크기, 다른 어종의 Prototype fallback, 정어리↔다른 어종의 양방향 Pool 재사용, Pause/선택 상태, 기존 VFX·Resistance·포획·UI, Run 재시작 후 시각 초기화도 정상으로 확인했다. 사용자는 현재 정어리 Prototype 이미지 방향에 만족한다고 밝혔다. 이는 **VS-2B-1 수동 시각 검증 완료 및 첫 프로토타입 승인**이며 최종 출시용 아트 승인이나 전체 프로젝트 Sprite 규격 확정은 아니다.
+- Git add/commit/push는 사용자 지시에 따라 수행하지 않았다.

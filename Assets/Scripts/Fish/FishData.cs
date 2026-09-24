@@ -73,6 +73,10 @@ public class FishData : ScriptableObject
     private Color visualColor =
         Color.white;
 
+    [SerializeField] private FishVisualProfile visualProfile;
+
+    public FishVisualProfile VisualProfile => visualProfile;
+
     public string FishName =>
         fishName;
 

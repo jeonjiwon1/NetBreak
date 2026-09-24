@@ -81,6 +81,8 @@ public class FishMovement : MonoBehaviour
     public float RouteLaneOffset =>
         routeLaneOffset;
 
+    public Vector2 LastMovementDirection { get; private set; } = Vector2.right;
+
     public event System.Action<FishMovement>
         DestinationReached;
 
@@ -117,6 +119,7 @@ public class FishMovement : MonoBehaviour
         wasAttractedByBait = false;
 
         ResetMovementModifiers();
+        LastMovementDirection = Vector2.right;
     }
 
     public void InitializeSchoolMovement(
@@ -142,6 +145,7 @@ public class FishMovement : MonoBehaviour
         wasAttractedByBait = false;
 
         ResetMovementModifiers();
+        LastMovementDirection = Vector2.right;
     }
 
     public void SetRouteLaneOffset(
@@ -476,6 +480,12 @@ public class FishMovement : MonoBehaviour
             signatureNetSpeedMultiplier
             *
             timedSpeedMultiplier;
+
+        if (moveSpeed > 0.0001f && Time.deltaTime > 0f &&
+            direction.sqrMagnitude > 0.000001f)
+        {
+            LastMovementDirection = direction;
+        }
 
         transform.position +=
             (Vector3)(

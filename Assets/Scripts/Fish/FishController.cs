@@ -10,6 +10,7 @@ public class FishController : MonoBehaviour
     private int lifecycleVersion;
 
     private SpriteRenderer spriteRenderer;
+    private FishVisualController visualController;
 
     public FishData Data =>
         fishData;
@@ -46,6 +47,12 @@ public class FishController : MonoBehaviour
     {
         spriteRenderer =
             GetComponentInChildren<SpriteRenderer>();
+
+        visualController = GetComponent<FishVisualController>();
+        if (visualController == null)
+        {
+            visualController = gameObject.AddComponent<FishVisualController>();
+        }
     }
 
     public void Initialize(
@@ -65,6 +72,7 @@ public class FishController : MonoBehaviour
             currentResistance = 0f;
             isCaptured = false;
             Captured = null;
+            visualController?.Initialize(null, spriteRenderer);
 
             return;
         }
@@ -90,6 +98,8 @@ public class FishController : MonoBehaviour
             spriteRenderer.color =
                 fishData.VisualColor;
         }
+
+        visualController?.Initialize(fishData, spriteRenderer);
 
         gameObject.name =
             $"Fish_{fishData.FishName}";

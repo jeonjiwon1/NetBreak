@@ -15,6 +15,14 @@ MonoBehaviour:
   fishName: "\uC815\uC5B4\uB9AC"
   specialType: 0
   netDisruptionMultiplier: 1
+  inkRange: 2.5
+  inkInterval: 5
+  inkDisableDuration: 2.5
+  firstInkDelay: 2
+  dashSpeedMultiplier: 2.5
+  dashDuration: 0.8
+  dashInterval: 5
+  firstDashDelay: 2.5
   maxResistance: 5
   catchValue: 1
   goldReward: 1
@@ -28,3 +36,4 @@ MonoBehaviour:
   schoolSpawnSpreadY: 1.2
   visualScale: {x: 0.35, y: 0.18}
   visualColor: {r: 1, g: 1, b: 1, a: 1}
+  visualProfile: {fileID: 11400000, guid: d6878a36b1f8257409405bf4b924039b, type: 2}
