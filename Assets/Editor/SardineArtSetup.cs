@@ -66,35 +66,7 @@ public static class SardineArtSetup
     [MenuItem("NETBREAK/Art/Validate Fish Sprite Pipeline")]
     public static void Validate()
     {
-        if (!TryFindSardine(out FishData sardine)) return;
-        TextureImporter importer = AssetImporter.GetAtPath(SheetPath) as TextureImporter;
-        Sprite[] frames = LoadFrames();
-        FishVisualProfile profile = AssetDatabase.LoadAssetAtPath<FishVisualProfile>(ProfilePath);
-        bool valid = importer != null && frames != null && profile != null &&
-                     sardine.VisualProfile == profile && profile.IsValid &&
-                     importer.textureType == TextureImporterType.Sprite &&
-                     importer.spriteImportMode == SpriteImportMode.Multiple &&
-                     Mathf.Approximately(importer.spritePixelsPerUnit, 83f) &&
-                     importer.filterMode == FilterMode.Point &&
-                     importer.textureCompression == TextureImporterCompression.Uncompressed &&
-                     !importer.mipmapEnabled && importer.wrapMode == TextureWrapMode.Clamp;
-        if (valid)
-        {
-            for (int i = 0; i < 4; i++)
-                valid &= profile.HorizontalFrames[i] == frames[i] &&
-                         profile.VerticalFrames[i] == frames[4 + i] &&
-                         profile.DiagonalFrames[i] == frames[8 + i];
-        }
-        int sardineProfileCount = AssetDatabase.FindAssets("t:FishVisualProfile")
-            .Count(guid => AssetDatabase.GUIDToAssetPath(guid).Contains("/Sardine/"));
-        valid &= sardineProfileCount == 1;
-        foreach (string guid in AssetDatabase.FindAssets("t:FishData"))
-        {
-            FishData fish = AssetDatabase.LoadAssetAtPath<FishData>(AssetDatabase.GUIDToAssetPath(guid));
-            if (fish != sardine) valid &= fish.VisualProfile == null;
-        }
-        if (valid) Debug.Log("Fish sprite pipeline valid: 12 slices, importer, sardine profile and other-species fallback.");
-        else Debug.LogError("Fish sprite pipeline validation failed. Inspect sheet import, profile frames, Sardine link and fallback species.");
+        FishArtSetup.Validate();
     }
 
     private static bool TryFindSardine(out FishData sardine)

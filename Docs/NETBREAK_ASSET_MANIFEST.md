@@ -21,3 +21,37 @@
 | Prototype Approval / 프로토타입 승인 | Approved — 후속 일반 어종 제작의 기준으로 사용 가능 |
 | Final Production Art Approval / 최종 출시용 아트 승인 | Pending — Art Lock 아님 |
 | 비고 | 정어리 한 종의 첫 파이프라인 프로토타입. 32×32 셀·PPU 83·8 FPS·Pixel Perfect를 전체 프로젝트 공통 최종 규격으로 확정하지 않음 |
+
+| 항목 | 값 |
+|---|---|
+| Asset ID | FISH-MACKEREL-SWIM-001 |
+| 표시명 / 종류 | 고등어 헤엄 Sprite Sheet / 픽셀아트 프로토타입 |
+| 파일 | `Assets/Art/Fish/Mackerel/Mackerel_Swim.png` |
+| 출처 / 제작자 | 이 NETBREAK 작업에서 프로젝트 내부 생성 |
+| 제작 방식 | Pillow 픽셀 격자 직접 제작, `Tools/generate_mackerel_tuna_sprites.py` |
+| 라이선스 | 프로젝트 내부 제작물. 별도 외부 에셋 라이선스 없음; 소유·배포 권한은 프로젝트 정책에 따름 |
+| 시트 / 셀 | 192×144 RGBA / 48×48 |
+| PPU / FPS | 83 / 기본 8, 프로토타입 |
+| 프레임 / 방향 | 12 / 3 원본 세트, flip으로 8방향 |
+| Import / Unity 연결 | Unity 6000.3.11f1에서 12개 분할·Point·무압축·Full Rect·Clamp 확인. 고등어 FishData → `Mackerel_VisualProfile.asset` 연결 |
+| 자동 검증 | 전체 EditMode 168/168 통과, Pipeline Validate 통과 |
+| Manual Visual Validation / 수동 시각 검증 | Passed — 사용자 Unity 확인, Console Error 0 |
+| Prototype Approval / 프로토타입 승인 | Approved — 정어리 기준 Directional Fish Sprite Pipeline 확장 |
+| Final Production Art Approval / 최종 출시용 아트 승인 | Pending |
+
+| 항목 | 값 |
+|---|---|
+| Asset ID | FISH-TUNA-SWIM-001 |
+| 표시명 / 종류 | 참치 헤엄 Sprite Sheet / 픽셀아트 프로토타입 |
+| 파일 | `Assets/Art/Fish/Tuna/Tuna_Swim.png` |
+| 출처 / 제작자 | 이 NETBREAK 작업에서 프로젝트 내부 생성 |
+| 제작 방식 | Pillow 픽셀 격자 직접 제작, `Tools/generate_mackerel_tuna_sprites.py` |
+| 라이선스 | 프로젝트 내부 제작물. 별도 외부 에셋 라이선스 없음; 소유·배포 권한은 프로젝트 정책에 따름 |
+| 시트 / 셀 | 256×192 RGBA / 64×64 |
+| PPU / FPS | 83 / 기본 8, 프로토타입 |
+| 프레임 / 방향 | 12 / 3 원본 세트, flip으로 8방향 |
+| Import / Unity 연결 | Unity 6000.3.11f1에서 12개 분할·Point·무압축·Full Rect·Clamp 확인. 참치 FishData → `Tuna_VisualProfile.asset` 연결 |
+| 자동 검증 | 전체 EditMode 168/168 통과, Pipeline Validate 통과 |
+| Manual Visual Validation / 수동 시각 검증 | Passed — 사용자 Unity 확인, Console Error 0 |
+| Prototype Approval / 프로토타입 승인 | Approved — 정어리 기준 Directional Fish Sprite Pipeline 확장 |
+| Final Production Art Approval / 최종 출시용 아트 승인 | Pending |
