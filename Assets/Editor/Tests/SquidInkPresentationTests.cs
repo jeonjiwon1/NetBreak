@@ -21,10 +21,10 @@ public sealed class SquidInkPresentationTests
     public void SetUp()
     {
         Time.timeScale = 1f;
-        Texture2D pixels = Own(new Texture2D(20, 1, TextureFormat.RGBA32, false));
-        pixels.SetPixels(new Color[20]);
+        Texture2D pixels = Own(new Texture2D(28, 1, TextureFormat.RGBA32, false));
+        pixels.SetPixels(new Color[28]);
         pixels.Apply();
-        Sprite[] sprites = new Sprite[20];
+        Sprite[] sprites = new Sprite[28];
         for (int i = 0; i < sprites.Length; i++)
             sprites[i] = Own(Sprite.Create(pixels, new Rect(i, 0, 1, 1), new Vector2(.5f, .5f)));
 
@@ -37,7 +37,13 @@ public sealed class SquidInkPresentationTests
         SerializedObject inkData = new SerializedObject(ink);
         SerializedProperty puff = inkData.FindProperty("puffFrames");
         for (int i = 0; i < 4; i++)
+        {
             puff.GetArrayElementAtIndex(i).objectReferenceValue = sprites[16 + i];
+            inkData.FindProperty("projectileFrames").GetArrayElementAtIndex(i)
+                .objectReferenceValue = sprites[20 + i];
+            inkData.FindProperty("impactFrames").GetArrayElementAtIndex(i)
+                .objectReferenceValue = sprites[24 + i];
+        }
         inkData.ApplyModifiedPropertiesWithoutUndo();
 
         GameObject managerObject = Own(new GameObject("Ink Test Effects"));
@@ -135,14 +141,17 @@ public sealed class SquidInkPresentationTests
         Assert.That(float.IsNegativeInfinity((float)Field(effects, "lastSquidInkSoundTime")), Is.True);
         visual.Tick(.125f, Vector2.right);
         Assert.That(visual.SpecialFrame, Is.EqualTo(2));
-        Assert.That(effects.ActiveCombatVfxCount, Is.EqualTo(3));
+        Assert.That(effects.ActiveCombatVfxCount, Is.EqualTo(2));
         Assert.That(CountActive("SquidInkBurstVisual"), Is.EqualTo(1));
+        Assert.That(CountActive("SquidInkProjectileVisual"), Is.EqualTo(1));
+        Assert.That(CountActive("SquidInkImpactVisual"), Is.Zero);
+        Assert.That(CountActive("SquidInkTrajectoryVisual"), Is.Zero);
         SpriteRenderer renderer = fish.transform.Find("FishPixelVisual").GetComponent<SpriteRenderer>();
         Assert.That(renderer.sprite, Is.SameAs(ink.GetFrames(FishVisualSet.Horizontal)[2]));
         Assert.That(renderer.flipX && renderer.flipY, Is.True);
         Assert.That(float.IsNegativeInfinity((float)Field(effects, "lastSquidInkSoundTime")), Is.False);
         visual.Tick(.125f, Vector2.right);
-        Assert.That(effects.ActiveCombatVfxCount, Is.EqualTo(3));
+        Assert.That(effects.ActiveCombatVfxCount, Is.EqualTo(2));
         visual.Tick(.125f, Vector2.right);
         Assert.That(visual.IsPlayingSpecial, Is.False);
         Assert.That(visual.SpecialHeading, Is.EqualTo(FishVisualHeading.East));
@@ -159,7 +168,9 @@ public sealed class SquidInkPresentationTests
         visual.Tick(.25f, Vector2.right);
         object pool = Field(effects, "combatVfxPool");
         Invoke(pool, "Tick", 0f);
-        Assert.That(effects.ActiveCombatVfxCount, Is.EqualTo(3));
+        Assert.That(effects.ActiveCombatVfxCount, Is.EqualTo(2));
+        Invoke(pool, "Tick", 1f);
+        Assert.That(CountActive("SquidInkImpactVisual"), Is.EqualTo(1));
         Invoke(pool, "Tick", 1f);
         Assert.That(effects.ActiveCombatVfxCount, Is.Zero);
         int created = effects.CreatedCombatVfxCount;
@@ -172,6 +183,55 @@ public sealed class SquidInkPresentationTests
         Assert.That(visual.IsPlayingSpecial, Is.False);
         Assert.That(visual.SpecialFrame, Is.Zero);
         Assert.That(visual.SpecialHeading, Is.EqualTo(FishVisualHeading.East));
+    }
+
+    [Test]
+    public void ProjectileUsesSuccessfulTargetSnapshotThenSpawnsOneImpact()
+    {
+        Release();
+        visual.Tick(.25f, Vector2.right);
+        Assert.That(rod.IsInkInterferenceActive, Is.True);
+        Transform projectile = FindActive("SquidInkProjectileVisual");
+        Assert.That(projectile, Is.Not.Null);
+        Assert.That((Vector2)projectile.position, Is.EqualTo(Vector2.zero));
+
+        rod.transform.position = new Vector2(8f, 0f);
+        rod.gameObject.SetActive(false);
+        object pool = Field(effects, "combatVfxPool");
+        Invoke(pool, "Tick", .11f);
+        Assert.That(projectile.gameObject.activeSelf, Is.True);
+        Assert.That(projectile.position.x, Is.EqualTo(.5f).Within(.001f));
+        Assert.That(CountActive("SquidInkImpactVisual"), Is.Zero);
+
+        Invoke(pool, "Tick", .11f);
+        Assert.That(CountActive("SquidInkProjectileVisual"), Is.Zero);
+        Assert.That(CountActive("SquidInkImpactVisual"), Is.EqualTo(1));
+        Assert.That((Vector2)FindActive("SquidInkImpactVisual").position,
+            Is.EqualTo(Vector2.right));
+        Invoke(pool, "Tick", .3f);
+        Assert.That(CountActive("SquidInkImpactVisual"), Is.Zero);
+    }
+
+    [Test]
+    public void PauseAndRunResetRemoveProjectileWithoutDelayedImpact()
+    {
+        Release();
+        visual.Tick(.25f, Vector2.right);
+        object pool = Field(effects, "combatVfxPool");
+        Invoke(pool, "Tick", 0f);
+        Assert.That((Vector2)FindActive("SquidInkProjectileVisual").position,
+            Is.EqualTo(Vector2.zero));
+        Invoke(effects, "ClearRuntimeState", false);
+        Assert.That(effects.ActiveCombatVfxCount, Is.Zero);
+        Invoke(pool, "Tick", 1f);
+        Assert.That(CountActive("SquidInkImpactVisual"), Is.Zero);
+
+        effects.ShowSquidInkAttack(Vector2.zero, Vector2.right, ink);
+        Assert.That(CountActive("SquidInkProjectileVisual"), Is.EqualTo(1));
+        Invoke(pool, "Tick", .22f);
+        Assert.That(CountActive("SquidInkImpactVisual"), Is.EqualTo(1));
+        Invoke(pool, "Clear");
+        Assert.That(effects.ActiveCombatVfxCount, Is.Zero);
     }
 
     [Test]
@@ -214,7 +274,8 @@ public sealed class SquidInkPresentationTests
         FishVisualProfile swimAsset = AssetDatabase.LoadAssetAtPath<FishVisualProfile>(
             "Assets/Art/Fish/Squid/Squid_VisualProfile.asset");
         Assert.That(imported, Is.Not.Null);
-        Assert.That(imported.HasAnimation && imported.HasPuff, Is.True);
+        Assert.That(imported.HasAnimation && imported.HasPuff &&
+                    imported.HasProjectile && imported.HasImpact, Is.True);
         Assert.That(imported.InkClip, Is.Not.Null);
         Assert.That(imported.FramesPerSecond, Is.EqualTo(8f));
         Assert.That(swimAsset.IsValid, Is.True);
@@ -233,6 +294,13 @@ public sealed class SquidInkPresentationTests
         foreach (Transform child in effects.transform)
             if (child.gameObject.activeSelf && child.name == name) count++;
         return count;
+    }
+
+    private Transform FindActive(string name)
+    {
+        foreach (Transform child in effects.transform)
+            if (child.gameObject.activeSelf && child.name == name) return child;
+        return null;
     }
 
     private static void Fill(UnityEngine.Object target, string[] names, Sprite[] sprites)

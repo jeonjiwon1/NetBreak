@@ -8,6 +8,8 @@ public static class SquidInkArtSetup
 {
     private const string AttackPath = "Assets/Art/Fish/Squid/Squid_InkAttack.png";
     private const string PuffPath = "Assets/Art/VFX/Squid/Squid_InkPuff.png";
+    private const string ProjectilePath = "Assets/Art/VFX/Squid/Squid_InkProjectile.png";
+    private const string ImpactPath = "Assets/Art/VFX/Squid/Squid_InkImpact.png";
     private const string AudioPath = "Assets/Audio/SFX/SpecialFish/Squid_InkRelease.wav";
     private const string ProfilePath = "Assets/Resources/SquidInkPresentation.asset";
     private static readonly string[] Directions =
@@ -18,20 +20,26 @@ public static class SquidInkArtSetup
     {
         if (AssetImporter.GetAtPath(AttackPath) is not TextureImporter attack ||
             AssetImporter.GetAtPath(PuffPath) is not TextureImporter puff ||
+            AssetImporter.GetAtPath(ProjectilePath) is not TextureImporter projectile ||
+            AssetImporter.GetAtPath(ImpactPath) is not TextureImporter impact ||
             AssetDatabase.LoadAssetAtPath<AudioClip>(AudioPath) == null)
         {
-            Debug.LogError("Squid ink setup failed: action sheet, puff sheet or audio clip missing.");
+            Debug.LogError("Squid ink setup failed: action, puff, projectile, impact or audio missing.");
             return;
         }
 
         Configure(attack, 64, 4, 4, (row, col) =>
             $"squid_ink_{Directions[row]}_{col}");
         Configure(puff, 32, 4, 1, (_, col) => $"squid_ink_puff_{col}");
+        Configure(projectile, 16, 4, 1, (_, col) => $"squid_ink_projectile_{col}");
+        Configure(impact, 24, 4, 1, (_, col) => $"squid_ink_impact_{col}");
 
         Sprite[] action = Load(AttackPath, 16, (row, col) =>
             $"squid_ink_{Directions[row]}_{col}");
         Sprite[] cloud = Load(PuffPath, 4, (_, col) => $"squid_ink_puff_{col}");
-        if (action == null || cloud == null) return;
+        Sprite[] blobs = Load(ProjectilePath, 4, (_, col) => $"squid_ink_projectile_{col}");
+        Sprite[] splats = Load(ImpactPath, 4, (_, col) => $"squid_ink_impact_{col}");
+        if (action == null || cloud == null || blobs == null || splats == null) return;
 
         if (!AssetDatabase.IsValidFolder("Assets/Resources"))
             AssetDatabase.CreateFolder("Assets", "Resources");
@@ -54,6 +62,8 @@ public static class SquidInkArtSetup
         for (int row = 0; row < 4; row++)
             SetFrames(serialized.FindProperty(properties[row]), action, row * 4);
         SetFrames(serialized.FindProperty("puffFrames"), cloud, 0);
+        SetFrames(serialized.FindProperty("projectileFrames"), blobs, 0);
+        SetFrames(serialized.FindProperty("impactFrames"), splats, 0);
         serialized.FindProperty("inkClip").objectReferenceValue =
             AssetDatabase.LoadAssetAtPath<AudioClip>(AudioPath);
         serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -68,15 +78,23 @@ public static class SquidInkArtSetup
         var profile = AssetDatabase.LoadAssetAtPath<SquidInkPresentationProfile>(ProfilePath);
         var attack = AssetImporter.GetAtPath(AttackPath) as TextureImporter;
         var puff = AssetImporter.GetAtPath(PuffPath) as TextureImporter;
+        var projectile = AssetImporter.GetAtPath(ProjectilePath) as TextureImporter;
+        var impact = AssetImporter.GetAtPath(ImpactPath) as TextureImporter;
         var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(AudioPath);
         var attackTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(AttackPath);
         var puffTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(PuffPath);
+        var projectileTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(ProjectilePath);
+        var impactTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(ImpactPath);
         bool valid = profile != null && profile.HasAnimation && profile.HasPuff &&
+                     profile.HasProjectile && profile.HasImpact &&
                      profile.InkClip == clip && clip != null && clip.channels == 1 &&
                      clip.frequency == 44100 &&
                      attackTexture != null && attackTexture.width == 256 && attackTexture.height == 256 &&
                      puffTexture != null && puffTexture.width == 128 && puffTexture.height == 32 &&
+                     projectileTexture != null && projectileTexture.width == 64 && projectileTexture.height == 16 &&
+                     impactTexture != null && impactTexture.width == 96 && impactTexture.height == 24 &&
                      ValidImporter(attack) && ValidImporter(puff) &&
+                     ValidImporter(projectile) && ValidImporter(impact) &&
                      Mathf.Approximately(profile.FramesPerSecond, 8f) &&
                      AssetDatabase.FindAssets("t:SquidInkPresentationProfile").Length == 1;
         if (valid)
@@ -84,7 +102,9 @@ public static class SquidInkArtSetup
             Sprite[] action = Load(AttackPath, 16, (row, col) =>
                 $"squid_ink_{Directions[row]}_{col}");
             Sprite[] cloud = Load(PuffPath, 4, (_, col) => $"squid_ink_puff_{col}");
-            valid = action != null && cloud != null;
+            Sprite[] blobs = Load(ProjectilePath, 4, (_, col) => $"squid_ink_projectile_{col}");
+            Sprite[] splats = Load(ImpactPath, 4, (_, col) => $"squid_ink_impact_{col}");
+            valid = action != null && cloud != null && blobs != null && splats != null;
             if (valid)
             {
                 for (int row = 0; row < 4; row++)
@@ -94,12 +114,20 @@ public static class SquidInkArtSetup
                              new Rect(col * 64, (3 - row) * 64, 64, 64) &&
                              action[row * 4 + col].pivot == new Vector2(32, 32);
                 for (int col = 0; col < 4; col++)
+                {
                     valid &= profile.PuffFrames[col] == cloud[col] &&
                              cloud[col].rect == new Rect(col * 32, 0, 32, 32) &&
                              cloud[col].pivot == new Vector2(16, 16);
+                    valid &= profile.ProjectileFrames[col] == blobs[col] &&
+                             blobs[col].rect == new Rect(col * 16, 0, 16, 16) &&
+                             blobs[col].pivot == new Vector2(8, 8);
+                    valid &= profile.ImpactFrames[col] == splats[col] &&
+                             splats[col].rect == new Rect(col * 24, 0, 24, 24) &&
+                             splats[col].pivot == new Vector2(12, 12);
+                }
             }
         }
-        if (valid) Debug.Log("Squid ink presentation valid: 16 action frames, 4 puff frames, profile and mono WAV linked.");
+        if (valid) Debug.Log("Squid ink presentation valid: action, puff, projectile, impact and mono WAV linked.");
         else Debug.LogError("Squid ink presentation validation failed. Run Setup Squid Ink Presentation and inspect the assets.");
     }
 

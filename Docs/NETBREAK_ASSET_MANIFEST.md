@@ -1,5 +1,24 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## VS-2C-2 신규 Prototype (2026-09-24, Unity 수동 검증 완료)
+
+| 필드 | Ink Projectile | Ink Impact |
+|---|---|---|
+| Asset ID | VFX-SQUID-INK-PROJECTILE-001 | VFX-SQUID-INK-IMPACT-001 |
+| Display Name | 오징어 먹물 덩어리 | 오징어 먹물 타격 |
+| File Path | `Assets/Art/VFX/Squid/Squid_InkProjectile.png` | `Assets/Art/VFX/Squid/Squid_InkImpact.png` |
+| 규격 | 64×16 RGBA, 16×16 셀 4프레임, PPU 83 | 96×24 RGBA, 24×24 셀 4프레임, PPU 83 |
+| Production Method / Source | `Tools/generate_squid_ink_projectile.py`로 프로젝트 내부 직접 제작 | 같은 스크립트로 프로젝트 내부 직접 제작 |
+| License | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 |
+| Unity Linked | Sprite 분할 메타데이터와 `SquidInkPresentation.asset` 참조 작성; Play Mode 표시 확인 | Sprite 분할 메타데이터와 같은 Profile 참조 작성; Play Mode 표시 확인 |
+| Automated Validation | PNG·메타데이터·참조 정적 검사 완료; Unity EditMode 전체 193/193 통과 | PNG·메타데이터·참조 정적 검사 완료; Unity EditMode 전체 193/193 통과 |
+| Manual Validation | Manual Visual Validation: Passed — 실제 선택 대상 이동, 속도·가독성·다중 오징어 확인 | Manual Visual Validation: Passed — 대상 도착 시 표시, 지속 방해 상태·초기화 확인 |
+| Prototype Approval | Approved | Approved |
+| Final Approval | Final Production VFX Approval: Pending | Final Production VFX Approval: Pending |
+| Notes | 현재 Prototype의 `CombatVfxPool` 상한 48·RepeatedHit, 0.22초 직선 이동; 타격 판정 없음 | 현재 Prototype의 도착 시 0.3초 표시; 기존 지속 방해 상태와 별개 |
+
+두 시트는 기존 Ink Puff와 같은 검보라 팔레트와 Point/무압축/Full Rect/Clamp 설정을 사용한다. 기존 Release WAV를 그대로 사용하며 새 SFX는 없다. Unity compile 정상·Console Error 0·전체 EditMode 193/193 통과와 Play Mode의 Release → Projectile → Impact → 지속 방해 상태 표시를 확인했다. 기존 임시 연결선·즉시 target marker는 현재 구현에서 교체됐고, 대상 비활성·누락·Pause·Pool/Run 재시작에도 오류·잔상이 없었다. Gameplay 판정·타겟 선정·방해 지속시간은 변경하지 않았다. 현재 Projectile 이동시간·크기·Pool priority는 최종 출시 확정값이 아니다.
+
 ## VS-2C-1 신규 Prototype (2026-09-24)
 
 | 필드 | 오징어 먹물 공격 Sprite | 오징어 먹물 Burst VFX | 오징어 먹물 SFX |

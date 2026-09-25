@@ -65,6 +65,8 @@ UX-F1/F2의 실제 이벤트 연결과 임시 연출을 정식 제작의 기반�
 
 특수어 행동은 Swim과 별도 Animation Set으로 표현한다. 게임플레이 성공이 먼저 발생하고 특수 프레임과 VFX/SFX는 이를 보여준다. 공격 중에는 시작 방향을 잠그고 종료 즉시 현재 이동 방향의 Swim으로 복귀한다. VS-2C-1 오징어 먹물은 기존 몸통·눈·윤곽·팔레트를 유지한 64px 셀의 Anticipation→Release→Recovery 4프레임이다. 발사 원인은 오징어 부근의 짙은 검보라 픽셀 구름으로, 기존 도구 방해 상태 표시와 역할을 구분한다. 사용자가 Unity에서 방향·Swim 복귀와 VFX를 수동 검증하고 현재 Prototype 품질을 승인했다. **Ink Attack Manual Visual Validation: Passed / Ink VFX Manual Validation: Passed / Prototype Approval: Approved / Final Production Art·VFX Approval: Pending**이다.
 
+VS-2C-2는 성공한 먹물 판정 뒤 Attack animation → 기존 Release 구름·SFX → 16px 검보라 먹물 덩어리 → 대상의 24px 짧은 튐 → 기존 지속 방해 상태 표시 순서로 연결한다. 과거 번개형 대상 연결선과 즉시 타격 마커는 이 경로에서 교체됐으며 Play Mode에서도 중복 표시되지 않았다. Projectile은 발사 시점에 이미 판정된 어구 위치로 현재 Prototype 기준 0.22초 직선 이동하고, Impact는 0.3초 표시된다. 충돌·대상 재검색은 없다. 오징어 중심에서 시작하는 단순한 방식을 택했다. 네 방향축의 시각 소켓이 없고 짧은 이동 거리에서 방향별 추정 오프셋이 오히려 틀린 위치를 가리킬 수 있기 때문이다. 사용자가 Play Mode에서 실제 gameplay 대상 연결, 이동 속도·가독성, 도착 시 Impact, 이후 지속 방해 상태, 다중 오징어·대상 누락·Pause·Pool/Run 재시작을 확인했다. Gameplay 판정·타겟 선정·방해 지속시간은 변경하지 않았다. **Ink Projectile 및 Ink Impact 각각 Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production VFX Approval: Pending.** 현재 이동시간·크기·Pool priority는 최종 출시 확정값이 아니다.
+
 ## 8. UI 및 폰트
 
 픽셀아트와 일관된 프레임·아이콘을 사용하되 한국어 가독성을 우선한다. 기존 Canvas, TextMeshPro, Button 구조와 동적 Q/W/E/R 슬롯, 성장 관리·아이템·툴팁의 정보량을 유지한다.

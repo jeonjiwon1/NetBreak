@@ -13,6 +13,7 @@ public sealed class CombatVfxTests
     private PrototypeGameFlowManager flow;
     private ItemEffectManager manager;
     private Camera testCamera;
+    private SquidInkPresentationProfile inkProfile;
 
     [SetUp]
     public void SetUp()
@@ -31,6 +32,10 @@ public sealed class CombatVfxTests
 
         manager = managerObject.AddComponent<ItemEffectManager>();
         InvokePrivate(manager, "Awake");
+        inkProfile = AssetDatabase.LoadAssetAtPath<SquidInkPresentationProfile>(
+            "Assets/Resources/SquidInkPresentation.asset");
+        Assert.That(inkProfile != null && inkProfile.HasProjectile && inkProfile.HasImpact,
+            Is.True);
     }
 
     [TearDown]
@@ -83,15 +88,13 @@ public sealed class CombatVfxTests
 
         ReleaseInk(first);
 
-        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(3));
+        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(2));
         Assert.That(CountActiveLines("SquidInkBurstVisual"), Is.EqualTo(1));
-        Assert.That(CountActiveLines("SquidInkTrajectoryVisual"), Is.EqualTo(1));
-        Assert.That(CountActiveLines("SquidInkImpactVisual"), Is.EqualTo(1));
-
-        LineRenderer trajectory =
-            FindActiveLine("SquidInkTrajectoryVisual");
-        Assert.That((Vector2)trajectory.GetPosition(0), Is.EqualTo(Vector2.zero));
-        Assert.That((Vector2)trajectory.GetPosition(1), Is.EqualTo(Vector2.right));
+        Assert.That(CountActiveLines("SquidInkTrajectoryVisual"), Is.Zero);
+        Assert.That(CountActiveLines("SquidInkImpactVisual"), Is.Zero);
+        Assert.That(CountActiveLines("SquidInkProjectileVisual"), Is.EqualTo(1));
+        Assert.That((Vector2)FindActiveVisual("SquidInkProjectileVisual").position,
+            Is.EqualTo(Vector2.zero));
 
         float firstDeadline =
             GetPrivateField<float>(rod, "specialDisabledUntil");
@@ -101,7 +104,7 @@ public sealed class CombatVfxTests
         Assert.That(
             GetPrivateField<float>(rod, "specialDisabledUntil"),
             Is.GreaterThan(firstDeadline + 2f));
-        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(6));
+        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(4));
         Assert.That(
             rod.GetComponentsInChildren<TMPro.TextMeshPro>(true).Length,
             Is.EqualTo(1));
@@ -361,7 +364,7 @@ public sealed class CombatVfxTests
         {
             manager.ShowSquidInkAttack(
                 Vector2.zero,
-                new Vector2(i * 0.1f, 0f));
+                new Vector2(i * 0.1f, 0f), inkProfile);
         }
 
         Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(48));
@@ -376,10 +379,12 @@ public sealed class CombatVfxTests
             "Scaled delta time 0 must pause transient visual expiry.");
 
         InvokeMethod(pool, "Tick", 1f);
+        Assert.That(CountActiveLines("SquidInkImpactVisual"), Is.EqualTo(48));
+        InvokeMethod(pool, "Tick", 1f);
         Assert.That(manager.ActiveCombatVfxCount, Is.Zero);
 
-        manager.ShowSquidInkAttack(Vector2.zero, Vector2.one);
-        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(2));
+        manager.ShowSquidInkAttack(Vector2.zero, Vector2.one, inkProfile);
+        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(1));
         Assert.That(manager.CreatedCombatVfxCount, Is.EqualTo(48));
 
         flow.FailMiniBossEncounter();
@@ -584,8 +589,11 @@ public sealed class CombatVfxTests
     {
         for (int i = 0; i < 24; i++)
         {
-            manager.ShowSquidInkAttack(Vector2.zero, new Vector2(i, 0f));
+            manager.ShowSquidInkAttack(Vector2.zero, new Vector2(i, 0f), inkProfile);
         }
+        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(24));
+        for (int i = 24; i < 48; i++)
+            manager.ShowSquidInkAttack(Vector2.zero, new Vector2(i, 0f), inkProfile);
         Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(48));
 
         InvokePrivate(
@@ -597,6 +605,31 @@ public sealed class CombatVfxTests
         Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(48));
         Assert.That(CountActiveLines("ThunderSwordBurstVisual"), Is.EqualTo(1));
         Assert.That(CountActiveLines("ThunderSwordResonanceHitVisual"), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void FullVisualPoolDoesNotDelaySquidInterference()
+    {
+        for (int i = 0; i < 48; i++)
+            manager.ShowSquidInkAttack(Vector2.zero, new Vector2(i, 0f), inkProfile);
+        FishingRodController rod = CreateRod(Vector2.right);
+        GameObject hitbox = Own(new GameObject("Full Pool Rod Collider"));
+        hitbox.transform.SetParent(rod.transform, false);
+        BoxCollider2D targetCollider = hitbox.AddComponent<BoxCollider2D>();
+        SquidController squid = CreateSquid(Vector2.zero, 2.5f, 1f);
+        Physics2D.SyncTransforms();
+        Assert.That(Physics2D.OverlapCircleAll(squid.transform.position,
+            squid.GetComponent<FishController>().Data.InkRange),
+            Does.Contain(targetCollider),
+            "The rod must be reachable by the gameplay physics query before testing pool saturation.");
+
+        ReleaseInk(squid);
+
+        Assert.That(rod.IsInkInterferenceActive, Is.True);
+        Assert.That(rod.IsInkInterferenceVisible, Is.True);
+        Assert.That(rod.IsOperational, Is.False);
+        Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(48));
+        Assert.That(manager.CreatedCombatVfxCount, Is.EqualTo(48));
     }
 
     private void BindInventory(RunItemInventory inventory)
@@ -831,6 +864,11 @@ public sealed class CombatVfxTests
 
     private LineRenderer FindActiveLine(string objectName)
     {
+        return FindActiveVisual(objectName).GetComponent<LineRenderer>();
+    }
+
+    private Transform FindActiveVisual(string objectName)
+    {
         for (int i = 0; i < manager.transform.childCount; i++)
         {
             Transform child = manager.transform.GetChild(i);
@@ -840,7 +878,7 @@ public sealed class CombatVfxTests
                     objectName,
                     StringComparison.Ordinal))
             {
-                return child.GetComponent<LineRenderer>();
+                return child;
             }
         }
 

@@ -141,11 +141,30 @@ internal sealed class CombatVfxPool
         public bool IsPersistent;
         public long Sequence;
         public CombatVfxPriority Priority;
+        public Vector2 TravelOrigin;
+        public Vector2 TravelTarget;
+        public Sprite[] ImpactFrames;
+        public string ImpactName;
+        public float ImpactDuration;
+        public float ImpactSize;
+        public int ImpactSortingOrder;
+    }
+
+    private struct PendingImpact
+    {
+        public string Name;
+        public Sprite[] Frames;
+        public Vector2 Position;
+        public float Duration;
+        public float Size;
+        public int SortingOrder;
+        public CombatVfxPriority Priority;
     }
 
     private readonly Transform owner;
     private readonly CombatVfxSettings settings;
     private readonly List<Entry> entries = new();
+    private readonly List<PendingImpact> pendingImpacts = new();
 
     private Material sharedMaterial;
     private long nextSequence;
@@ -232,6 +251,36 @@ internal sealed class CombatVfxPool
         return entry.Sprite;
     }
 
+    public SpriteRenderer AcquireTravelingSprite(
+        string objectName, Sprite[] frames, Vector2 origin, Vector2 target,
+        float duration, float size, int sortingOrder, string impactName,
+        Sprite[] impactFrames, float impactDuration, float impactSize,
+        int impactSortingOrder, CombatVfxPriority priority)
+    {
+        if (frames == null || impactFrames == null ||
+            impactFrames.Length == 0 || duration <= 0f)
+            return null;
+
+        SpriteRenderer renderer = AcquireSpriteTransient(
+            objectName, frames, origin, duration, size, sortingOrder, priority);
+        if (renderer == null) return null;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            Entry entry = entries[i];
+            if (entry.Sprite != renderer) continue;
+            entry.TravelOrigin = origin;
+            entry.TravelTarget = target;
+            entry.ImpactFrames = impactFrames;
+            entry.ImpactName = impactName;
+            entry.ImpactDuration = impactDuration;
+            entry.ImpactSize = impactSize;
+            entry.ImpactSortingOrder = impactSortingOrder;
+            break;
+        }
+        return renderer;
+    }
+
     public LineRenderer AcquirePersistent(
         string objectName,
         Color color,
@@ -255,6 +304,7 @@ internal sealed class CombatVfxPool
             return;
         }
 
+        pendingImpacts.Clear();
         for (int i = 0; i < entries.Count; i++)
         {
             Entry entry = entries[i];
@@ -266,15 +316,37 @@ internal sealed class CombatVfxPool
             entry.Remaining -= scaledDeltaTime;
             if (entry.Remaining <= 0f)
             {
+                if (entry.ImpactFrames != null)
+                    pendingImpacts.Add(new PendingImpact
+                    {
+                        Name = entry.ImpactName,
+                        Frames = entry.ImpactFrames,
+                        Position = entry.TravelTarget,
+                        Duration = entry.ImpactDuration,
+                        Size = entry.ImpactSize,
+                        SortingOrder = entry.ImpactSortingOrder,
+                        Priority = entry.Priority
+                    });
                 Release(entry);
             }
             else if (entry.Sprite != null && entry.Frames != null)
             {
+                if (entry.ImpactFrames != null)
+                    entry.GameObject.transform.position = Vector2.Lerp(
+                        entry.TravelOrigin, entry.TravelTarget,
+                        1f - entry.Remaining / entry.TotalDuration);
                 int index = Mathf.Min(entry.Frames.Length - 1,
                     Mathf.FloorToInt((1f - entry.Remaining / entry.TotalDuration) * entry.Frames.Length));
                 entry.Sprite.sprite = entry.Frames[index];
             }
         }
+        for (int i = 0; i < pendingImpacts.Count; i++)
+        {
+            PendingImpact impact = pendingImpacts[i];
+            AcquireSpriteTransient(impact.Name, impact.Frames, impact.Position,
+                impact.Duration, impact.Size, impact.SortingOrder, impact.Priority);
+        }
+        pendingImpacts.Clear();
     }
 
     public void Release(LineRenderer line)
@@ -296,6 +368,7 @@ internal sealed class CombatVfxPool
 
     public void Clear()
     {
+        pendingImpacts.Clear();
         for (int i = 0; i < entries.Count; i++)
         {
             Release(entries[i]);
@@ -478,6 +551,13 @@ internal sealed class CombatVfxPool
         if (entry.Sprite != null) entry.Sprite.sprite = null;
         entry.Frames = null;
         entry.TotalDuration = 0f;
+        entry.TravelOrigin = Vector2.zero;
+        entry.TravelTarget = Vector2.zero;
+        entry.ImpactFrames = null;
+        entry.ImpactName = null;
+        entry.ImpactDuration = 0f;
+        entry.ImpactSize = 0f;
+        entry.ImpactSortingOrder = 0;
         entry.GameObject.SetActive(false);
         ActiveCount = Mathf.Max(0, ActiveCount - 1);
     }

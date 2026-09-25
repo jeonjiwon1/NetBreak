@@ -322,27 +322,18 @@ public sealed class ItemEffectManager : MonoBehaviour
 
     public void ShowSquidInkAttack(
         Vector2 origin,
-        Vector2 target)
+        Vector2 target,
+        SquidInkPresentationProfile presentation)
     {
-        CombatVfxSettings settings =
-            GetCombatVfxSettings();
-
-        CreateLightning(
-            origin,
-            target,
-            settings.SquidTrajectoryDuration,
-            settings.SquidTrajectoryColor,
-            0.13f,
-            "SquidInkTrajectoryVisual",
-            CombatVfxPriority.RepeatedHit);
-
-        CreateImpactMarker(
-            target,
-            settings.SquidImpactColor,
-            0.45f,
-            0.11f,
-            settings.SquidImpactDuration,
-            "SquidInkImpactVisual",
+        if (presentation == null || !presentation.HasProjectile || !presentation.HasImpact)
+            return;
+        CombatVfxSettings settings = GetCombatVfxSettings();
+        combatVfxPool ??= new CombatVfxPool(transform, settings);
+        combatVfxPool.AcquireTravelingSprite(
+            "SquidInkProjectileVisual", presentation.ProjectileFrames,
+            origin, target, settings.SquidTrajectoryDuration, 1.3f, 30,
+            "SquidInkImpactVisual", presentation.ImpactFrames,
+            settings.SquidImpactDuration, 1.3f, 30,
             CombatVfxPriority.RepeatedHit);
     }
 

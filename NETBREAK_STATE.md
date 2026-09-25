@@ -1,5 +1,18 @@
 # NETBREAK 인수인계
 
+## VS-2C-2 — 오징어 먹물 Projectile·Impact (2026-09-24, Unity 수동 검증 완료)
+
+- 시작 HEAD `3af01e6`, `vertical-slice`, 작업 트리 깨끗함. 최신 사용자 지시에 따라 Computer Use와 Git add/commit/push를 수행하지 않는다.
+- 기존 임시 대상 효과는 `ItemEffectManager.ShowSquidInkAttack`의 RepeatedHit `LineRenderer` 번개형 연결선과 Release 즉시 표시되는 원형 마커였다. `SquidController.ReleaseInk`가 `DisableTemporarily`로 실제 방해를 먼저 적용한 뒤 Release 콜백에서 이 효과를 호출했다. 이는 판정과 분리된 Presentation이었다. 이제 연결선·즉시 마커를 생성하지 않고 Projectile 이동 완료 시 Impact를 한 번 표시한다. 낚싯대·그물의 지속 방해 시각 상태는 유지한다.
+- 실제 성공 대상인 그물·낚싯대의 위치를 `ReleaseInk`에서 중복 제거 후 캡처해 Presentation에 전달한다. 별도 대상 검색, 충돌 판정이나 피해는 없다. 0.22초 동안 오징어 중심에서 당시 대상 위치로 직선 이동한다. 어구가 제거되거나 재사용되어도 stale 참조가 없다. 0.3초 Impact 뒤 Pool에 반환한다. 시작 위치는 4축별 입 소켓이 없어 추정 오프셋보다 중심을 택했다.
+- `Squid_InkProjectile.png`는 16×16×4프레임(시트 64×16), `Squid_InkImpact.png`는 24×24×4프레임(시트 96×24)의 내부 생성 RGBA Prototype이다. 기존 Ink Puff 팔레트를 사용한다. Sprite 분할 `.meta`와 `SquidInkPresentation.asset` 참조를 작성하고 기존 Setup/Validate 메뉴를 확장했다. Scene/Prefab/ProjectSettings는 변경하지 않았다.
+- `CombatVfxPool`의 기존 상한 48·RepeatedHit 우선순위·scaled `Tick`을 재사용한다. 이동·Impact 대기값은 풀 반환/Run 정리에서 지운다. 풀 포화로 VFX가 생략되거나 재활용되어도 즉시 적용된 방해 판정은 유지된다. 기존 Ink Attack 4방향 애니메이션, Release Puff와 `Squid_InkRelease.wav` 재생 시점·중복 보호는 유지하며 새 소리는 없다.
+- `SquidInkPresentationTests`, `CombatVfxTests`를 Release의 단발 발사, 성공 대상 위치, 이동·도착 후 단발 Impact, 임시 선 중복 제거, Pause/풀 반환/Run 정리, cap·우선순위와 기존 상태 표시 기준으로 확장했다. PNG·메타·Profile 참조 정적 검사는 완료했다. 최초 구현 시 Unity 배치 시도는 Package Manager IPC/Licensing Client 연결 문제로 끝나지 못했다. 이후 사용자 Editor 전체 EditMode에서 192/193 통과, `FullVisualPoolDoesNotDelaySquidInterference` 1개 실패를 확인했다.
+- 회귀 원인은 게임 방해/풀 우선순위가 아니라 신규 테스트 Fixture의 낚싯대 Collider가 EditMode 물리 쿼리에 등록되지 않은 것이었다. 실패 재현에서 `specialDisabledUntil=0`, 범위 hit 0, Collider bounds 크기 0을 확인했다. 기존 성공 Fixture와 동일한 자식 Collider를 추가하고 실제 `OverlapCircleAll` 대상 포함을 선행 검증하도록 수정했다. 방해 상태·지속 표시·작동 중단·풀 상한 assertion은 유지·강화했다. 별도 프로젝트 복사본의 Unity EditMode 재실행 결과 실패 테스트 **1/1**, `CombatVfxTests` **21/21**, `SquidInkPresentationTests` **9/9**, 전체 **193/193**, 실패 0·skip 0이다. Runtime/Editor/Test assembly가 컴파일되어 테스트 실행까지 완료했고 테스트 로그에 CS 오류는 없었다.
+- `Tools/validate_squid_ink_projectile.py` 정적 검사 2/2 통과. 이후 사용자가 원래 Unity Editor에서 compile 정상, Console Error 0, 전체 EditMode **193/193 통과**와 Play Mode 수동 검증을 확인했다. 두 새 VFX의 실제 표시와 Profile 연결은 Play Mode에서 확인됐으며 Setup/Validate 메뉴 실행 여부는 별도로 전달받지 않았다.
+- Play Mode에서 먹물 gameplay 판정·Ink Attack animation·Release VFX/SFX가 정상이고, **Release → 실제 선택된 대상 어구로 이동하는 Projectile → 도착 시 Impact → 기존 지속 방해 상태 표시**가 이어졌다. 이동 속도·가독성, 다중 오징어 대상 연결, 대상 비활성·누락 시 오류·잔상 없음, Pause와 Pool/Run 재시작 초기화도 확인했다. 기존 임시 연결선·즉시 target marker는 중복 표시되지 않았으며 기존 Fish animation·Resistance·Collider·포획·UI·VFX도 정상이다. Gameplay 판정·타겟 선정·방해 지속시간은 변경하지 않았다.
+- **Ink Projectile 및 Ink Impact 각각 Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production VFX Approval: Pending.** 현재 이동시간·크기·Pool priority는 최종 출시 확정값이 아니다. 기존 immutable package 경고의 `Packages/com.unity.2d.animation/package.json`은 Git 변경사항이 아니며 관련 파일을 수정하지 않았다.
+
 ## VS-2C-1 — 오징어 먹물 공격 Presentation (2026-09-24, Unity 수동 검증 완료)
 
 - 시작 HEAD `a042316`, `vertical-slice`, 기존 작업 트리 깨끗함. 이번 요청에 따라 Git add/commit/push를 수행하지 않는다.

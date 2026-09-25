@@ -154,9 +154,12 @@ public class SquidController : MonoBehaviour
         if (affectedNets.Count > 0 || affectedRods.Count > 0)
         {
             Vector2 origin = transform.position;
-            List<Vector2> rodPositions = new List<Vector2>(affectedRods.Count);
+            List<Vector2> targetPositions = new List<Vector2>(
+                affectedNets.Count + affectedRods.Count);
+            foreach (NetController net in affectedNets)
+                if (net != null) targetPositions.Add(net.transform.position);
             foreach (FishingRodController rod in affectedRods)
-                if (rod != null) rodPositions.Add(rod.transform.position);
+                if (rod != null) targetPositions.Add(rod.transform.position);
 
             InkPresentationTriggered?.Invoke(this);
             Action releasePresentation = () =>
@@ -164,8 +167,8 @@ public class SquidController : MonoBehaviour
                 ItemEffectManager effects = ItemEffectManager.Instance;
                 if (effects == null) return;
                 effects.ShowSquidInkBurst(origin, presentationProfile);
-                for (int i = 0; i < rodPositions.Count; i++)
-                    effects.ShowSquidInkAttack(origin, rodPositions[i]);
+                for (int i = 0; i < targetPositions.Count; i++)
+                    effects.ShowSquidInkAttack(origin, targetPositions[i], presentationProfile);
                 effects.PlaySquidInkSound(presentationProfile);
             };
             if (visualController == null)

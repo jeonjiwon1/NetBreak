@@ -37,6 +37,16 @@ MonoBehaviour:
   - {fileID: 1197123931, guid: 941085e75227f934db2b32a097d45215, type: 3}
   - {fileID: 766587199, guid: 941085e75227f934db2b32a097d45215, type: 3}
   - {fileID: 1000670799, guid: 941085e75227f934db2b32a097d45215, type: 3}
+  projectileFrames:
+  - {fileID: 79328738, guid: 4535e1e170235c999397b57dcbbb8c31, type: 3}
+  - {fileID: 1197123931, guid: 4535e1e170235c999397b57dcbbb8c31, type: 3}
+  - {fileID: 766587199, guid: 4535e1e170235c999397b57dcbbb8c31, type: 3}
+  - {fileID: 1000670799, guid: 4535e1e170235c999397b57dcbbb8c31, type: 3}
+  impactFrames:
+  - {fileID: 79328738, guid: 9cdd9bed85fc581680d5c332792f233f, type: 3}
+  - {fileID: 1197123931, guid: 9cdd9bed85fc581680d5c332792f233f, type: 3}
+  - {fileID: 766587199, guid: 9cdd9bed85fc581680d5c332792f233f, type: 3}
+  - {fileID: 1000670799, guid: 9cdd9bed85fc581680d5c332792f233f, type: 3}
   framesPerSecond: 8
   inkVolume: 0.38
   inkClip: {fileID: 8300000, guid: 83e267c39e7065843860dc2b6de3baa9, type: 3}
