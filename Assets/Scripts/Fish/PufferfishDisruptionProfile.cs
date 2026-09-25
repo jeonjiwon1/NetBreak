@@ -1,30 +1,24 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "SquidInkPresentation", menuName = "NetBreak/Squid Ink Presentation")]
-public sealed class SquidInkPresentationProfile : ScriptableObject, IFishSpecialAnimation
+[CreateAssetMenu(fileName = "PufferfishDisruption", menuName = "NetBreak/Pufferfish Disruption")]
+public sealed class PufferfishDisruptionProfile : ScriptableObject, IFishSpecialAnimation
 {
     [SerializeField] private Sprite[] horizontalFrames = new Sprite[4];
     [SerializeField] private Sprite[] verticalFrames = new Sprite[4];
     [SerializeField] private Sprite[] diagonalFrames = new Sprite[4];
     [SerializeField] private Sprite[] diagonalNorthWestFrames = new Sprite[4];
-    [SerializeField] private Sprite[] puffFrames = new Sprite[4];
-    [SerializeField] private Sprite[] projectileFrames = new Sprite[4];
     [SerializeField] private Sprite[] impactFrames = new Sprite[4];
-    [Min(0.1f)] [SerializeField] private float framesPerSecond = 8f;
-    [Range(0f, 1f)] [SerializeField] private float inkVolume = 0.38f;
-    [SerializeField] private AudioClip inkClip;
+    [Min(0.1f)] [SerializeField] private float framesPerSecond = 12f;
+    [Range(0f, 1f)] [SerializeField] private float soundVolume = 0.34f;
+    [SerializeField] private AudioClip soundClip;
 
     public bool HasAnimation => HasFrames(horizontalFrames) && HasFrames(verticalFrames) &&
                                 HasFrames(diagonalFrames) && HasFrames(diagonalNorthWestFrames);
-    public bool HasPuff => HasFrames(puffFrames);
-    public bool HasProjectile => HasFrames(projectileFrames);
     public bool HasImpact => HasFrames(impactFrames);
-    public Sprite[] PuffFrames => puffFrames;
-    public Sprite[] ProjectileFrames => projectileFrames;
     public Sprite[] ImpactFrames => impactFrames;
     public float FramesPerSecond => Mathf.Max(0.1f, framesPerSecond);
-    public float InkVolume => Mathf.Clamp01(inkVolume);
-    public AudioClip InkClip => inkClip;
+    public float SoundVolume => Mathf.Clamp01(soundVolume);
+    public AudioClip SoundClip => soundClip;
 
     public Sprite[] GetFrames(FishVisualSet set)
     {

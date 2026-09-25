@@ -12,7 +12,7 @@ public sealed class FishVisualController : MonoBehaviour
     private FishVisualSet currentSet;
     private int frameIndex;
     private float frameTimer;
-    private SquidInkPresentationProfile specialProfile;
+    private IFishSpecialAnimation specialProfile;
     private Action specialRelease;
     private FishVisualDirection lockedDirection;
     private int specialFrame;
@@ -116,7 +116,7 @@ public sealed class FishVisualController : MonoBehaviour
         customRenderer.sprite = profile.GetFrames(currentSet)[frameIndex];
     }
 
-    public bool PlaySpecial(SquidInkPresentationProfile presentation, Action onRelease)
+    public bool PlaySpecial(IFishSpecialAnimation presentation, Action onRelease = null)
     {
         if (profile == null || customRenderer == null ||
             presentation == null || !presentation.HasAnimation)

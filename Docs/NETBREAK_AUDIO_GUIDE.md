@@ -6,7 +6,7 @@ SFX와 BGM을 게임플레이 원인, 화면 정보, 밝은 픽셀아트 톤에 
 
 ## 2. 현재 Audio 상태
 
-VS-2C-1의 `Squid_InkRelease.wav`가 첫 실제 프로젝트 내부 생성 Prototype SFX다. 기존 공용 Audio Manager나 Mixer 정책은 없다. 오징어 효과는 `ItemEffectManager`의 작은 one-shot `AudioSource`를 사용한다.
+VS-2C-1의 `Squid_InkRelease.wav`가 첫 프로젝트 내부 생성 Prototype SFX다. VS-2C-3의 `Pufferfish_NetDisrupt.wav`는 두 번째 Fish/Special Prototype이다. 기존 공용 Audio Manager나 Mixer 정책은 없다. 두 효과는 `ItemEffectManager`의 재사용 one-shot `AudioSource`를 사용한다.
 
 ## 3. 전체 Sound Direction
 
@@ -26,7 +26,7 @@ VS-2C-1의 `Squid_InkRelease.wav`가 첫 실제 프로젝트 내부 생성 Proto
 
 ## 7. Special Fish SFX
 
-오징어 먹물은 물기 섞인 낮은 분사음 한 번이다. 성공한 방해 판정 뒤 공격 애니메이션의 Release 프레임에 재생한다. 복어 등 다른 특수어의 소리는 미정이다.
+오징어 먹물은 물기 섞인 낮은 분사음 한 번이다. 성공한 방해 판정 뒤 공격 애니메이션의 Release 프레임에 재생한다. 복어 그물 중단은 다른 음색의 짧고 둔탁한 물방울형 접촉음이며 실제 중단 성공 직후 재생한다.
 
 ## 8. Boss SFX
 
@@ -42,23 +42,23 @@ VS-2C-1의 `Squid_InkRelease.wav`가 첫 실제 프로젝트 내부 생성 Proto
 
 ## 11. File Format
 
-현재 첫 효과는 PCM WAV, mono, 44.1 kHz, 16 bit, 0.28초다. 외부 파일을 내려받지 않았으며 코드로 생성했다. 향후 파일 형식·압축은 대상 플랫폼과 실제 메모리/음질을 보고 결정한다.
+오징어는 PCM WAV, mono, 44.1 kHz, 16 bit, 0.28초이고 복어는 같은 규격의 0.22초다. 외부 파일을 내려받지 않았으며 코드로 생성했다. 향후 파일 형식·압축은 대상 플랫폼과 실제 메모리/음질을 보고 결정한다.
 
 ## 12. Volume / Priority
 
-효과별 볼륨은 Profile/Inspector에서 조절한다. 오징어 현재 Prototype 기본값은 `0.38`이며 최종 볼륨은 아니다. 핵심 결과음이 잦은 반복음보다 잘 들리도록 설계하되 최종 loudness, 버스, 믹서 우선순위는 미정이다.
+효과별 볼륨은 Profile/Inspector에서 조절한다. 오징어 현재 Prototype 기본값은 `0.38`, 복어는 `0.34`이며 최종 볼륨은 아니다. 핵심 결과음이 잦은 반복음보다 잘 들리도록 설계하되 최종 loudness, 버스, 믹서 우선순위는 미정이다.
 
 ## 13. 동시 재생
 
-같은 오징어 먹물 SFX는 현재 Prototype에서 전역 scaled time 기준 0.08초 안의 추가 재생을 생략한다. 여러 오징어의 게임플레이 판정과 VFX에는 영향을 주지 않는다. 사용자가 다중 오징어 상황의 중복 보호를 수동 확인했으며 최종 cooldown 정책은 미정이다. 다른 효과의 동시 정책은 실제 밀집 화면에서 결정한다.
+같은 오징어 먹물 SFX는 현재 Prototype에서 전역 scaled time 기준 0.08초 안의 추가 재생을 생략한다. 복어 접촉음은 전역 scaled time 기준 0.1초 안의 추가 재생만 생략한다. 여러 특수어의 게임플레이 판정과 VFX에는 영향을 주지 않는다. 사용자가 오징어와 복어의 동일음 중복 보호를 수동 확인했다. 최종 cooldown 정책과 다른 효과의 동시 정책은 실제 밀집 화면에서 결정한다.
 
 ## 14. Pool / One-shot
 
-짧은 효과는 재사용 `AudioSource.PlayOneShot`을 사용한다. 오징어별 AudioSource나 매 공격 Instantiate/Destroy는 사용하지 않는다. Time.timeScale 0에서 Source를 Pause하고 재개 시 UnPause하며 Run 종료/재시작 때 Stop한다.
+짧은 효과는 재사용 `AudioSource.PlayOneShot`을 사용한다. 특수어별 AudioSource나 매 공격 Instantiate/Destroy는 사용하지 않는다. Time.timeScale 0에서 Source를 Pause하고 재개 시 UnPause하며 Run 종료/재시작 때 Stop한다.
 
 ## 15. Naming
 
-`<대상>_<행동>.wav` 형식으로 분명한 영어 파일명을 사용한다. 현재 이름은 `Squid_InkRelease.wav`다.
+`<대상>_<행동>.wav` 형식으로 분명한 영어 파일명을 사용한다. 현재 이름은 `Squid_InkRelease.wav`, `Pufferfish_NetDisrupt.wav`다.
 
 ## 16. Folder
 
@@ -75,6 +75,8 @@ VS-2C-1의 `Squid_InkRelease.wav`가 첫 실제 프로젝트 내부 생성 Proto
 ## 19. Prototype / Final
 
 오징어 먹물은 첫 실제 Prototype SFX다. 사용자가 Unity에서 1회 재생, 다중 오징어 중복 보호, Pause·Run 재시작 처리를 확인했다. **Manual Audio Validation: Passed / Prototype Approval: Approved / Final Production Audio Approval: Pending.** 최종 loudness·Mixer와 출시용 오디오 품질은 확정하지 않았다.
+
+복어 그물 중단음은 두 번째 Fish/Special Prototype SFX다. 활성 그물의 실제 중단 성공 직후에만 재생되며 동일 소리의 전역 0.1초 중복 보호가 있다. 사용자가 Play Mode에서 재생, 과도한 중첩 방지, Pause와 Run 재시작 후 정상 초기화를 확인했다. **Manual Audio Validation: Passed / Prototype Approval: Approved / Final Production Audio Approval: Pending.** 현재 볼륨 0.34와 cooldown은 Prototype 값이며 최종 loudness·Mixer 정책은 미정이다.
 
 ## 20. 미정
 

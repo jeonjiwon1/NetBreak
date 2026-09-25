@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 [RequireComponent(typeof(BoxCollider2D))]
@@ -25,6 +26,8 @@ public class NetController : MonoBehaviour
     private float specialDisabledUntil;
 
     private bool isOperational = true;
+    private PufferfishDisruptionProfile pufferfishPresentation;
+    public event Action<FishController, Vector2> PufferfishPresentationTriggered;
 
     private SpriteRenderer netRenderer;
     private Color normalNetColor;
@@ -49,6 +52,9 @@ public class NetController : MonoBehaviour
             RigidbodyType2D.Kinematic;
 
         rigidBody.gravityScale = 0f;
+
+        pufferfishPresentation = Resources.Load<PufferfishDisruptionProfile>(
+            "PufferfishDisruption");
 
         netRenderer =
             GetComponentInChildren<SpriteRenderer>();
@@ -135,9 +141,20 @@ public class NetController : MonoBehaviour
             return false;
         }
 
+        Vector2 contactPoint = netCollider != null
+            ? netCollider.ClosestPoint(other.bounds.center)
+            : ((Vector2)transform.position + (Vector2)fish.transform.position) * 0.5f;
+
         DisableTemporarily(
             pufferfishDisableDuration
         );
+
+        // The net has already stopped; every presentation path is optional.
+        PufferfishPresentationTriggered?.Invoke(fish, contactPoint);
+        fish.GetComponent<FishVisualController>()?.PlaySpecial(pufferfishPresentation);
+        ItemEffectManager effects = ItemEffectManager.Instance;
+        effects?.ShowPufferfishNetImpact(contactPoint, pufferfishPresentation);
+        effects?.PlayPufferfishNetSound(pufferfishPresentation);
 
         return true;
     }
@@ -469,5 +486,6 @@ public class NetController : MonoBehaviour
     private void OnDisable()
     {
         ReleaseAllFish();
+        PufferfishPresentationTriggered = null;
     }
 }

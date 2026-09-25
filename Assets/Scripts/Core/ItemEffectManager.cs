@@ -232,8 +232,10 @@ public sealed class ItemEffectManager : MonoBehaviour
     private CombatVfxPool combatVfxPool;
     private AudioSource squidInkAudio;
     private float lastSquidInkSoundTime = float.NegativeInfinity;
+    private float lastPufferfishSoundTime = float.NegativeInfinity;
     private bool squidInkAudioPaused;
     private const float SquidInkSoundCooldown = 0.08f;
+    private const float PufferfishSoundCooldown = 0.1f;
     private bool runWasActive;
     private int capacitorHitCount;
     private float stormOrbRemaining;
@@ -346,6 +348,28 @@ public sealed class ItemEffectManager : MonoBehaviour
             0.32f, 1.6f, 29, CombatVfxPriority.RepeatedHit);
     }
 
+    public void ShowPufferfishNetImpact(Vector2 position, PufferfishDisruptionProfile presentation)
+    {
+        if (presentation == null || !presentation.HasImpact) return;
+        combatVfxPool ??= new CombatVfxPool(transform, GetCombatVfxSettings());
+        combatVfxPool.AcquireSpriteTransient(
+            "PufferfishNetImpactVisual", presentation.ImpactFrames, position,
+            0.28f, 1.2f, 30, CombatVfxPriority.RepeatedHit);
+    }
+
+    public bool PlayPufferfishNetSound(PufferfishDisruptionProfile presentation)
+    {
+        if (presentation == null || presentation.SoundClip == null ||
+            Time.timeScale <= 0f ||
+            Time.time - lastPufferfishSoundTime < PufferfishSoundCooldown)
+            return false;
+
+        EnsureSpecialFishAudio();
+        squidInkAudio.PlayOneShot(presentation.SoundClip, presentation.SoundVolume);
+        lastPufferfishSoundTime = Time.time;
+        return true;
+    }
+
     public bool PlaySquidInkSound(SquidInkPresentationProfile presentation)
     {
         if (presentation == null || presentation.InkClip == null ||
@@ -353,17 +377,20 @@ public sealed class ItemEffectManager : MonoBehaviour
             Time.time - lastSquidInkSoundTime < SquidInkSoundCooldown)
             return false;
 
-        if (squidInkAudio == null)
-        {
-            squidInkAudio = GetComponent<AudioSource>();
-            if (squidInkAudio == null) squidInkAudio = gameObject.AddComponent<AudioSource>();
-            squidInkAudio.playOnAwake = false;
-            squidInkAudio.loop = false;
-            squidInkAudio.spatialBlend = 0f;
-        }
+        EnsureSpecialFishAudio();
         squidInkAudio.PlayOneShot(presentation.InkClip, presentation.InkVolume);
         lastSquidInkSoundTime = Time.time;
         return true;
+    }
+
+    private void EnsureSpecialFishAudio()
+    {
+        if (squidInkAudio != null) return;
+        squidInkAudio = GetComponent<AudioSource>();
+        if (squidInkAudio == null) squidInkAudio = gameObject.AddComponent<AudioSource>();
+        squidInkAudio.playOnAwake = false;
+        squidInkAudio.loop = false;
+        squidInkAudio.spatialBlend = 0f;
     }
 
     private void UpdateSquidInkAudioPause()
@@ -2640,6 +2667,7 @@ public sealed class ItemEffectManager : MonoBehaviour
         combatVfxPool?.Clear();
         if (squidInkAudio != null) squidInkAudio.Stop();
         lastSquidInkSoundTime = float.NegativeInfinity;
+        lastPufferfishSoundTime = float.NegativeInfinity;
         squidInkAudioPaused = false;
         electricStunVisuals.Clear();
         iceFreezeVisuals.Clear();

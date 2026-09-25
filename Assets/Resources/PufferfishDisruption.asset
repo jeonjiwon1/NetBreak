@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c978bd98e47849b59d377894367df383, type: 3}
+  m_Name: PufferfishDisruption
+  m_EditorClassIdentifier: Assembly-CSharp::PufferfishDisruptionProfile
+  horizontalFrames:
+  - {fileID: 1658762473, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  - {fileID: 1510187338, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  - {fileID: -1522523710, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  - {fileID: 1947574712, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  verticalFrames:
+  - {fileID: 1205025229, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  - {fileID: 863732750, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  - {fileID: 1388980934, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  - {fileID: -1771780726, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  diagonalFrames:
+  - {fileID: -972466725, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  - {fileID: -1518924353, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  - {fileID: -955433302, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  - {fileID: -1567546696, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  diagonalNorthWestFrames:
+  - {fileID: -1025077626, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  - {fileID: 802656540, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  - {fileID: -1528340332, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  - {fileID: -1993787367, guid: 3198b55294e1455e9af2a95335071741, type: 3}
+  impactFrames:
+  - {fileID: 79328738, guid: 8a115ba590a3436a912c965ac77e33d8, type: 3}
+  - {fileID: 1197123931, guid: 8a115ba590a3436a912c965ac77e33d8, type: 3}
+  - {fileID: 766587199, guid: 8a115ba590a3436a912c965ac77e33d8, type: 3}
+  - {fileID: 1000670799, guid: 8a115ba590a3436a912c965ac77e33d8, type: 3}
+  framesPerSecond: 12
+  soundVolume: 0.34
+  soundClip: {fileID: 8300000, guid: fe461a79a0e84fc58893a542299e094c, type: 3}

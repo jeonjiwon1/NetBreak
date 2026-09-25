@@ -11,6 +11,7 @@
 - **검증 완료:** VS-2B-3 복어·오징어 방향별 수영 시트와 FishData 연결. 사용자 Unity 컴파일 정상, Console Error 0, 전체 EditMode 173/173 통과, Play Mode 수동 시각 검증을 확인했다. 두 어종의 프로토타입 승인은 완료했고 최종 출시용 아트 승인은 대기 중이다.
 - **현재 프로토타입 검증 완료:** VS-2B-4에서 다섯 어종의 원본 12프레임을 픽셀 단위로 보존하고 NW 4프레임을 더해 16프레임으로 확장했다. E/N/NE/NW 네 원본 축과 반대 방향의 flipX+flipY를 사용자가 Play Mode에서 확인했다. Unity 컴파일 정상, Console Error 0, 전체 EditMode 183/183 통과와 다섯 어종의 수동 시각 검증을 마쳤다. 위 VS-2B-1~3 승인 수치는 이전 12프레임 버전의 역사적 기록이다. 최종 출시용 아트 승인은 Pending이다.
 - **VS-2C-1 프로토타입 검증 완료:** 오징어 먹물 공격 Animation/VFX/SFX를 사용자가 Unity에서 확인하고 승인했다. 컴파일 정상, Console Error 0, 전체 EditMode 190/190 통과. 최종 출시용 Art/VFX/Audio 승인은 Pending이다.
+- **VS-2C-3 프로토타입 검증 완료:** 복어 그물 중단 순간 애니메이션과 Impact VFX를 사용자가 Play Mode에서 확인하고 승인했다. 컴파일 정상, Console Error 0, 전체 EditMode 200/200 통과. 최종 출시용 Art/VFX 승인은 Pending이다.
 - **검증 필요:** 전체 성능, 최종 배경·VFX와의 통합 화면, 폰트와 외부 에셋 라이선스.
 - **미완료:** 그 외 정식 에셋 제작·적용, 정식 VFX·SFX·BGM 및 최종 출시용 Art Lock.
 
@@ -43,7 +44,7 @@
 
 VS-2B-2에서 고등어·참치 방향별 프로토타입을 정어리의 픽셀 윤곽·제한된 청록 팔레트·어두운 등/밝은 배·작은 눈·4프레임 꼬리 리듬에 맞춰 제작하고 FishData에 연결했다. 고등어는 두꺼운 중간 몸체와 짧은 등 무늬, 참치는 깊고 긴 몸체·좁은 꼬리자루·갈라진 꼬리로 실루엣을 구별한다. 사용자가 Unity 플레이에서 세 어종의 크기 계층·실루엣·방향·반전·헤엄·어군 가독성과 기존 기능을 확인하고 고등어·참치 이미지를 현재 아트 방향의 프로토타입으로 승인했다.
 
-VS-2B-3 당시 복어는 48×48 셀에서 일정한 둥근 몸통과 짧은 꼬리·지느러미, 밝은 황금색 배와 짙은 윤곽으로 구별했다. 오징어는 64×64 셀에서 뾰족한 몸통과 분리된 촉수, 연보라·산호색 면과 같은 짙은 윤곽을 사용했다. 당시 각 3방향×4프레임, 공통 PPU 83·8 FPS의 수영 프로토타입을 사용자가 Unity에서 수동 검증해 **프로토타입으로 승인**했다. 현재는 두 어종에도 NW 4프레임을 추가했다. VS-2C-1에서 오징어 먹물 공격 전용 4방향×4프레임 Prototype을 별도 시트로 제작했다. 복어 팽창·가시 강화와 최종 출시용 아트 승인은 남아 있다.
+VS-2B-3 당시 복어는 48×48 셀에서 일정한 둥근 몸통과 짧은 꼬리·지느러미, 밝은 황금색 배와 짙은 윤곽으로 구별했다. 오징어는 64×64 셀에서 뾰족한 몸통과 분리된 촉수, 연보라·산호색 면과 같은 짙은 윤곽을 사용했다. 당시 각 3방향×4프레임, 공통 PPU 83·8 FPS의 수영 프로토타입을 사용자가 Unity에서 수동 검증해 **프로토타입으로 승인**했다. 현재는 두 어종에도 NW 4프레임을 추가했다. VS-2C-1에서 오징어 먹물 공격 전용 4방향×4프레임 Prototype을 별도 시트로 제작했다. VS-2C-3의 복어 접촉 반응도 Prototype으로 승인했지만 지속 팽창 gameplay는 구현하지 않았고 최종 출시용 아트 승인은 남아 있다.
 
 ## 6. 도구 및 설치물
 
@@ -66,6 +67,8 @@ UX-F1/F2의 실제 이벤트 연결과 임시 연출을 정식 제작의 기반�
 특수어 행동은 Swim과 별도 Animation Set으로 표현한다. 게임플레이 성공이 먼저 발생하고 특수 프레임과 VFX/SFX는 이를 보여준다. 공격 중에는 시작 방향을 잠그고 종료 즉시 현재 이동 방향의 Swim으로 복귀한다. VS-2C-1 오징어 먹물은 기존 몸통·눈·윤곽·팔레트를 유지한 64px 셀의 Anticipation→Release→Recovery 4프레임이다. 발사 원인은 오징어 부근의 짙은 검보라 픽셀 구름으로, 기존 도구 방해 상태 표시와 역할을 구분한다. 사용자가 Unity에서 방향·Swim 복귀와 VFX를 수동 검증하고 현재 Prototype 품질을 승인했다. **Ink Attack Manual Visual Validation: Passed / Ink VFX Manual Validation: Passed / Prototype Approval: Approved / Final Production Art·VFX Approval: Pending**이다.
 
 VS-2C-2는 성공한 먹물 판정 뒤 Attack animation → 기존 Release 구름·SFX → 16px 검보라 먹물 덩어리 → 대상의 24px 짧은 튐 → 기존 지속 방해 상태 표시 순서로 연결한다. 과거 번개형 대상 연결선과 즉시 타격 마커는 이 경로에서 교체됐으며 Play Mode에서도 중복 표시되지 않았다. Projectile은 발사 시점에 이미 판정된 어구 위치로 현재 Prototype 기준 0.22초 직선 이동하고, Impact는 0.3초 표시된다. 충돌·대상 재검색은 없다. 오징어 중심에서 시작하는 단순한 방식을 택했다. 네 방향축의 시각 소켓이 없고 짧은 이동 거리에서 방향별 추정 오프셋이 오히려 틀린 위치를 가리킬 수 있기 때문이다. 사용자가 Play Mode에서 실제 gameplay 대상 연결, 이동 속도·가독성, 도착 시 Impact, 이후 지속 방해 상태, 다중 오징어·대상 누락·Pause·Pool/Run 재시작을 확인했다. Gameplay 판정·타겟 선정·방해 지속시간은 변경하지 않았다. **Ink Projectile 및 Ink Impact 각각 Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production VFX Approval: Pending.** 현재 이동시간·크기·Pool priority는 최종 출시 확정값이 아니다.
+
+VS-2C-3 복어 연출은 **실제 활성 그물 접촉으로 기존 3초 중단이 먼저 성공한 경우**에만 재생한다. 48px 복어 몸체를 두 프레임 동안 조금 키워 가시·외곽의 접촉 반응을 보여준 뒤 현재 방향 Swim으로 복귀한다. 이는 순간 반응이며 지속 팽창·가시 피해·경고 행동을 뜻하지 않는다. 접촉점의 24px 노랑·물색 Impact는 중단 원인을 짧게 알리고, 기존 그물 어두워짐은 중단 지속 상태를 알린다. 사용자는 Play Mode에서 실제 중단 판정과 애니메이션·Swim 복귀·Impact, 지속 접촉의 중복 방지, Pause·Pool 재사용·Run 재시작 및 기존 전투 흐름을 확인했다. Net 중단 시간·판정·감속·포획·Resistance 수치는 변경하지 않았다. 4방향축×4프레임·12 FPS·약 0.33초 및 0.28초 Impact는 최종 출시 확정값이 아니다. **Puffer Disrupt Sprite: Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending. Puffer Net Impact VFX: Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production VFX Approval: Pending.**
 
 ## 8. UI 및 폰트
 

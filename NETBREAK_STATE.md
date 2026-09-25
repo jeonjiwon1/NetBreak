@@ -1,5 +1,14 @@
 # NETBREAK 인수인계
 
+## VS-2C-3 — 복어 그물 중단 순간 연출 (2026-09-25, Unity 수동 검증 완료)
+
+- 활성 그물·복어 접촉 성공 시 `NetController`가 기존 `DisableTemporarily`를 먼저 적용하고 전용 이벤트, 특수 애니메이션, 접촉점 Impact VFX와 SFX를 즉시 시작한다. 비활성 그물의 `OnTriggerStay2D`는 반환하므로 동일 중단 중 연출을 반복하지 않는다. 기존 3초 중단, 감속·포획 피해·Resistance·Collider·타겟 판정은 변경하지 않았다.
+- 승인된 수영 시트를 기준으로 `Pufferfish_Disrupt.png` 48×48 셀×4방향축×4프레임(192×192)을 만들었다. 12 FPS, 약 0.33초의 순간 반응 후 현재 이동 방향 Swim으로 복귀한다. 지속 팽창 상태나 새 공격 판정은 없다.
+- `Pufferfish_NetImpact.png`는 24×24 셀×4프레임, 0.28초다. 공용 `CombatVfxPool`의 상한 48과 RepeatedHit 우선순위를 사용한다. `Pufferfish_NetDisrupt.wav`는 내부 합성 44.1 kHz/16-bit/mono/0.22초 one-shot이고 Profile 볼륨 0.34와 전역 0.1초 동일음 중복 제한을 쓴다. 공용 AudioSource의 Pause/Run 정리를 공유한다.
+- `PufferfishDisruptionProfile`과 `NETBREAK/Art/Setup Pufferfish Disruption Presentation`, `Validate Pufferfish Disruption Presentation` 메뉴가 16+4 Sprite 분할·Import·WAV·FishData·Resources 참조를 확인한다. Scene/Prefab/ProjectSettings/URP는 수정하지 않았다.
+- 신규 `PufferfishDisruptionTests` 7개는 성공 순서·단발 연출·무효 대상·애니메이션·VFX 풀·오디오 중복·에셋 누락·풀 포화·풀 재사용·scaled time을 검사한다. 별도 프로젝트 복사본의 Unity 6000.3.11f1에서 Runtime/Editor/Test assembly 컴파일 및 **전체 EditMode 200/200 통과, 실패 0·skip 0**을 확인했다. 최초 배치 실행은 Package Manager IPC 문제로 종료됐고, 첫 실제 테스트의 1개 실패는 경계 시점 테스트 입력을 수정해 전체 재실행으로 해결했다. 같은 복사본에서 Setup/Validate 메뉴를 두 번 실행했고 16+4 Sprite·WAV·FishData 검증 로그와 Profile/Import 메타데이터 해시 불변을 확인했다. PNG·메타데이터·Profile·WAV 정적 검사도 통과했다.
+- 사용자 원본 Unity Editor에서 compile 정상, Console Error 0, **전체 EditMode 200/200 통과**를 확인했다. Play Mode에서 실제 활성 그물·복어 접촉 시 즉시 중단과 약 3초 지속, Puffer Disrupt 애니메이션과 현재 방향 Swim 복귀, 접촉점 Impact 및 SFX를 확인했다. 지속 접촉의 연출 반복과 동일음의 과도한 중첩은 없었고 일반 어종에는 복어 연출이 발생하지 않았다. Pause, Fish Pool 재사용, Run 재시작의 잔상 없이 기존 Squid Ink Presentation·Fish animation·Resistance·포획·UI·VFX도 정상이다. **Puffer Disrupt Sprite: Manual Visual Validation Passed / Prototype Approval Approved / Final Production Art Approval Pending. Puffer Net Impact: Manual Visual Validation Passed / Prototype Approval Approved / Final Production VFX Approval Pending. Puffer Net Disrupt SFX: Manual Audio Validation Passed / Prototype Approval Approved / Final Production Audio Approval Pending.** 기존 Net 중단 시간·판정·감속·포획·Resistance 수치는 변경하지 않았으며 지속 팽창 gameplay는 없다. 현재 12 FPS·약 0.33초·Impact 0.28초·SFX 볼륨/중복 제한은 최종 출시 확정값이 아니다. 이번 문서 갱신에서 Computer Use와 Git add/commit/push는 수행하지 않는다.
+
 ## VS-2C-2 — 오징어 먹물 Projectile·Impact (2026-09-24, Unity 수동 검증 완료)
 
 - 시작 HEAD `3af01e6`, `vertical-slice`, 작업 트리 깨끗함. 최신 사용자 지시에 따라 Computer Use와 Git add/commit/push를 수행하지 않는다.

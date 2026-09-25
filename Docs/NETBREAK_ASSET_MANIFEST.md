@@ -1,5 +1,22 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## VS-2C-3 신규 Prototype (2026-09-25, Unity 수동 검증 완료)
+
+| 필드 | 복어 접촉 애니메이션 | 복어 그물 Impact | 복어 그물 중단음 |
+|---|---|---|---|
+| Asset ID | FISH-PUFFER-DISRUPT-ANIM-001 | VFX-PUFFER-NET-IMPACT-001 | SFX-PUFFER-NET-DISRUPT-001 |
+| File Path | `Assets/Art/Fish/Pufferfish/Pufferfish_Disrupt.png` | `Assets/Art/VFX/Pufferfish/Pufferfish_NetImpact.png` | `Assets/Audio/SFX/SpecialFish/Pufferfish_NetDisrupt.wav` |
+| 규격 | 192×192 RGBA, 48×48 셀 4방향축×4프레임, 12 FPS | 96×24 RGBA, 24×24 셀 4프레임, 0.28초 | PCM WAV mono/44.1 kHz/16-bit/0.22초, Profile 볼륨 0.34 |
+| Production Method / Source | 승인된 `Pufferfish_Swim.png` 픽셀을 바탕으로 `Tools/generate_pufferfish_disruption.py`에서 순간 크기 반응 제작 | 같은 내부 스크립트의 픽셀 격자 접촉 burst | 같은 내부 스크립트의 감쇠 물방울음 합성 |
+| License | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 |
+| Unity Linked | `PufferfishDisruption.asset` 16개 Sprite 참조, Resources 로드 | 같은 Profile의 4개 Impact 참조, CombatVfxPool | 같은 Profile의 AudioClip 참조, 공용 one-shot AudioSource |
+| Automated Validation | Unity 복사본 Setup/Validate 2회 통과, 전체 EditMode 200/200 통과 | 같은 Setup/Validate·EditMode 통과, 풀 반환 검사 | WAV 정적 규격 및 EditMode 중복 보호 검사 통과 |
+| Manual Validation | Manual Visual Validation: Passed — 실제 복어 접촉, 특수 애니메이션, 현재 방향 Swim 복귀 확인 | Manual Visual Validation: Passed — 접촉점 표시, 중복 방지, Pause·Pool·Run 초기화 확인 | Manual Audio Validation: Passed — 성공음, 과도한 중첩 방지, Pause·Run 초기화 확인 |
+| Prototype Approval | Approved | Approved | Approved |
+| Final Approval | Final Production Art Approval: Pending | Final Production VFX Approval: Pending | Final Production Audio Approval: Pending |
+
+순간 접촉 연출은 실제 복어→활성 그물 중단 성공 후에만 발생한다. 기존 그물 어두워짐은 지속 상태 표시로 유지한다. Impact는 RepeatedHit 우선순위로 공용 상한 48을 따르며, 연출 누락이나 풀 포화가 게임플레이 판정을 지연시키지 않는다. 사용자 Unity compile 정상·Console Error 0·전체 EditMode 200/200 통과와 Play Mode 시각·청각 검증을 확인했다. 일반 어종에는 전용 연출이 없고 기존 Squid Ink Presentation·Fish animation·Resistance·포획·UI·VFX는 정상이다. 지속 팽창 gameplay는 없으며 Net 중단 시간·판정·감속·포획·Resistance 수치는 변경하지 않았다. 12 FPS·약 0.33초·Impact 0.28초·SFX 볼륨/중복 제한은 최종 출시 확정값이 아니다. 최종 제작 승인은 Pending이다.
+
 ## VS-2C-2 신규 Prototype (2026-09-24, Unity 수동 검증 완료)
 
 | 필드 | Ink Projectile | Ink Impact |
