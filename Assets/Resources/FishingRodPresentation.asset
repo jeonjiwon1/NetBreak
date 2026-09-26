@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7bc0b3668fc46089494fb34fdf2d49b, type: 3}
+  m_Name: FishingRodPresentation
+  m_EditorClassIdentifier: Assembly-CSharp::FishingRodPresentationProfile
+  idleSprite: {fileID: 79328738, guid: 96918fa1a6e14a129752d8e60c662ef1, type: 3}
+  attackFrames:
+  - {fileID: 79328738, guid: 3fe1d8c0f40940abb1982cbcae6e5d99, type: 3}
+  - {fileID: 1197123931, guid: 3fe1d8c0f40940abb1982cbcae6e5d99, type: 3}
+  - {fileID: 766587199, guid: 3fe1d8c0f40940abb1982cbcae6e5d99, type: 3}
+  hitFrames:
+  - {fileID: 79328738, guid: 4d22b8e4446d418182746497da39a711, type: 3}
+  - {fileID: 1197123931, guid: 4d22b8e4446d418182746497da39a711, type: 3}
+  - {fileID: 766587199, guid: 4d22b8e4446d418182746497da39a711, type: 3}
+  - {fileID: 1000670799, guid: 4d22b8e4446d418182746497da39a711, type: 3}
+  hitClip: {fileID: 8300000, guid: 0b683ed8e6004832a02bba36ad5e03e3, type: 3}
+  attackDuration: 0.27
+  lineDuration: 0.18
+  hitDuration: 0.22
+  hitVolume: 0.28

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5111392391714882311}
   - component: {fileID: 6636558008196806176}
   - component: {fileID: 7863251352283777015}
+  - component: {fileID: 6173086735423022142}
   m_Layer: 0
   m_Name: FishingRod
   m_TagString: Untagged
@@ -85,7 +86,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 79328738, guid: 96918fa1a6e14a129752d8e60c662ef1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -112,6 +113,11 @@ MonoBehaviour:
   captureRange: 1.5
   rangeVisual: {fileID: 9107703342988807989}
   targetLine: {fileID: 6636558008196806176}
+  interferenceTintColor: {r: 0, g: 0, b: 0, a: 1}
+  interferenceTintStrength: 0.65
+  interferenceStatusColor: {r: 0.75, g: 0.9, b: 1, a: 1}
+  interferenceStatusOffset: {x: 0, y: 1.6, z: 0}
+  interferenceStatusFontSize: 3.5
 --- !u!120 &6636558008196806176
 LineRenderer:
   serializedVersion: 3
@@ -268,6 +274,19 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 2, y: 2}
   m_EdgeRadius: 0
+--- !u!114 &6173086735423022142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 841112138552657569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 834fde48b03c4804886306f0d0007233, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FishingRodPresentation
+  profile: {fileID: 11400000, guid: 3938a847d38f4c29a4711662db56354a, type: 2}
 --- !u!1 &939419882581939002
 GameObject:
   m_ObjectHideFlags: 0

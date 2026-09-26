@@ -1,5 +1,9 @@
 # NETBREAK 오디오 가이드
 
+## VS-2D-1 낚싯대 Prototype
+
+`Assets/Audio/SFX/Tools/FishingRod_Hit.wav`는 프로젝트 내부에서 합성한 44.1 kHz/16-bit/mono/0.19초의 짧은 Reel/Click/물방울 적중음이다. 실제 Resistance 감소 후 공용 one-shot AudioSource로 재생한다. Profile 볼륨 0.28과 전역 동일음 0.09초 제한은 반복 타격·여러 낚싯대의 청각 피로를 줄이는 프로토타입 값이다. 소리 제한은 공격 판정에 영향을 주지 않는다. 기존 AudioSource Pause·Run 초기화 정책을 공유한다. 사용자가 Play Mode에서 설치 후 적중음과 기존 연출 흐름을 확인했다. **Manual Audio Validation: Passed / Prototype Approval: Approved / Final Production Audio Approval: Pending.**
+
 ## 1. 목적
 
 SFX와 BGM을 게임플레이 원인, 화면 정보, 밝은 픽셀아트 톤에 맞춰 제작하고 기록한다. 이 문서는 제작 기준이며 최종 믹스 규격은 아니다.
@@ -14,7 +18,7 @@ VS-2C-1의 `Squid_InkRelease.wav`가 첫 프로젝트 내부 생성 Prototype SF
 
 ## 4. Tool SFX
 
-도구별 사용 시작·적중·설치 완료를 구분한다. Q/W 도구 소리는 키가 아니라 현재 선택된 도구의 행동에 연결한다. 아직 제작하지 않았다.
+도구별 사용 시작·적중·설치 완료를 구분한다. Q/W 도구 소리는 키가 아니라 현재 선택된 도구의 행동에 연결한다. 현재 낚싯대 적중음 1종만 프로토타입으로 제작했다.
 
 ## 5. Fish / Capture SFX
 

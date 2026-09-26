@@ -53,6 +53,7 @@ public class FishingRodController : MonoBehaviour
     private bool isOperational = true;
 
     private SpriteRenderer rodRenderer;
+    private FishingRodPresentation presentation;
     private Color normalRodColor;
     private Color lastAppliedRodColor;
     private bool hasAppliedRodColor;
@@ -67,6 +68,8 @@ public class FishingRodController : MonoBehaviour
 
     public float CaptureRange =>
         captureRange;
+
+    public Transform RangeVisual => rangeVisual;
 
     public bool IsOperational =>
         isOperational;
@@ -91,6 +94,11 @@ public class FishingRodController : MonoBehaviour
 
             targetLine.enabled = false;
         }
+
+        presentation = GetComponent<FishingRodPresentation>();
+        if (presentation == null &&
+            Resources.Load<FishingRodPresentationProfile>("FishingRodPresentation") != null)
+            presentation = gameObject.AddComponent<FishingRodPresentation>();
 
         rodRenderer =
             GetComponentInChildren<SpriteRenderer>();
@@ -122,6 +130,7 @@ public class FishingRodController : MonoBehaviour
         if (!isOperational)
         {
             currentTarget = null;
+            presentation?.ResetVisual();
             HideTargetLine();
             return;
         }
@@ -134,6 +143,7 @@ public class FishingRodController : MonoBehaviour
             flow.IsGameEnded)
         {
             currentTarget = null;
+            presentation?.ResetVisual();
             HideTargetLine();
             return;
         }
@@ -149,7 +159,7 @@ public class FishingRodController : MonoBehaviour
                 GetEffectiveAttackInterval();
         }
 
-        UpdateTargetLine();
+        // The presentation owns the short attack line.
     }
 
     private void Attack()
@@ -173,6 +183,8 @@ public class FishingRodController : MonoBehaviour
         currentTarget =
             targets[0];
 
+        bool lineShown = false;
+
         foreach (FishController target
                  in targets)
         {
@@ -181,20 +193,26 @@ public class FishingRodController : MonoBehaviour
                 continue;
             }
 
+            float resistanceBefore = target.CurrentResistance;
+            Vector2 hitPosition = target.transform.position;
             target.TakeCaptureDamage(
                 capturePower,
                 CombatDamageContext.Tool(
                     "fishing_rod",
                     this)
             );
+
+            if (target.CurrentResistance < resistanceBefore)
+            {
+                presentation?.ShowHit(hitPosition, !lineShown);
+                lineShown = true;
+            }
         }
 
         if (currentTarget == null ||
             !currentTarget.gameObject.activeSelf)
         {
             currentTarget = null;
-
-            HideTargetLine();
         }
     }
 
@@ -288,47 +306,6 @@ public class FishingRodController : MonoBehaviour
         }
 
         return candidates;
-    }
-
-    private void UpdateTargetLine()
-    {
-        if (targetLine == null)
-        {
-            return;
-        }
-
-        if (currentTarget == null ||
-            !currentTarget.gameObject.activeSelf)
-        {
-            HideTargetLine();
-            return;
-        }
-
-        float distance =
-            Vector2.Distance(
-                transform.position,
-                currentTarget.transform.position
-            );
-
-        if (distance > captureRange)
-        {
-            currentTarget = null;
-
-            HideTargetLine();
-            return;
-        }
-
-        targetLine.enabled = true;
-
-        targetLine.SetPosition(
-            0,
-            transform.position
-        );
-
-        targetLine.SetPosition(
-            1,
-            currentTarget.transform.position
-        );
     }
 
     private void HideTargetLine()
@@ -457,7 +434,7 @@ public class FishingRodController : MonoBehaviour
         if (!isOperational)
         {
             currentTarget = null;
-
+            presentation?.ResetVisual();
             HideTargetLine();
         }
         else
@@ -704,6 +681,9 @@ public class FishingRodController : MonoBehaviour
 
     private void OnDisable()
     {
+        currentTarget = null;
+        presentation?.ResetVisual();
+        HideTargetLine();
         SetInterferenceStatusVisible(false);
 
         if (rodRenderer == null)

@@ -1,5 +1,22 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## VS-2D-1 신규 낚싯대 Prototype (2026-09-26, Unity 수동 검증 완료)
+
+| 필드 | Idle/Attack 본체 | 대상 Hit | 적중음 |
+|---|---|---|---|
+| Asset ID | TOOL-FISHING-ROD-BODY-001 | VFX-FISHING-ROD-HIT-001 | SFX-FISHING-ROD-HIT-001 |
+| File Path | `Assets/Art/Tools/FishingRod/FishingRod_Idle.png`, `FishingRod_Attack.png` | `Assets/Art/VFX/Tools/FishingRod_Hit.png` | `Assets/Audio/SFX/Tools/FishingRod_Hit.wav` |
+| 규격 | 32×32 Idle, 96×32 Attack 3프레임, PPU 32, 0.27초 | 64×16, 16×16 셀×4프레임, PPU 83, 0.22초 | PCM WAV mono/44.1 kHz/16-bit/0.19초, 볼륨 0.28 |
+| Production Method / Source | `Tools/generate_fishing_rod_presentation.py`에서 프로젝트 내부 픽셀 제작 | 같은 내부 스크립트의 Hook/Splash 픽셀 제작 | 같은 내부 스크립트의 감쇠 Reel/물방울음 합성 |
+| License | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 |
+| Unity Linked | `FishingRodPresentation.asset`와 Resources 런타임 참조; Setup 메뉴가 프리팹도 연결 | 같은 Profile의 4개 Hit Sprite, 공용 CombatVfxPool | 같은 Profile의 AudioClip, 공용 one-shot AudioSource |
+| Automated Validation | PNG/메타데이터 정적 검사; Unity EditMode 전체 212/212 통과 | PNG/참조 정적 검사; Unity EditMode 전체 212/212 통과 | WAV 규격 정적 검사; Unity EditMode 전체 212/212 통과 |
+| Manual Validation | Manual Visual Validation: Passed — Sprite·Attack Animation·Line 확인 | Manual Validation: Passed — 실제 대상 Hit VFX 확인 | Manual Audio Validation: Passed — 설치 후 SFX 확인 |
+| Prototype Approval | Approved | Approved | Approved |
+| Final Approval | Final Production Art Approval: Pending | Final Production VFX Approval: Pending | Final Production Audio Approval: Pending |
+
+사용자가 원본 Unity에서 compile 정상·Console Error 0·전체 EditMode 212/212 통과와 Play Mode 시각·청각 검증을 확인했다. Fishing Rod Sprite **Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending**. Attack Presentation·Line 및 Hit VFX 각각 **Manual Validation: Passed / Prototype Approval: Approved / Final Production VFX Approval: Pending**. SFX **Manual Audio Validation: Passed / Prototype Approval: Approved / Final Production Audio Approval: Pending**. Placement Preview **Manual Validation: Passed / Prototype Approval: Approved**이며 Q/W 동적 슬롯과 빠른 커서 이동 중 Ghost·Range 동위치 추적, 실제 gameplay range 일치를 확인했다. 본체 PPU 32는 기존 낚싯대 화면 footprint를 보존하는 첫 Tool 값이고 전체 Tool 표준이 아니다. Scene/Prefab YAML을 직접 수정하지 않았으며 Unity Editor Setup 메뉴가 프리팹 참조를 설정한다.
+
 ## VS-2C-3 신규 Prototype (2026-09-25, Unity 수동 검증 완료)
 
 | 필드 | 복어 접촉 애니메이션 | 복어 그물 Impact | 복어 그물 중단음 |

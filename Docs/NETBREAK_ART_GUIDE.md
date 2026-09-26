@@ -1,5 +1,11 @@
 # NETBREAK 아트 스타일 가이드 — VS-2 초안
 
+## VS-2D-1 낚싯대 Tool Presentation Prototype
+
+낚싯대는 장식보다 설치 도구로 읽히는 실루엣을 우선한다. 32×32 Idle 본체에 받침대·기울어진 대·릴·낚싯대 끝을 분리해 그렸고, 공격 본체 3프레임은 짧은 휨만 보여준다. 공격 대상 정보는 본체와 분리된 얇은 줄 및 대상 위치의 16×16 Hook/Splash Hit으로 전달한다. 줄은 사거리 원과 구별되도록 공격 성공 직후에만 0.18초 표시한다. 설치 Preview에는 본체 Idle을 재사용한다.
+
+기존 프리팹 루트 Scale 0.35와 화면 footprint 약 29px를 보존하기 위해 본체 PPU 32를 선택했다. Hit PPU는 현재 물고기·VFX와 같은 83이다. Tool 몸체 PPU·셀 크기·Pixel Perfect Camera는 최종 규격이 아니며, 다른 Tool에 적용할 때 실제 화면 크기와 픽셀 밀도를 재검토한다. 사용자가 Play Mode에서 Pixel Sprite, 공격 애니메이션·줄·Hit VFX와 Ghost·Range 커서 추적을 확인했다. **Fishing Rod Sprite: Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending. Attack Presentation·Line 및 Hit VFX 각각: Manual Validation: Passed / Prototype Approval: Approved / Final Production VFX Approval: Pending. Placement Preview: Manual Validation: Passed / Prototype Approval: Approved.**
+
 기준일: 2026-09-22. 이 문서는 VS-2의 아트 기획 기준이다. 게임 설계는 [NETBREAK_DESIGN.md](NETBREAK_DESIGN.md), 구현·검증 상태는 [NETBREAK_STATE.md](../NETBREAK_STATE.md), 제작 순서는 [NETBREAK_ROADMAP.md](NETBREAK_ROADMAP.md)를 따른다.
 
 ## 1. 문서 상태

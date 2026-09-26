@@ -233,9 +233,11 @@ public sealed class ItemEffectManager : MonoBehaviour
     private AudioSource squidInkAudio;
     private float lastSquidInkSoundTime = float.NegativeInfinity;
     private float lastPufferfishSoundTime = float.NegativeInfinity;
+    private float lastFishingRodSoundTime = float.NegativeInfinity;
     private bool squidInkAudioPaused;
     private const float SquidInkSoundCooldown = 0.08f;
     private const float PufferfishSoundCooldown = 0.1f;
+    private const float FishingRodSoundCooldown = 0.09f;
     private bool runWasActive;
     private int capacitorHitCount;
     private float stormOrbRemaining;
@@ -355,6 +357,28 @@ public sealed class ItemEffectManager : MonoBehaviour
         combatVfxPool.AcquireSpriteTransient(
             "PufferfishNetImpactVisual", presentation.ImpactFrames, position,
             0.28f, 1.2f, 30, CombatVfxPriority.RepeatedHit);
+    }
+
+    public void ShowFishingRodHit(Vector2 position, FishingRodPresentationProfile presentation)
+    {
+        if (presentation == null || !presentation.HasHit) return;
+        combatVfxPool ??= new CombatVfxPool(transform, GetCombatVfxSettings());
+        combatVfxPool.AcquireSpriteTransient(
+            "FishingRodHitVisual", presentation.HitFrames, position,
+            presentation.HitDuration, 0.75f, 30, CombatVfxPriority.RepeatedHit);
+    }
+
+    public bool PlayFishingRodHitSound(FishingRodPresentationProfile presentation)
+    {
+        if (presentation == null || presentation.HitClip == null ||
+            Time.timeScale <= 0f ||
+            Time.time - lastFishingRodSoundTime < FishingRodSoundCooldown)
+            return false;
+
+        EnsureSpecialFishAudio();
+        squidInkAudio.PlayOneShot(presentation.HitClip, presentation.HitVolume);
+        lastFishingRodSoundTime = Time.time;
+        return true;
     }
 
     public bool PlayPufferfishNetSound(PufferfishDisruptionProfile presentation)
@@ -2668,6 +2692,7 @@ public sealed class ItemEffectManager : MonoBehaviour
         if (squidInkAudio != null) squidInkAudio.Stop();
         lastSquidInkSoundTime = float.NegativeInfinity;
         lastPufferfishSoundTime = float.NegativeInfinity;
+        lastFishingRodSoundTime = float.NegativeInfinity;
         squidInkAudioPaused = false;
         electricStunVisuals.Clear();
         iceFreezeVisuals.Clear();

@@ -20,6 +20,10 @@ public class FishingRodPlacementController : MonoBehaviour
     [SerializeField] private int maxActiveRods = 2;
 
     private Camera mainCamera;
+    private Transform rangePreview;
+
+    private const float VisibleGhostAlpha = 0.6f;
+    private const float VisibleRangeAlpha = 0.25f;
 
     private readonly List<FishingRodController>
         activeRods = new();
@@ -41,6 +45,10 @@ public class FishingRodPlacementController : MonoBehaviour
     public int PlacementCost =>
         CalculatePlacementCost();
 
+    public float PreviewCaptureRange => rodPrefab != null
+        ? rodPrefab.CaptureRange + Mathf.Max(0f, rodRangeBonus)
+        : 0f;
+
     private void Awake()
     {
         mainCamera = Camera.main;
@@ -48,11 +56,52 @@ public class FishingRodPlacementController : MonoBehaviour
         if (placementPreview != null)
         {
             placementPreview.gameObject.SetActive(false);
+            SpriteRenderer previewRenderer = placementPreview.GetComponent<SpriteRenderer>();
+            SpriteRenderer rodRenderer = rodPrefab != null
+                ? rodPrefab.GetComponent<SpriteRenderer>() : null;
+            FishingRodPresentationProfile profile =
+                Resources.Load<FishingRodPresentationProfile>("FishingRodPresentation");
+            if (previewRenderer != null && profile != null && profile.IdleSprite != null)
+                previewRenderer.sprite = profile.IdleSprite;
+            else if (previewRenderer != null && rodRenderer != null && rodRenderer.sprite != null)
+                previewRenderer.sprite = rodRenderer.sprite;
+
+            if (previewRenderer != null)
+            {
+                Color ghostColor = previewRenderer.color;
+                ghostColor.a = Mathf.Max(ghostColor.a, VisibleGhostAlpha);
+                previewRenderer.color = ghostColor;
+            }
+
+            Transform sourceRange = rodPrefab != null ? rodPrefab.RangeVisual : null;
+            if (sourceRange != null && sourceRange.GetComponent<SpriteRenderer>() != null)
+            {
+                rangePreview = placementPreview.Find("FishingRodRangePreview");
+                if (rangePreview == null)
+                {
+                    rangePreview = Instantiate(sourceRange, placementPreview, false);
+                    rangePreview.name = "FishingRodRangePreview";
+                }
+                rangePreview.localPosition = Vector3.zero;
+                rangePreview.localRotation = Quaternion.identity;
+                SpriteRenderer rangeRenderer = rangePreview.GetComponent<SpriteRenderer>();
+                Color rangeColor = rangeRenderer.color;
+                rangeColor.a = Mathf.Max(rangeColor.a, VisibleRangeAlpha);
+                rangeRenderer.color = rangeColor;
+                rangePreview.gameObject.SetActive(false);
+                UpdateRangePreview();
+            }
         }
     }
 
     private void Update()
     {
+        if (Time.timeScale <= 0f)
+        {
+            CancelPlacementMode();
+            return;
+        }
+
         ToolInputState input = ToolSlotInput.Read(ToolId.FishingRod);
         if (input.Cancelled)
         {
@@ -114,6 +163,7 @@ public class FishingRodPlacementController : MonoBehaviour
         if (placementPreview != null)
         {
             placementPreview.gameObject.SetActive(true);
+            if (rangePreview != null) rangePreview.gameObject.SetActive(true);
         }
 
         UpdatePreview();
@@ -127,6 +177,7 @@ public class FishingRodPlacementController : MonoBehaviour
         {
             placementPreview.gameObject.SetActive(false);
         }
+        if (rangePreview != null) rangePreview.gameObject.SetActive(false);
     }
 
     private void UpdatePreview()
@@ -138,6 +189,19 @@ public class FishingRodPlacementController : MonoBehaviour
 
         placementPreview.position =
             GetMouseWorldPosition();
+        UpdateRangePreview();
+    }
+
+    private void UpdateRangePreview()
+    {
+        if (rangePreview == null || placementPreview == null) return;
+        float diameter = PreviewCaptureRange * 2f;
+        Vector3 parentScale = placementPreview.lossyScale;
+        float scaleX = Mathf.Abs(parentScale.x) > 0.0001f
+            ? diameter / Mathf.Abs(parentScale.x) : diameter;
+        float scaleY = Mathf.Abs(parentScale.y) > 0.0001f
+            ? diameter / Mathf.Abs(parentScale.y) : diameter;
+        rangePreview.localScale = new Vector3(scaleX, scaleY, 1f);
     }
 
     private void TryPlaceRod()
@@ -164,8 +228,11 @@ public class FishingRodPlacementController : MonoBehaviour
             return;
         }
 
-        Vector2 position =
-            GetMouseWorldPosition();
+        Vector2 position = placementPreview != null
+            ? (Vector2)placementPreview.position
+            : GetMouseWorldPosition();
+
+        CancelPlacementMode();
 
         FishingRodController rod =
             Instantiate(
@@ -178,7 +245,6 @@ public class FishingRodPlacementController : MonoBehaviour
 
         activeRods.Add(rod);
 
-        CancelPlacementMode();
     }
 
     private int CalculatePlacementCost()
