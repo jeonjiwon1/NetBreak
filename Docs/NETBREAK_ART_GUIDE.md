@@ -1,5 +1,11 @@
 # NETBREAK 아트 스타일 가이드 — VS-2 초안
 
+## VS-2D-3 Scoop Net Prototype — Unity 수동 검증 완료
+
+직접 사용형 Tool은 몸체 장식보다 실제 공격 위치와 범위의 가독성을 먼저 맞춘다. 뜰채는 Scene의 원형 범위와 커서 월드 좌표를 그대로 사용하고, 약한 Range 원·Ready 실루엣을 사용 가능할 때만 표시한다. 기존 카메라 orthographic size 6.5, 공격 반경 1.1과 어종 32~64px 셀의 상대 크기를 보고 48×48 셀/PPU 64(0.75 world unit)의 손잡이·타원형 망 실루엣을 첫 후보로 정했다. PPU 64나 83은 Tool 전체 최종 규격이 아니다.
+
+5프레임 Swing은 픽셀을 임의 각도로 회전시키지 않고 망을 커서 주변에서 짧게 이동시킨다. 공격은 원형이므로 별도 방향별 시트를 제작하지 않는다. 실제 Resistance가 감소한 Fish 위치마다 24×24 작은 Hit 물보라를 표시하고, 다중 타격에도 공용 VFX Pool의 RepeatedHit 우선순위와 상한을 따른다. Fish를 가리는 큰 효과를 늘리지 않는다. 사용자가 Play Mode에서 Ready Sprite·커서 추적·실제 공격 범위와 일치하는 Range Feedback, 화면 혼잡도, Hit/Miss 구분, 단일·다중 Hit VFX, Ready→Swing→Ready 복귀와 방향 독립 Swing을 확인했다. **Scoop Net Sprite: Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending. Scoop Net Swing: Manual Validation: Passed / Prototype Approval: Approved / Final Production Animation Approval: Pending. Scoop Net Hit VFX: Manual Validation: Passed / Prototype Approval: Approved / Final Production VFX Approval: Pending.** 현재 셀 크기·PPU·5프레임·animation duration·VFX size는 최종 출시 확정값이 아니다.
+
 ## VS-2D-2 Net Prototype — Unity 수동 검증 완료
 
 실제 그물은 선분을 중심으로 한 두께 0.3의 회전 직사각형이다. 16×16 반투명 Mesh Tile과 16×4 Rope Tile을 길이 방향으로 반복해 범위를 읽히게 하며, Ghost와 설치물은 동일한 authoritative 시작점·끝점·두께·최대 길이와 배치 변환을 공유한다. 한 장의 그림을 길이에 맞춰 늘이지 않는다. 물고기를 가리지 않는 성긴 격자, Cyan 바다와 구분되는 밝은 로프, 조용한 Mesh 알파 변화를 사용한다. 지속 Tool의 접촉 VFX는 첫 영향 등록에만 짧게 표시하고 매 물리 Tick에는 반복하지 않는다. 비작동 중에는 기존 어두운 상태가 우선한다.

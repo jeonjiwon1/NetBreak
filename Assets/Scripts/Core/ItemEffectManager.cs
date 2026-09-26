@@ -235,11 +235,13 @@ public sealed class ItemEffectManager : MonoBehaviour
     private float lastPufferfishSoundTime = float.NegativeInfinity;
     private float lastFishingRodSoundTime = float.NegativeInfinity;
     private float lastNetPlaceSoundTime = float.NegativeInfinity;
+    private float lastScoopNetSoundTime = float.NegativeInfinity;
     private bool squidInkAudioPaused;
     private const float SquidInkSoundCooldown = 0.08f;
     private const float PufferfishSoundCooldown = 0.1f;
     private const float FishingRodSoundCooldown = 0.09f;
     private const float NetPlaceSoundCooldown = 0.09f;
+    private const float ScoopNetSoundCooldown = 0.09f;
     private bool runWasActive;
     private int capacitorHitCount;
     private float stormOrbRemaining;
@@ -377,6 +379,27 @@ public sealed class ItemEffectManager : MonoBehaviour
         combatVfxPool.AcquireSpriteTransient(
             "NetContactVisual", presentation.ContactFrames, position,
             .2f, .65f, 29, CombatVfxPriority.RepeatedHit);
+    }
+
+    public void ShowScoopNetHit(Vector2 position, ScoopNetPresentationProfile presentation)
+    {
+        if (presentation == null || !presentation.HasHit) return;
+        combatVfxPool ??= new CombatVfxPool(transform, GetCombatVfxSettings());
+        combatVfxPool.AcquireSpriteTransient(
+            "ScoopNetHitVisual", presentation.HitFrames, position,
+            presentation.HitDuration, .8f, 30, CombatVfxPriority.RepeatedHit);
+    }
+
+    public bool PlayScoopNetSwingSound(ScoopNetPresentationProfile presentation)
+    {
+        if (presentation == null || presentation.SwingClip == null ||
+            Time.timeScale <= 0f ||
+            Time.time - lastScoopNetSoundTime < ScoopNetSoundCooldown)
+            return false;
+        EnsureSpecialFishAudio();
+        squidInkAudio.PlayOneShot(presentation.SwingClip, presentation.SwingVolume);
+        lastScoopNetSoundTime = Time.time;
+        return true;
     }
 
     public bool PlayNetPlaceSound(NetPresentationProfile presentation)
@@ -2716,6 +2739,7 @@ public sealed class ItemEffectManager : MonoBehaviour
         lastPufferfishSoundTime = float.NegativeInfinity;
         lastFishingRodSoundTime = float.NegativeInfinity;
         lastNetPlaceSoundTime = float.NegativeInfinity;
+        lastScoopNetSoundTime = float.NegativeInfinity;
         squidInkAudioPaused = false;
         electricStunVisuals.Clear();
         iceFreezeVisuals.Clear();

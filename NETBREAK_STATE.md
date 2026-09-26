@@ -1,5 +1,15 @@
 # NETBREAK 인수인계
 
+## VS-2D-3 — Scoop Net Presentation Prototype (2026-09-27, Unity 수동 검증 완료)
+
+- 실제 뜰채는 Q/W 슬롯이 아닌 LMB 고정 도구다. Scene 직렬화 값은 Resistance 피해 3, 원형 반경 1.1, 공격 쿨타임 0.45초, 기본 최대 3마리, 연쇄 반경 1.5·피해 2다. New Input System의 커서 월드 좌표를 중심으로 Collider를 거리순 정렬해 피해를 적용한다. 누르고 있는 동안 쿨타임마다 재사용하며 쿨타임 입력은 버퍼링하지 않는다. Miss가 가능하고 기존 HUD에 쿨타임 표시가 있다.
+- 기존 `LandingNetRange` SpriteRenderer를 같은 커서 위치와 `captureRadius * 2` 크기로 사용한다. 사용 가능할 때 약한 원과 뜰채 Ready Sprite를 표시하고 쿨타임 중 원을 더 흐리게 한다. 범위 업그레이드는 기존 `UpdateRangeVisual`이 같은 값으로 즉시 반영한다. 기존 Scene 원본 알파는 약 0.039였다. Scene/Prefab YAML은 수정하지 않았다.
+- 48×48 Ready 및 5프레임 Swing Pixel Sprite(PPU 64, 본체 0.75 world unit), 24×24×4프레임 Hit 물보라(PPU 83), 0.24초 mono WAV를 내부 생성했다. `LandingNetController`의 모든 실제 `TakeCaptureDamage` 후 Resistance가 감소한 Fish와 당시 위치를 기록하고 공격 루프 완료 뒤 Presentation에 넘긴다. 연쇄 피해도 실제 감소 시 기록한다. Swing은 Hit/Miss 공통 0.26초, Hit VFX는 실제 피해 위치마다 0.2초, 기본 SFX는 Tool use당 1회다. VFX는 공용 `CombatVfxPool` RepeatedHit, 사운드는 공용 one-shot Source와 0.09초 전역 중복 제한을 사용한다. 피해·대상 선택·기본 최대 타격 수·쿨타임·아이템/시너지 큐를 바꾸지 않았다.
+- `NETBREAK/Art/Setup Scoop Net Presentation`이 Import와 Resources Profile을 연결하고 `Validate Scoop Net Presentation`이 참조·규격·런타임 hook을 점검한다. 런타임에 뜰채 자식 SpriteRenderer만 생성하며 Collider는 추가하지 않는다. UI 선택·Pause·배치 모드 중 커서 표시와 Swing은 지우고 입력을 차단한다. Run 초기화는 공용 VFX/Audio 정리를 사용한다.
+- **자동 검증:** Unity 6000.3.11f1 배치 Setup/Validate 2회와 Runtime·Editor/Test 컴파일 성공. Import 메타데이터·Profile 해시는 반복 Setup 후 불변이다. 신규 EditMode 테스트 9개는 LMB/커서·원형 범위·쿨타임·다중 피해 위치·Hit/Miss·중복음·선택 UI/Pause·에셋 누락/풀 포화·초기화/풀 반환을 검사한다. 전체 EditMode **231/231 통과**(실패·Skip 0).
+- **사용자 수동 검증:** 원본 Unity compile 정상, Console Error 0, 전체 EditMode **231/231 통과**. Play Mode에서 Ready Sprite·커서 추적·실제 gameplay 범위와 일치하는 Range Feedback 및 화면 가독성, Miss의 Swing/SFX와 Hit VFX 없음, Resistance가 실제 감소한 단일·다중 대상별 Hit VFX, 1 use = 1 기본 SFX, 쿨타임 중 가짜 연출 없음, Ready→Swing→Ready 복귀와 방향 독립 Swing의 자연스러움을 확인했다. 선택 UI·배치/재배치·Pause 입력 차단, Run 재시작 후 잔상 없음, 기존 Fishing Rod/Net/Squid/Puffer/Item/Synergy Presentation도 확인했다. 실제 gameplay hit Fish 목록과 당시 위치를 Presentation이 그대로 사용하며 별도 target search가 없음을 검증했다.
+- **승인:** Scoop Net Sprite **Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending**. Scoop Net Swing **Manual Validation: Passed / Prototype Approval: Approved / Final Production Animation Approval: Pending**. Scoop Net Hit VFX **Manual Validation: Passed / Prototype Approval: Approved / Final Production VFX Approval: Pending**. Scoop Net SFX **Manual Audio Validation: Passed / Prototype Approval: Approved / Final Production Audio Approval: Pending**. Damage·range·cooldown·max targets·input binding 값은 변경하지 않았다. 48×48·5프레임·animation duration·VFX size·SFX volume은 최종 출시 확정값이 아니다. 이번 문서 갱신에서 구현 에셋은 수정하지 않고 Git add/commit/push도 수행하지 않는다.
+
 ## VS-2D-2 — Net Presentation Prototype (2026-09-26, Unity 수동 검증 완료)
 
 - 실제 Net은 Q/W 동적 슬롯으로 모드 진입 후 LMB 시작점→끝점 드래그·릴리스로 설치하는 회전 직사각형 Trigger다. Scene 직렬화 값은 두께 0.3, 길이 0.5~8, 상한 3, 비용 8+길이당 6·설치 수 증가 0.5다. 프리팹은 감속 0.5, Resistance DPS 1.5다. OnTriggerStay2D마다 `Time.fixedDeltaTime`을 곱하며 별도 긴 Tick 타이머는 없다. 설치 후 Ctrl+드래그 이동이 이미 있다.

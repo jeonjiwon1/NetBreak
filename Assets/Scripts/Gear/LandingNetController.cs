@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
 
 public class LandingNetController : MonoBehaviour
 {
@@ -18,6 +19,11 @@ public class LandingNetController : MonoBehaviour
 
     private Camera mainCamera;
     private float nextAttackTime;
+    private LandingNetPresentation presentation;
+    private readonly List<ScoopNetHit> confirmedHits = new();
+
+    public float CaptureRadius => captureRadius;
+    public float AttackCooldown => attackCooldown;
 
     private bool chainCaptureEnabled;
     private bool autoUseEnabled;
@@ -35,23 +41,30 @@ public class LandingNetController : MonoBehaviour
         mainCamera = Camera.main;
 
         UpdateRangeVisual();
+        presentation = GetComponent<LandingNetPresentation>();
+        if (presentation == null)
+            presentation = gameObject.AddComponent<LandingNetPresentation>();
+        presentation.Bind(this, rangeVisual);
     }
 
     private void Update()
     {
-        if (ToolSlotInput.IsWorldPointerReserved)
+        if (Time.timeScale <= 0f || ToolSlotInput.IsWorldPointerReserved)
         {
+            presentation?.SetAimAvailable(false);
             return;
         }
 
         if (Mouse.current == null)
         {
+            presentation?.SetAimAvailable(false);
             return;
         }
 
         if (PrototypeGameFlowManager.Instance != null &&
             PrototypeGameFlowManager.Instance.IsPreparation)
         {
+            presentation?.SetAimAvailable(false);
             return;
         }
 
@@ -70,14 +83,18 @@ public class LandingNetController : MonoBehaviour
             rangeVisual.position =
                 mouseWorldPosition;
         }
+        presentation?.SetAimPosition(mouseWorldPosition);
 
         if (NetPlacementController.IsNetModeActive ||
             FishingRodPlacementController.IsRodModeActive ||
             GearRepositionController.IsRepositioning ||
             GearRepositionController.IsRepositionModifierHeld)
         {
+            presentation?.SetAimAvailable(false);
             return;
         }
+
+        presentation?.SetAimAvailable(true);
 
         bool shouldUse;
 
@@ -145,6 +162,7 @@ public class LandingNetController : MonoBehaviour
         );
 
         int hitCount = 0;
+        confirmedHits.Clear();
         System.Collections.Generic.HashSet<FishController> damagedFish = new();
 
         foreach (Collider2D hit in hits)
@@ -160,6 +178,7 @@ public class LandingNetController : MonoBehaviour
             Vector2 fishPosition =
                 fish.transform.position;
 
+            float resistanceBefore = fish.CurrentResistance;
             bool captured =
                 fish.TakeCaptureDamage(
                     capturePower,
@@ -168,11 +187,15 @@ public class LandingNetController : MonoBehaviour
                         this)
                 );
 
+            if (fish.CurrentResistance < resistanceBefore)
+                confirmedHits.Add(new ScoopNetHit(fish, fishPosition));
+
             if (captured &&
                 chainCaptureEnabled)
             {
                 ApplyChainCapture(
-                    fishPosition
+                    fishPosition,
+                    confirmedHits
                 );
             }
 
@@ -183,10 +206,13 @@ public class LandingNetController : MonoBehaviour
                 break;
             }
         }
+        presentation?.ShowUse(capturePosition, confirmedHits);
+        confirmedHits.Clear();
     }
 
     private void ApplyChainCapture(
-        Vector2 center)
+        Vector2 center,
+        List<ScoopNetHit> hitsPresented)
     {
         Collider2D[] hits =
             Physics2D.OverlapCircleAll(
@@ -225,13 +251,23 @@ public class LandingNetController : MonoBehaviour
 
         if (nearestFish != null)
         {
+            float resistanceBefore = nearestFish.CurrentResistance;
+            Vector2 hitPosition = nearestFish.transform.position;
             nearestFish.TakeCaptureDamage(
                 chainDamage,
                 CombatDamageContext.Tool(
                     "landing_net.chain",
                     this)
             );
+            if (nearestFish.CurrentResistance < resistanceBefore)
+                hitsPresented.Add(new ScoopNetHit(nearestFish, hitPosition));
         }
+    }
+
+    private void OnDisable()
+    {
+        confirmedHits.Clear();
+        presentation?.ResetVisual();
     }
 
     private void UpdateRangeVisual()

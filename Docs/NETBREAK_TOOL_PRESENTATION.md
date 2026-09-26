@@ -1,4 +1,10 @@
-# NETBREAK Tool Presentation 원칙 — VS-2D-2
+# NETBREAK Tool Presentation 원칙 — VS-2D-3
+
+## 직접 사용형 Tool — Scoop Net Prototype
+
+뜰채는 LMB 고정 즉발형 Tool이다. 설치형 Fishing Rod/Net의 Ghost·설치물 수명주기를 사용하지 않는다. Controller가 실제 입력·커서 좌표·원형 반경·쿨타임·대상 정렬·`TakeCaptureDamage`를 소유한다. 사용 가능한 동안만 기존 Range 원과 뜰채 Ready Sprite를 커서에 표시한다. Range 크기는 Controller의 실제 `captureRadius` 변경 경로를 따르며 UI/HUD에 별도 반경 상수를 두지 않는다.
+
+한 번의 사용에서 모든 기본·연쇄 피해 판정이 끝난 뒤, 실제 Resistance가 감소한 Fish와 당시 위치의 목록을 Presentation에 전달한다. Presentation은 Fish를 다시 검색하지 않고 Swing 1회, 실제 피해 위치마다 작은 Hit VFX, 기본 SFX 1회를 요청한다. 0명일 때는 Swing과 사용음만 나타낸다. 공용 CombatVfxPool RepeatedHit/상한과 one-shot Source/중복 제한을 재사용한다. Swing 길이는 공격 쿨타임과 독립적이며 Animation Event에서 피해를 발생시키지 않는다. 선택 UI·Pause·Run 초기화에서 커서/Animation/VFX/Audio 상태를 정리한다. 이 규칙은 이후 Cast Net 등 즉발형 Tool의 최소 후보이며 해당 도구의 판정·입력은 구현할 때 별도로 조사한다. 사용자가 실제 hit Fish 목록과 VFX 대상 일치, Miss·다중 Hit·1 use = 1 기본 SFX, Ready→Swing→Ready, UI/Pause/Run 정리 및 기존 Tool Presentation 회귀를 Play Mode에서 확인했다. Damage·range·cooldown·max targets·input binding은 변경하지 않았다. **Scoop Net Manual Validation: Passed / Prototype Approval: Approved / Final Production Art·Animation·VFX·Audio Approval: Pending.**
 
 낚싯대와 그물에 공통으로 확인된 최소 규칙이다. 각 도구의 배치와 공격 방식은 해당 Controller가 소유한다.
 

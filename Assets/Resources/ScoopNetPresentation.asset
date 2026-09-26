@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f33620a943c7794882fb0ac859e3991, type: 3}
+  m_Name: ScoopNetPresentation
+  m_EditorClassIdentifier: Assembly-CSharp::ScoopNetPresentationProfile
+  readySprite: {fileID: -8808376285598078010, guid: 396c54a5b4393b540ab12bf827487a57, type: 3}
+  swingFrames:
+  - {fileID: 9028674067510473094, guid: ee3781bc9f2f6b74eb1f4d0316cde577, type: 3}
+  - {fileID: 1607702499851361489, guid: ee3781bc9f2f6b74eb1f4d0316cde577, type: 3}
+  - {fileID: -1809907055664182690, guid: ee3781bc9f2f6b74eb1f4d0316cde577, type: 3}
+  - {fileID: -846109597147649960, guid: ee3781bc9f2f6b74eb1f4d0316cde577, type: 3}
+  - {fileID: -8427849027933115810, guid: ee3781bc9f2f6b74eb1f4d0316cde577, type: 3}
+  hitFrames:
+  - {fileID: 6327146399423111587, guid: 06b5e9b115289c94a896b9a755b333b2, type: 3}
+  - {fileID: -3912026386177462958, guid: 06b5e9b115289c94a896b9a755b333b2, type: 3}
+  - {fileID: -5329360426335118817, guid: 06b5e9b115289c94a896b9a755b333b2, type: 3}
+  - {fileID: 845233894, guid: 06b5e9b115289c94a896b9a755b333b2, type: 3}
+  swingClip: {fileID: 8300000, guid: 448bb0219c0033843b3b6c33f93ab6ab, type: 3}
+  swingDuration: 0.26
+  hitDuration: 0.2
+  swingVolume: 0.27

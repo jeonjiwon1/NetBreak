@@ -1,5 +1,22 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## VS-2D-3 신규 Scoop Net Prototype (2026-09-27, Unity 수동 검증 완료)
+
+| 필드 | Ready 뜰채 | Swing | 명중 물보라 | 사용음 |
+|---|---|---|---|---|
+| Asset ID | TOOL-SCOOP-NET-BODY-001 | TOOL-SCOOP-NET-SWING-001 | VFX-SCOOP-NET-HIT-001 | SFX-SCOOP-NET-SWING-001 |
+| File Path | `Assets/Art/Tools/ScoopNet/ScoopNet_Ready.png` | `Assets/Art/Tools/ScoopNet/ScoopNet_Swing.png` | `Assets/Art/VFX/Tools/ScoopNet_Hit.png` | `Assets/Audio/SFX/Tools/ScoopNet_Swing.wav` |
+| 규격 | 48×48, PPU 64 | 240×48/5프레임, PPU 64, 0.26초 | 96×24/24×24×4프레임, PPU 83, 0.2초 | PCM WAV mono/44.1 kHz/16-bit/0.24초, 볼륨 0.27 |
+| Production Method / Source | `Tools/generate_scoop_net_presentation.py` 프로젝트 내부 직접 제작 | 같은 스크립트 내부 제작 | 같은 스크립트 내부 제작 | 같은 스크립트 내부 합성 |
+| License | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 | 외부 소재 없음; 같은 조건 | 외부 소재 없음; 같은 조건 | 외부 소재 없음; 같은 조건 |
+| Unity Linked | Resources `ScoopNetPresentation.asset`, 런타임 뜰채 SpriteRenderer | 같은 Profile의 5 Sprite | 같은 Profile의 4 Sprite, 공용 CombatVfxPool | 같은 Profile AudioClip, 공용 one-shot Source |
+| Automated Validation | Unity Setup/Validate, EditMode 전체 231/231 통과 | 같은 Setup/Validate·EditMode 통과 | 같은 Setup/Validate·VFX 풀 검증 | WAV Import·중복 제한 EditMode 검증 |
+| Manual Validation | Manual Visual Validation: Passed | Manual Validation: Passed | Manual Validation: Passed | Manual Audio Validation: Passed |
+| Prototype Approval | Approved | Approved | Approved | Approved |
+| Final Approval | Final Production Art Approval: Pending | Final Production Animation Approval: Pending | Final Production VFX Approval: Pending | Final Production Audio Approval: Pending |
+
+Scene/Prefab YAML 수정 없이 기존 뜰채 Controller에서 실제 피해 Fish 목록과 당시 위치를 Presentation에 전달하며 별도 target search는 없다. 커서 Preview는 기존 Range SpriteRenderer와 동일 공격 반경을 사용한다. 사용자가 Unity compile 정상·Console Error 0·전체 EditMode 231/231 통과와 Play Mode 화면 footprint·Hit/Miss·다중 타격·1 use = 1 기본 SFX·UI 차단·Pause/Run 초기화·기존 Presentation 회귀를 확인하고 Prototype 품질을 승인했다. Damage·range·cooldown·max targets·input binding 값은 변경하지 않았다. 48×48·5프레임·animation duration·VFX size·SFX volume은 최종 출시 확정값이 아니다.
+
 ## VS-2D-2 신규 Net Prototype (2026-09-26, Unity 수동 검증 완료)
 
 | 필드 | 반복 Net Mesh/Rope | 접촉 VFX | 설치 SFX |
