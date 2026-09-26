@@ -27,6 +27,8 @@ public class NetController : MonoBehaviour
 
     private bool isOperational = true;
     private PufferfishDisruptionProfile pufferfishPresentation;
+    private NetPresentationProfile netPresentation;
+    public event Action<FishController, Vector2> FishContactPresented;
     public event Action<FishController, Vector2> PufferfishPresentationTriggered;
 
     private SpriteRenderer netRenderer;
@@ -55,6 +57,7 @@ public class NetController : MonoBehaviour
 
         pufferfishPresentation = Resources.Load<PufferfishDisruptionProfile>(
             "PufferfishDisruption");
+        netPresentation = Resources.Load<NetPresentationProfile>("NetPresentation");
 
         netRenderer =
             GetComponentInChildren<SpriteRenderer>();
@@ -64,6 +67,10 @@ public class NetController : MonoBehaviour
             normalNetColor =
                 netRenderer.color;
         }
+
+        NetPresentation visual = GetComponent<NetPresentation>();
+        if (visual == null) visual = gameObject.AddComponent<NetPresentation>();
+        visual.Configure(false, netPresentation);
 
         RefreshOperationalState();
     }
@@ -237,6 +244,14 @@ public class NetController : MonoBehaviour
             this,
             GetEffectiveSlowMultiplier()
         );
+
+        FishController fish = other.GetComponent<FishController>();
+        if (fish != null && fish.Data != null)
+        {
+            Vector2 position = fish.transform.position;
+            FishContactPresented?.Invoke(fish, position);
+            ItemEffectManager.Instance?.ShowNetContact(position, netPresentation);
+        }
     }
 
     private void RecalculateNetDisruption()
@@ -487,5 +502,6 @@ public class NetController : MonoBehaviour
     {
         ReleaseAllFish();
         PufferfishPresentationTriggered = null;
+        FishContactPresented = null;
     }
 }

@@ -1,5 +1,11 @@
 # NETBREAK 아트 스타일 가이드 — VS-2 초안
 
+## VS-2D-2 Net Prototype — Unity 수동 검증 완료
+
+실제 그물은 선분을 중심으로 한 두께 0.3의 회전 직사각형이다. 16×16 반투명 Mesh Tile과 16×4 Rope Tile을 길이 방향으로 반복해 범위를 읽히게 하며, Ghost와 설치물은 동일한 authoritative 시작점·끝점·두께·최대 길이와 배치 변환을 공유한다. 한 장의 그림을 길이에 맞춰 늘이지 않는다. 물고기를 가리지 않는 성긴 격자, Cyan 바다와 구분되는 밝은 로프, 조용한 Mesh 알파 변화를 사용한다. 지속 Tool의 접촉 VFX는 첫 영향 등록에만 짧게 표시하고 매 물리 Tick에는 반복하지 않는다. 비작동 중에는 기존 어두운 상태가 우선한다.
+
+사용자가 Play Mode에서 Q/W 배치 진입, 시작점 Preview, 드래그 Ghost와 실제 Net의 위치·길이·두께·각도 일치, Pixel Art 가독성, 첫 접촉 VFX, 과다 반복 없음, 복어 중단의 어두운 상태·Active visual 정지·복귀, 다중 Net 독립 상태와 기존 연출 회귀를 확인했다. **Net Pixel Art: Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending. Net Placement Preview: Manual Validation: Passed / Prototype Approval: Approved. Net Contact VFX: Manual Validation: Passed / Prototype Approval: Approved / Final Production VFX Approval: Pending.** 현재 길이·두께·animation 속도·VFX lifetime은 최종 출시 확정값이 아니다.
+
 ## VS-2D-1 낚싯대 Tool Presentation Prototype
 
 낚싯대는 장식보다 설치 도구로 읽히는 실루엣을 우선한다. 32×32 Idle 본체에 받침대·기울어진 대·릴·낚싯대 끝을 분리해 그렸고, 공격 본체 3프레임은 짧은 휨만 보여준다. 공격 대상 정보는 본체와 분리된 얇은 줄 및 대상 위치의 16×16 Hook/Splash Hit으로 전달한다. 줄은 사거리 원과 구별되도록 공격 성공 직후에만 0.18초 표시한다. 설치 Preview에는 본체 Idle을 재사용한다.

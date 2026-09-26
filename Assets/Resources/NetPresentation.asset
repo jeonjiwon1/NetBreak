@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64fa0bda31b50ef48a15c7d623b61d74, type: 3}
+  m_Name: NetPresentation
+  m_EditorClassIdentifier: Assembly-CSharp::NetPresentationProfile
+  meshTile: {fileID: 21300000, guid: 6d635cc5af3b2254ba3283e7acd95595, type: 3}
+  ropeTile: {fileID: 21300000, guid: 40dd8f68f78ef8e44ae0bf93a90c7740, type: 3}
+  contactFrames:
+  - {fileID: -4226002846729040798, guid: b918d84382dab4042840ce3280505daa, type: 3}
+  - {fileID: -1603627046, guid: b918d84382dab4042840ce3280505daa, type: 3}
+  - {fileID: -666205787, guid: b918d84382dab4042840ce3280505daa, type: 3}
+  - {fileID: 846521695, guid: b918d84382dab4042840ce3280505daa, type: 3}
+  placeClip: {fileID: 8300000, guid: 3bdebc3a7cf7a5b44b3ab50752438445, type: 3}
+  placeVolume: 0.32

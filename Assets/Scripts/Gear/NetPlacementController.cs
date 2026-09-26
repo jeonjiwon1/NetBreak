@@ -28,6 +28,7 @@ public class NetPlacementController : MonoBehaviour
     [SerializeField] private float costIncreasePerNet = 0.2f;
 
     private Camera mainCamera;
+    private NetPresentationProfile netPresentation;
 
     private bool isDragging;
 
@@ -75,6 +76,21 @@ public class NetPlacementController : MonoBehaviour
     private void Awake()
     {
         mainCamera = Camera.main;
+        netPresentation = Resources.Load<NetPresentationProfile>("NetPresentation");
+
+        if (netPreview != null)
+        {
+            NetPresentation visual = netPreview.GetComponent<NetPresentation>();
+            if (visual == null) visual = netPreview.gameObject.AddComponent<NetPresentation>();
+            SpriteRenderer renderer = netPreview.GetComponent<SpriteRenderer>();
+            if (renderer != null)
+            {
+                Color tint = renderer.color;
+                tint.a = Mathf.Max(tint.a, .7f);
+                renderer.color = tint;
+            }
+            visual.Configure(true, netPresentation);
+        }
 
         if (netPreview != null)
         {
@@ -85,7 +101,7 @@ public class NetPlacementController : MonoBehaviour
     private void Update()
     {
         ToolInputState input = ToolSlotInput.Read(ToolId.Net);
-        if (input.Cancelled)
+        if (input.Cancelled || Time.timeScale <= 0f)
         {
             IsNetModeActive = false;
             CancelPlacement();
@@ -98,6 +114,8 @@ public class NetPlacementController : MonoBehaviour
         {
             return;
         }
+
+        if (!isDragging) UpdateStartPreview();
 
         HandlePlacement();
     }
@@ -112,6 +130,10 @@ public class NetPlacementController : MonoBehaviour
             if (!IsNetModeActive)
             {
                 CancelPlacement();
+            }
+            else
+            {
+                UpdateStartPreview();
             }
         }
 
@@ -165,6 +187,7 @@ public class NetPlacementController : MonoBehaviour
         if (activeNets.Count >= maxActiveNets)
         {
             IsNetModeActive = false;
+            CancelPlacement();
             return;
         }
 
@@ -262,6 +285,7 @@ public class NetPlacementController : MonoBehaviour
         );
 
         activeNets.Add(net);
+        ItemEffectManager.Instance?.PlayNetPlaceSound(netPresentation);
 
         IsNetModeActive = false;
     }
@@ -350,6 +374,15 @@ public class NetPlacementController : MonoBehaviour
         int amount)
     {
         maxActiveNets += amount;
+    }
+
+    private void UpdateStartPreview()
+    {
+        if (netPreview == null || mainCamera == null || Mouse.current == null)
+            return;
+        Vector2 point = GetMouseWorldPosition();
+        UpdateVisual(netPreview, point, point + Vector2.right * Mathf.Min(.15f, minLength));
+        netPreview.gameObject.SetActive(true);
     }
 
     public void MultiplyPlacementCost(

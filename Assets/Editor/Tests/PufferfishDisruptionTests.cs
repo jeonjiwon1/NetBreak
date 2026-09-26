@@ -98,7 +98,7 @@ public sealed class PufferfishDisruptionTests
     }
 
     [Test]
-    public void NonPufferOrAlreadyDisabledNetHasNoPresentation()
+    public void NonPufferOrAlreadyDisabledNetHasNoPufferPresentation()
     {
         int events = 0;
         net.PufferfishPresentationTriggered += (_, _) => events++;
@@ -108,7 +108,7 @@ public sealed class PufferfishDisruptionTests
         Trigger("OnTriggerEnter2D");
         Assert.That(net.IsOperational, Is.True);
         Assert.That(events, Is.Zero);
-        Assert.That(effects.ActiveCombatVfxCount, Is.Zero);
+        Assert.That(CountActive("PufferfishNetImpactVisual"), Is.Zero);
         data.Update();
         data.FindProperty("specialType").enumValueIndex = (int)FishSpecialType.Pufferfish;
         data.ApplyModifiedPropertiesWithoutUndo();

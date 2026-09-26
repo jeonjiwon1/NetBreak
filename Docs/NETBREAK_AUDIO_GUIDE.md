@@ -1,5 +1,9 @@
 # NETBREAK 오디오 가이드
 
+## VS-2D-2 Net Place Prototype — Unity 수동 검증 완료
+
+`Assets/Audio/SFX/Tools/Net_Place.wav`는 프로젝트 내부에서 합성한 44.1 kHz/16-bit/mono/0.29초의 짧은 로프·물소리다. 실제 Net 설치 완료 후 공용 one-shot Source에서 재생하며 같은 소리는 0.09초 중복 제한을 둔다. 사용자가 Play Mode에서 설치 완료 시 1회 재생과 취소 시 무음을 확인했다. 지속 Slow·Resistance 피해의 물리 Tick에는 소리를 내지 않으며 접촉 VFX도 매 Tick 반복하지 않는다. Profile 기본 볼륨 0.32는 Prototype 값이며 최종 출시 확정값이 아니다. **Manual Audio Validation: Passed / Prototype Approval: Approved / Final Production Audio Approval: Pending.**
+
 ## VS-2D-1 낚싯대 Prototype
 
 `Assets/Audio/SFX/Tools/FishingRod_Hit.wav`는 프로젝트 내부에서 합성한 44.1 kHz/16-bit/mono/0.19초의 짧은 Reel/Click/물방울 적중음이다. 실제 Resistance 감소 후 공용 one-shot AudioSource로 재생한다. Profile 볼륨 0.28과 전역 동일음 0.09초 제한은 반복 타격·여러 낚싯대의 청각 피로를 줄이는 프로토타입 값이다. 소리 제한은 공격 판정에 영향을 주지 않는다. 기존 AudioSource Pause·Run 초기화 정책을 공유한다. 사용자가 Play Mode에서 설치 후 적중음과 기존 연출 흐름을 확인했다. **Manual Audio Validation: Passed / Prototype Approval: Approved / Final Production Audio Approval: Pending.**

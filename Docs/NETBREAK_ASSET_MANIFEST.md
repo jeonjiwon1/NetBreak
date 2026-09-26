@@ -1,5 +1,22 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## VS-2D-2 신규 Net Prototype (2026-09-26, Unity 수동 검증 완료)
+
+| 필드 | 반복 Net Mesh/Rope | 접촉 VFX | 설치 SFX |
+|---|---|---|---|
+| Asset ID | TOOL-NET-BODY-001 | VFX-NET-CONTACT-001 | SFX-NET-PLACE-001 |
+| File Path | `Assets/Art/Tools/Net/Net_Mesh.png`, `Net_Rope.png` | `Assets/Art/VFX/Tools/Net_Contact.png` | `Assets/Audio/SFX/Tools/Net_Place.wav` |
+| 규격 | 16×16 Mesh, 16×4 Rope, PPU 64, tiled | 96×24, 24×24 셀×4, PPU 83, 0.2초 | PCM WAV mono/44.1 kHz/16-bit/0.29초, 볼륨 0.32 |
+| Production Method / Source | `Tools/generate_net_presentation.py` 프로젝트 내부 픽셀 제작 | 같은 스크립트 내부 제작 | 같은 스크립트 내부 합성 |
+| License | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 | 외부 소재 없음; 같은 조건 | 외부 소재 없음; 같은 조건 |
+| Unity Linked | `NetPresentation.asset`의 Mesh/Rope와 Net 프리팹; Preview 런타임 공유 | Profile 4프레임, 공용 CombatVfxPool | Profile AudioClip, 공용 one-shot Source |
+| Automated Validation | Unity Setup/Validate, EditMode 전체 222/222 통과 | Unity Setup/Validate, EditMode 전체 222/222 통과 | Unity Setup/Validate, EditMode 전체 222/222 통과 |
+| Manual Validation | Manual Visual Validation: Passed; Placement Preview Manual Validation: Passed | Manual Validation: Passed | Manual Audio Validation: Passed |
+| Prototype Approval | Approved; Placement Preview Approved | Approved | Approved |
+| Final Approval | Final Production Art Approval: Pending | Final Production VFX Approval: Pending | Final Production Audio Approval: Pending |
+
+Scene/Prefab YAML 변경 없이 Unity Editor API로 Resources Profile을 연결하고, Net 프리팹에는 런타임에 시각 컴포넌트를 붙인다. Preview와 실제 Net gameplay 영역은 동일한 authoritative 시작점·끝점·두께·최대 길이와 배치 변환을 쓴다. 사용자가 Pixel Art·Preview·Contact VFX·Place SFX와 복어 중단의 어두운 상태·정상 복귀를 Play Mode에서 검증하고 Prototype 품질을 승인했다. 지속 Tick의 VFX/SFX 남발은 없고 Slow·Resistance damage·Tick·area·설치 수·비용은 변경하지 않았다. 길이·두께·animation 속도·VFX lifetime·SFX volume은 최종 출시 확정값이 아니다.
+
 ## VS-2D-1 신규 낚싯대 Prototype (2026-09-26, Unity 수동 검증 완료)
 
 | 필드 | Idle/Attack 본체 | 대상 Hit | 적중음 |

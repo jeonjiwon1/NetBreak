@@ -234,10 +234,12 @@ public sealed class ItemEffectManager : MonoBehaviour
     private float lastSquidInkSoundTime = float.NegativeInfinity;
     private float lastPufferfishSoundTime = float.NegativeInfinity;
     private float lastFishingRodSoundTime = float.NegativeInfinity;
+    private float lastNetPlaceSoundTime = float.NegativeInfinity;
     private bool squidInkAudioPaused;
     private const float SquidInkSoundCooldown = 0.08f;
     private const float PufferfishSoundCooldown = 0.1f;
     private const float FishingRodSoundCooldown = 0.09f;
+    private const float NetPlaceSoundCooldown = 0.09f;
     private bool runWasActive;
     private int capacitorHitCount;
     private float stormOrbRemaining;
@@ -366,6 +368,26 @@ public sealed class ItemEffectManager : MonoBehaviour
         combatVfxPool.AcquireSpriteTransient(
             "FishingRodHitVisual", presentation.HitFrames, position,
             presentation.HitDuration, 0.75f, 30, CombatVfxPriority.RepeatedHit);
+    }
+
+    public void ShowNetContact(Vector2 position, NetPresentationProfile presentation)
+    {
+        if (presentation == null || !presentation.HasContact) return;
+        combatVfxPool ??= new CombatVfxPool(transform, GetCombatVfxSettings());
+        combatVfxPool.AcquireSpriteTransient(
+            "NetContactVisual", presentation.ContactFrames, position,
+            .2f, .65f, 29, CombatVfxPriority.RepeatedHit);
+    }
+
+    public bool PlayNetPlaceSound(NetPresentationProfile presentation)
+    {
+        if (presentation == null || presentation.PlaceClip == null ||
+            Time.timeScale <= 0f || Time.time - lastNetPlaceSoundTime < NetPlaceSoundCooldown)
+            return false;
+        EnsureSpecialFishAudio();
+        squidInkAudio.PlayOneShot(presentation.PlaceClip, presentation.PlaceVolume);
+        lastNetPlaceSoundTime = Time.time;
+        return true;
     }
 
     public bool PlayFishingRodHitSound(FishingRodPresentationProfile presentation)
@@ -2693,6 +2715,7 @@ public sealed class ItemEffectManager : MonoBehaviour
         lastSquidInkSoundTime = float.NegativeInfinity;
         lastPufferfishSoundTime = float.NegativeInfinity;
         lastFishingRodSoundTime = float.NegativeInfinity;
+        lastNetPlaceSoundTime = float.NegativeInfinity;
         squidInkAudioPaused = false;
         electricStunVisuals.Clear();
         iceFreezeVisuals.Clear();

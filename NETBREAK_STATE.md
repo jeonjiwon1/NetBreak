@@ -1,5 +1,14 @@
 # NETBREAK 인수인계
 
+## VS-2D-2 — Net Presentation Prototype (2026-09-26, Unity 수동 검증 완료)
+
+- 실제 Net은 Q/W 동적 슬롯으로 모드 진입 후 LMB 시작점→끝점 드래그·릴리스로 설치하는 회전 직사각형 Trigger다. Scene 직렬화 값은 두께 0.3, 길이 0.5~8, 상한 3, 비용 8+길이당 6·설치 수 증가 0.5다. 프리팹은 감속 0.5, Resistance DPS 1.5다. OnTriggerStay2D마다 `Time.fixedDeltaTime`을 곱하며 별도 긴 Tick 타이머는 없다. 설치 후 Ctrl+드래그 이동이 이미 있다.
+- 16×16 반복 Mesh와 16×4 Rope Pixel Tile을 월드 길이·두께에 맞춰 타일링한다. 실제 Collider와 Preview가 기존 `NetPlacementController`의 같은 시작점·끝점·두께 및 `NetController.Initialize` 변환을 쓴다. 모드 진입 시 시작점 표식, 드래그 중 전체 Ghost를 보이고 설치/취소/차단 시 지운다. 시각 자식에는 Collider가 없다. 작동 중 Mesh 알파만 미세하게 변하고 기존 비작동 어두운 틴트가 우선한다.
+- 일반 물고기가 실제 `EnterNet`에 새로 등록된 뒤에만 24×24×4프레임 Net Contact VFX를 공용 `CombatVfxPool`의 RepeatedHit 우선순위로 요청한다. 지속 피해 Tick에는 VFX/SFX를 요청하지 않는다. 실제 설치와 Gold 지불 뒤에만 0.29초 Net Place WAV를 재사용 one-shot Source로 1회 요청한다. Profile/Pool/오디오 누락은 판정에 영향을 주지 않는다. 기존 복어 3초 중단·Collider 비활성·어두운 상태·기존 복어 연출은 유지한다.
+- `Tools/generate_net_presentation.py`로 프로젝트 내부 PNG/WAV를 생성하고 Unity Editor 메뉴 `NETBREAK/Art/Setup Net Presentation`에서 Import·Resources Profile을 연결한다. 기존 Net 프리팹에는 런타임에서 작은 시각 컴포넌트를 붙인다. `Validate Net Presentation`은 참조·Import·WAV를 확인한다. Scene/Prefab YAML은 최종 diff에서 변경하지 않았다. 수치와 판정 규칙은 바꾸지 않았다.
+- **검증:** Unity 6000.3.11f1 배치 Setup/Validate 반복 실행과 Runtime·Editor/Test 컴파일, 전체 EditMode **222/222 통과**(실패·Skip 0). 사용자가 원본 Unity에서 compile 정상, Console Error 0, 전체 EditMode **222/222 통과**와 Play Mode 수동 검증을 확인했다. Q/W 동적 배치, 시작점·드래그 Ghost와 실제 위치·길이·두께·각도 일치, 최소 길이·Gold·설치 상한, 확정·취소, 설치음 1회, 첫 Fish 접촉 VFX와 지속 Tick의 과다 반복 없음, 기존 Slow·Resistance 피해, 복어 중단 시 어두운 상태와 Active visual 정지·약 3초 뒤 복귀, 다중 Net 독립 상태, 도구 전환·Pause·선택 UI·Run 재시작의 잔상 없음, 기존 Fishing Rod·Squid·Puffer 연출을 확인했다. 새 Net 테스트 10개를 추가했고 기존 복어 테스트의 일반 Net 접촉 VFX 기대값만 갱신했다.
+- **승인:** Net Pixel Art **Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending**. Net Placement Preview **Manual Validation: Passed / Prototype Approval: Approved**. Net Contact VFX **Manual Validation: Passed / Prototype Approval: Approved / Final Production VFX Approval: Pending**. Net Place SFX **Manual Audio Validation: Passed / Prototype Approval: Approved / Final Production Audio Approval: Pending**. Preview와 실제 gameplay 영역은 같은 authoritative 배치 값으로 생성한다. 지속 Tick VFX/SFX를 남발하지 않으며 Slow·Resistance damage·Tick·area·설치 수·비용은 변경하지 않았다. 길이·두께·animation 속도·VFX lifetime·SFX volume은 최종 출시 확정값이 아니다. 이번 문서 갱신에서 Computer Use와 Git add/commit/push는 수행하지 않는다.
+
 ## VS-2D-1 — 낚싯대 Presentation Prototype (2026-09-26, Unity 수동 검증 완료)
 
 - 실제 배치형 낚싯대 공격을 조사했다. 프리팹 직렬화 값은 포획력 4, 간격 0.8초, 사거리 1.5, 루트 Scale 0.35, BoxCollider2D Trigger 2×2이다. Scene 배치 상한은 3개다. 범위 안 물고기 중심만 대상으로 하고 CatchValue 내림차순·거리 오름차순으로 선택한다. `TakeCaptureDamage`가 Resistance를 적용하고 포획 시 물고기를 비활성화한다.
