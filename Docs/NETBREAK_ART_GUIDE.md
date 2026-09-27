@@ -53,6 +53,24 @@
 
 배경 장식이 설치 가능 영역이나 실제 이동 경로를 바꾼 것처럼 보이면 안 된다. 현재 구현되지 않은 지형 판정은 아트로 암시하더라도 구현 기능으로 기록하지 않는다.
 
+### Area 1 고품질 정적 배경 Prototype (2026-09-27, 사용자 수동 검증 완료)
+
+현재 후보는 사용자 첨부의 1672×941 고품질 탑다운 바다 이미지를 경로에 맞춰 국소 편집한 단일 불투명 PNG다. 세밀한 청록색 수면광·해저 깊이감·픽셀아트 질감을 유지하고, 큰 암초·바위·해초·산호와 강한 모래는 실제 Fish/Boss 동선을 피한다. 특히 좌상단→우하단 일반 어군/보스 1차, 좌하단→우상단 보스 2차, 좌측→우측 지그재그 보스 3차를 보호한다. 요청된 우상단 Spawn·좌하단 Exit와 역대각선도 열린 바다로 둔다. 중앙은 비교적 깨끗하고 모래는 상·하단 일부의 물 아래 해저 포켓으로만 보인다.
+
+기존 Resources 로드·Main Camera 자식 SpriteRenderer(-1000)·중복 방지·카메라 맞춤은 유지하고, 직전 미검증 반사선 오버레이는 정적 평가에서 제거했다. Sprite Single/Point/무압축/Mipmap Off/PPU 32/Max Size 2048이며 원본 이미지를 저해상도로 축소하지 않는다. 사용자가 실제 Play Mode에서 밝기와 Fish/Tool/VFX 가독성, Spawn/Exit, 일반 Fish·Boss 경로와 지형의 시각적 조화를 확인하고 현재 Vertical Slice용 Prototype으로 승인했다. 배경은 계속 Fish/Tool/VFX보다 낮은 시각 우선순위를 유지한다. **Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending.**
+
+약간의 이질감·정적인 느낌의 원인은 아직 확정하지 않았다. 배경 움직임 부족, 세부 Art Density 차이, 수면 패턴·반복감, UI와 다른 아트 완성 후의 통합 화면 조화는 후반 Polish 검토 후보일 뿐이다. 단일 PNG는 현재 Prototype 방식이며 최종 구조는 미정이다. 단일 PNG 유지, 레이어 분리, Water Base·Underwater Detail·Decoration 분리, 미세한 수면 Animation/Overlay 중 어느 방식을 쓸지도 확정하지 않는다. 아래 이전 배경 톤·흐름 기록은 역사적 자료다.
+
+### Area 1 선택 배경 톤·흐름 개선 (이전 후보 기록, 2026-09-27)
+
+사용자가 선택한 탑다운 바다 시안의 구도는 유지하되, 물색을 차분한 터콰이즈로 낮추고 연결된 밝은 다각형 격자 무늬를 낮은 대비의 짧고 불규칙한 물결로 정돈했다. 이전 PNG 대비 평균 휘도는 약 12% 감소했다. 수중 큰 군집은 네 곳에서 두 곳으로 줄이고 상단·하단에 작은 바위만 드물게 남겼다. 모래는 가장자리 일부의 **물 아래 해저**로만 보이며 중앙을 넓게 덮거나 해변 띠를 만들지 않는다. Fish·Tool·Range·VFX·UI보다 배경이 조용해야 한다.
+
+우상단 Spawn Zone, 좌하단 Exit Zone 및 두 지점 사이 대각선은 요청한 아트 보호 구역이다. 실제 `Main.unity`의 활성 `CoastRoute_01`은 현재 좌상단 `(-10, 8)`에서 우하단 `(10, -8)`으로 향하며, `FishSpawner`의 일반 어군도 카메라 왼쪽에서 생성한다. 따라서 실제 반대 대각선도 함께 열어 둔다. Boss 2차의 좌하단→우상단과 3차의 좌측→우측 이동 구간에는 큰 모래띠·암초·바위·해초를 배치하지 않는다. 이는 배경 배치 원칙이며 경로·Spawn·Boss Gameplay 수정이 아니다.
+
+현재 파일은 1671×941 불투명 RGB PNG다. Sprite Single/Point/무압축/Mipmap 없음/PPU 32를 유지하고 기존 Resources 로드와 카메라 자식 SpriteRenderer(-1000)를 재사용한다. 같은 컨트롤러가 -999 뒤쪽 계층에 짧은 투명 반사선 오버레이를 한 번 만들고 최대 0.09×0.06 world unit만 천천히 움직인다. 이 오버레이는 scaled time으로 Pause 중 정지하며 초기화·파괴 시 정리된다. Collider나 게임플레이 판정은 없다. 단일 PNG와 이 약한 오버레이는 현재 Prototype 검증 방식이며 최종 Production Background 구조는 미확정이다. 이전 절차형 생성기는 `Tools/CoastBackground_ProceduralDraft.png`로만 출력하여 선택 배경을 덮어쓰지 않는다.
+
+현재 배경은 **Manual Visual Validation: Pending / Prototype Approval: Pending / Final Production Art Approval: Pending**이다. Unity Play Mode에서 밝기·격자감·수면 흐름의 강도, 수중 지형·양쪽 대각선 및 Boss 회유, 물고기·도구·VFX·UI 가독성, Pause·Run 재시작 후 중복·잔상을 사용자가 확인한다. 자동 검사 결과와 전체 파일 목록은 [NETBREAK_ASSET_MANIFEST.md](NETBREAK_ASSET_MANIFEST.md)와 `../NETBREAK_STATE.md`에 기록한다.
+
 ## 5. 물고기 스타일
 
 - **정어리:** 작고 단순하며 군집에서도 읽히는 실루엣.

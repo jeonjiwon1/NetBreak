@@ -1,5 +1,37 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## AREA1-BG-001 — 고품질 정적 배경 후보 (2026-09-27, 현재 적용)
+
+| 항목 | 내용 |
+|---|---|
+| Asset ID | AREA1-BG-001 |
+| 파일 | `Assets/Resources/Area1/CoastBackground.png` 및 기존 `.meta` GUID `86f44e43f8174c7d95f748a04009f8b1` |
+| 출처·제작 | 사용자 첨부 16:9 이미지를 기준으로 내장 ImageGen 정밀 편집. 실제 경로와 겹치는 네 모서리의 큰 장식, 좌측 중간 산호, 우측 상부 군집을 제거·축소하고 주변 고품질 바다 질감으로 메움 |
+| 권리 | 사용자 제공 원본의 최종 소유·배포 권한과 출시 사용 승인은 별도 확인 |
+| 형식·Import | 1672×941 불투명 RGB PNG, Sprite Single, Point, Mipmap Off, PPU 32, 기본 무압축, Max Size 2048. Import 축소 없음 |
+| 표현·경로 | 일반 어군/Boss 1차 좌상단→우하단, Boss 2차 좌하단→우상단, Boss 3차 좌측→우측 지그재그 및 요청된 우상단→좌하단 보호. 중앙 열린 바다, 상·하단 일부만 물 아래 모래·작은 장식 |
+| 연결 | `Area1BackgroundController`가 Main Scene 로드 시 `Resources.Load<Sprite>`로 Main Camera 자식 SpriteRenderer(-1000)에 단일 이미지 연결·카메라 맞춤·중복 방지. 이전 수면 오버레이 제거 |
+| 검증 | 이전 Asset·meta·Scene 좌표·참조·코드 정적 점검에 이어 사용자가 실제 Unity Play Mode에서 밝기·Fish/Tool/VFX 가독성·Spawn/Exit·일반 Fish 및 Boss 경로의 시각 충돌을 확인. 이번 문서 갱신에서 Unity 재검증은 하지 않음 |
+| 시각 검증·승인 | Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending |
+
+현재 단일 PNG는 Area 1 Vertical Slice에서 사용 승인된 Prototype 방식이며 Final Production Architecture 확정이 아니다. 약간의 이질감·정적인 느낌은 원인 미확정으로 후반 Polish 검토에 남긴다. 아래 톤·흐름 개선 기록은 이전 후보의 역사적 자료다.
+
+## AREA1-BG-001 — 탑다운 연안 배경 톤·수면 흐름 개선 (이전 후보 기록, 2026-09-27)
+
+| 항목 | 내용 |
+|---|---|
+| Asset ID | AREA1-BG-001 |
+| 파일 | `Assets/Resources/Area1/CoastBackground.png` 및 기존 `.meta` GUID |
+| 출처·제작 | 사용자 선택 시안의 직전 적용 PNG를 ImageGen 내장 편집으로 톤·물결·수중 장식 밀도 조정. 약한 수면 반사선은 기존 Controller에서 결정론적으로 생성. 이전 절차형 생성기는 별도 Draft로만 출력 |
+| 권리 | 사용자 제공 원본 시안의 최종 소유·배포 권한 확인은 별도. 배경의 최종 출시용 사용 승인과 구분 |
+| 형식·Import | 1671×941 불투명 RGB PNG, 기존 GUID, Sprite Single, Point, Mipmap 없음, 무압축, PPU 32 (배경 한정 프로토타입). Runtime 반사선 1024×576 RGBA/Point/무 Mipmap |
+| 표현 | 이전 PNG 대비 평균 휘도 약 12% 감소, 연결 격자 하이라이트 완화. 큰 수중 군집 네 곳→두 곳과 드문 작은 바위, 상·하단 가장자리의 약한 해저 모래. 중앙·양쪽 대각선·가로 통로 열린 바다; 물고기 실루엣·Collider 없음 |
+| 연결 | `Assets/Scripts/Core/Area1BackgroundController.cs`가 Main Scene 로드 때 Resources Sprite를 Main Camera 자식(-1000)에 연결; 같은 자식 계층의 투명 반사선(-999)이 scaled time으로 약하게 왕복·Pause 정지·재시작 리셋 |
+| 자동 검증 | 최종 PNG 1671×941 RGB/불투명, 격리 Unity 6000.3.11f1 Runtime·Editor/Test 컴파일 성공, 배경 3/3·전체 EditMode 244/244 통과(실패·Skip 0), 기존 GUID Import 및 오버레이 중복·정렬·Pause/리셋 검사. 원본 Play Mode/Console은 수동 검증 전 |
+| 시각 검증·승인 | Manual Visual Validation: Pending / Prototype Approval: Pending / Final Production Art Approval: Pending |
+
+요청한 우상단→좌하단 이동과 Boss 2·3차 회유 구간에 큰 장식을 두지 않았다. 실제 Scene의 활성 일반 경로는 좌상단→우하단이고 일반 어군 스폰도 왼쪽이므로 반대 대각선도 열린 바다로 유지했다. 기존 Main Scene 로드·Resources 참조를 재사용하며 Scene/Prefab YAML, ProjectSettings/URP, Camera, Gameplay·Balance·UI는 수정하지 않았다. 현재 단일 PNG와 약한 반사 오버레이는 Prototype 연결 방식이며 최종 Production 구조는 미확정이다. Unity Play Mode 수동 시각 검증·Prototype 승인·최종 출시용 아트 승인은 모두 Pending이다.
+
 ## VS-2D-4 신규 Cast Net Prototype (2026-09-27, Unity 수동 검증 완료)
 
 | 필드 | 접힌 투망·전개 | 범위 물결 | 실제 명중 접촉 | 사용음 |
