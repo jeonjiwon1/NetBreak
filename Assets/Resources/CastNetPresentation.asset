@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4b4e6be9289bd242bbb3f62c44cff9b, type: 3}
+  m_Name: CastNetPresentation
+  m_EditorClassIdentifier: Assembly-CSharp::CastNetPresentationProfile
+  foldedSprite: {fileID: -3983560849643027753, guid: bc928181eb94310429b363e7ae366eef, type: 3}
+  openingFrames:
+  - {fileID: 610768604382847016, guid: 591f07051b3b60148a0b16beafe905c1, type: 3}
+  - {fileID: 252090549638685555, guid: 591f07051b3b60148a0b16beafe905c1, type: 3}
+  - {fileID: 6089819649785124358, guid: 591f07051b3b60148a0b16beafe905c1, type: 3}
+  - {fileID: 5145030921204721774, guid: 591f07051b3b60148a0b16beafe905c1, type: 3}
+  - {fileID: -6510300364838900413, guid: 591f07051b3b60148a0b16beafe905c1, type: 3}
+  areaFrames:
+  - {fileID: -7645562619762938741, guid: 8f1dc9aad15825746bbb55ec1d4a1c54, type: 3}
+  - {fileID: 3669345068498261154, guid: 8f1dc9aad15825746bbb55ec1d4a1c54, type: 3}
+  - {fileID: -5670194197839284329, guid: 8f1dc9aad15825746bbb55ec1d4a1c54, type: 3}
+  - {fileID: -5819252393148891873, guid: 8f1dc9aad15825746bbb55ec1d4a1c54, type: 3}
+  hitFrames:
+  - {fileID: 5606815548810112840, guid: e6fbe5b63727578499ef01991e839e95, type: 3}
+  - {fileID: 2103833746, guid: e6fbe5b63727578499ef01991e839e95, type: 3}
+  - {fileID: 1041514498, guid: e6fbe5b63727578499ef01991e839e95, type: 3}
+  - {fileID: -1574018793, guid: e6fbe5b63727578499ef01991e839e95, type: 3}
+  castClip: {fileID: 8300000, guid: 55406ca517092ae4c8da19c3469b4be0, type: 3}
+  openingDuration: 0.42
+  areaDuration: 0.28
+  hitDuration: 0.18
+  castVolume: 0.3

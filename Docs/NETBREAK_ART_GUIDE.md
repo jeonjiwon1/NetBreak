@@ -1,5 +1,9 @@
 # NETBREAK 아트 스타일 가이드 — VS-2 초안
 
+## VS-2D-4 Cast Net Prototype — Unity 수동 검증 완료
+
+일회성 범위 도구는 실제 판정 중심과 반경을 먼저 읽히게 한다. 투망은 기존 커서 원형 표시와 같은 실제 `captureRadius`를 사용하고, 중심의 작은 접힌 Ghost를 투명하게 표시한다. 사용 후에는 64×64 셀/PPU 64의 5프레임 방사형 망이 목표 위치에서 약 0.42초 펼쳐진다. 확장 물결과 실제 피해 Fish의 작은 접촉 표시는 잠깐만 남는다. 지속 설치 Net의 길게 뻗은 Mesh/Rope와 실루엣 및 수명을 구분한다. 플레이어 캐릭터나 투척 원점이 없어서 임의의 비행 경로를 만들지 않았다. 사용자가 Unity Play Mode에서 Q/W 조준 Ghost와 실제 범위의 동위치 추적, 범위 업그레이드, 전개 Animation, 일회성 Area VFX, 실제 피해 대상만의 작은 Hit VFX, Miss와 다중 명중의 가독성을 확인하고 Prototype 품질을 승인했다. **Cast Net Pixel Art/Ghost: Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending. Cast/Open Animation: Manual Validation: Passed / Prototype Approval: Approved / Final Production Animation Approval: Pending. Area/Hit VFX: Manual Validation: Passed / Prototype Approval: Approved / Final Production VFX Approval: Pending.** PPU·셀 크기·5프레임·속도·VFX 수명은 최종 출시 규격이 아니다.
+
 ## VS-2D-3 Scoop Net Prototype — Unity 수동 검증 완료
 
 직접 사용형 Tool은 몸체 장식보다 실제 공격 위치와 범위의 가독성을 먼저 맞춘다. 뜰채는 Scene의 원형 범위와 커서 월드 좌표를 그대로 사용하고, 약한 Range 원·Ready 실루엣을 사용 가능할 때만 표시한다. 기존 카메라 orthographic size 6.5, 공격 반경 1.1과 어종 32~64px 셀의 상대 크기를 보고 48×48 셀/PPU 64(0.75 world unit)의 손잡이·타원형 망 실루엣을 첫 후보로 정했다. PPU 64나 83은 Tool 전체 최종 규격이 아니다.

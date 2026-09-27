@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -17,9 +16,10 @@ public class CastNetController : MonoBehaviour
 
     [Header("Visual")]
     [SerializeField] private Transform castVisual;
-    [SerializeField] private float visualDuration = 0.2f;
 
     private Camera mainCamera;
+    private CastNetPresentation presentation;
+    private int observedLoadoutRevision = -1;
 
     private int currentCharges;
     private float rechargeTimer;
@@ -38,6 +38,8 @@ public class CastNetController : MonoBehaviour
     private bool massCatchRefundEnabled;
 
     public bool IsAiming => isAiming || isTacticalAiming;
+    public float CaptureRadius => captureRadius;
+    public float CurrentAimRadius => captureRadius * (isTacticalAiming ? tacticalRadiusMultiplier : 1f);
 
     public bool IsReady =>
         currentCharges > 0;
@@ -76,6 +78,10 @@ public class CastNetController : MonoBehaviour
         currentCharges = maxCharges;
 
         mainCamera = Camera.main;
+        presentation = GetComponent<CastNetPresentation>();
+        if (presentation == null)
+            presentation = gameObject.AddComponent<CastNetPresentation>();
+        presentation.Bind(castVisual);
 
         if (castVisual != null)
         {
@@ -88,6 +94,18 @@ public class CastNetController : MonoBehaviour
     private void Update()
     {
         UpdateRecharge();
+
+        int loadoutRevision = RunManager.Instance != null
+            ? RunManager.Instance.ToolSlots.Revision : -1;
+        if (observedLoadoutRevision >= 0 && loadoutRevision != observedLoadoutRevision)
+            presentation?.ResetVisual();
+        observedLoadoutRevision = loadoutRevision;
+
+        if (Time.timeScale <= 0f || ToolSlotInput.IsSelectionOrEndBlocked)
+        {
+            CancelAiming();
+            return;
+        }
 
         if (catchFeedbackTimer > 0f)
         {
@@ -104,7 +122,7 @@ public class CastNetController : MonoBehaviour
         ToolInputState input = ToolSlotInput.Read(ToolId.CastNet);
         if (input.Cancelled)
         {
-            CancelAiming();
+            if (IsAiming) CancelAiming();
             return;
         }
 
@@ -175,6 +193,7 @@ public class CastNetController : MonoBehaviour
     private void StartAiming()
     {
         isAiming = true;
+        UpdateVisualScale();
 
         UpdateAimPosition();
 
@@ -205,6 +224,8 @@ public class CastNetController : MonoBehaviour
             castVisual.position =
                 currentAimPosition;
         }
+
+        presentation?.SetAim(currentAimPosition, CurrentAimRadius);
 
         UpdateTargetCount();
     }
@@ -262,6 +283,7 @@ public class CastNetController : MonoBehaviour
             );
 
         HashSet<FishController> damagedFish = new();
+        List<Vector2> hitPositions = new();
         int capturedCount = 0;
 
         foreach (Collider2D hit in hits)
@@ -274,6 +296,8 @@ public class CastNetController : MonoBehaviour
                 continue;
             }
 
+            float previousResistance = fish.CurrentResistance;
+            Vector2 hitPosition = fish.transform.position;
             bool captured =
                 fish.TakeCaptureDamage(
                     capturePower,
@@ -281,6 +305,9 @@ public class CastNetController : MonoBehaviour
                         attackId,
                         this)
                 );
+
+            if (fish.CurrentResistance < previousResistance)
+                hitPositions.Add(hitPosition);
 
             if (captured)
             {
@@ -307,14 +334,7 @@ public class CastNetController : MonoBehaviour
 
         currentTargetCount = 0;
 
-        if (castVisual != null)
-        {
-            StartCoroutine(
-                ShowCastEffect(
-                    castPosition
-                )
-            );
-        }
+        presentation?.ShowCast(castPosition, captureRadius, hitPositions);
 
         return true;
     }
@@ -346,29 +366,6 @@ public class CastNetController : MonoBehaviour
         }
     }
 
-    private IEnumerator ShowCastEffect(
-        Vector2 position,
-        float radius = -1f)
-    {
-        castVisual.position =
-            position;
-
-        if (radius > 0f)
-        {
-            float diameter = radius * 2f;
-            castVisual.localScale = new Vector3(diameter, diameter, 1f);
-        }
-
-        castVisual.gameObject.SetActive(true);
-
-        yield return new WaitForSeconds(
-            visualDuration
-        );
-
-        castVisual.gameObject.SetActive(false);
-        UpdateVisualScale();
-    }
-
     private void CancelAiming()
     {
         isAiming = false;
@@ -380,10 +377,14 @@ public class CastNetController : MonoBehaviour
         {
             castVisual.gameObject.SetActive(false);
         }
+        presentation?.ResetVisual();
+        UpdateVisualScale();
     }
 
     public bool BeginTacticalAim(float radiusMultiplier = 1f)
     {
+        if (Time.timeScale <= 0f || ToolSlotInput.IsSelectionOrEndBlocked)
+            return false;
         CancelAiming();
         isTacticalAiming = true;
         tacticalRadiusMultiplier = Mathf.Max(1f, radiusMultiplier);
@@ -403,7 +404,8 @@ public class CastNetController : MonoBehaviour
         Vector2 castPosition,
         float radius,
         float damageMultiplier,
-        string attackId = "signature.heavenly_net")
+        string attackId = "signature.heavenly_net",
+        bool showCastNetPresentation = false)
     {
         if (radius <= 0f || damageMultiplier <= 0f)
         {
@@ -414,6 +416,7 @@ public class CastNetController : MonoBehaviour
             castPosition,
             radius);
         HashSet<FishController> damagedFish = new();
+        List<Vector2> hitPositions = new();
         int capturedCount = 0;
 
         foreach (Collider2D hit in hits)
@@ -424,6 +427,8 @@ public class CastNetController : MonoBehaviour
                 continue;
             }
 
+            float previousResistance = fish.CurrentResistance;
+            Vector2 hitPosition = fish.transform.position;
             if (fish.TakeCaptureDamage(
                     capturePower * damageMultiplier,
                     CombatDamageContext.Tool(
@@ -432,11 +437,15 @@ public class CastNetController : MonoBehaviour
             {
                 capturedCount++;
             }
+            if (fish.CurrentResistance < previousResistance)
+                hitPositions.Add(hitPosition);
         }
 
         lastCapturedCount = capturedCount;
         lastCastPosition = castPosition;
         catchFeedbackTimer = 1.2f;
+        if (showCastNetPresentation)
+            presentation?.ShowCast(castPosition, radius, hitPositions);
         return capturedCount;
     }
 
@@ -450,7 +459,8 @@ public class CastNetController : MonoBehaviour
 
     public bool ConfirmTacticalCast(float radiusMultiplier = 1f)
     {
-        if (!isTacticalAiming)
+        if (!isTacticalAiming || Time.timeScale <= 0f ||
+            ToolSlotInput.IsSelectionOrEndBlocked)
         {
             return false;
         }
@@ -461,6 +471,7 @@ public class CastNetController : MonoBehaviour
         {
             castVisual.gameObject.SetActive(false);
         }
+        UpdateVisualScale();
 
         float multiplier = Mathf.Max(1f, radiusMultiplier);
         tacticalRadiusMultiplier = 1f;
@@ -476,9 +487,8 @@ public class CastNetController : MonoBehaviour
             position,
             captureRadius * multiplier,
             1f,
-            "tactical.emergency_cast_net");
-        if (castVisual != null)
-            StartCoroutine(ShowCastEffect(position, captureRadius * multiplier));
+            "tactical.emergency_cast_net",
+            true);
         currentTargetCount = 0;
         return true;
     }

@@ -1,5 +1,9 @@
 # NETBREAK 오디오 가이드
 
+## VS-2D-4 Cast Net Open Prototype — Unity 수동 청각 검증 완료
+
+`Assets/Audio/SFX/Tools/CastNet_Open.wav`는 프로젝트 내부 합성 PCM mono/44.1 kHz/16-bit/0.34초의 로프·망·물소리다. 실제 cast 완료 뒤 공용 one-shot Source에서 재생한다. **1 cast = 기본 SFX 최대 1회**이며 다중 명중 Fish마다 반복하지 않는다. 같은 소리의 0.09초 중복 제한은 판정에 영향을 주지 않는다. 사용자가 Unity Play Mode에서 Hit/Miss의 사용음, 다중 명중 시 기본음 1회, 취소·UI 차단·Pause 중 불필요한 재생 없음과 Run 재시작 후 잔상 없음을 확인하고 현재 Prototype 품질을 승인했다. **Manual Audio Validation: Passed / Prototype Approval: Approved / Final Production Audio Approval: Pending.** Profile 볼륨 0.3과 최종 믹스는 출시용 확정값이 아니다.
+
 ## VS-2D-3 Scoop Net Swing Prototype — Unity 수동 청각 검증 완료
 
 `Assets/Audio/SFX/Tools/ScoopNet_Swing.wav`는 프로젝트 내부 합성 PCM mono/44.1 kHz/16-bit/0.24초의 가벼운 물 휘두름 소리다. 직접 반복 사용 도구의 기본 SFX는 **1 use = 1회**로 연결하고, 다중 Fish를 맞춰도 대상마다 반복하지 않는다. Hit과 Miss 모두 Swing을 나타내며 공용 one-shot Source와 0.09초 동일음 중복 제한을 사용한다. 사용자가 Play Mode에서 Miss/Hit 사용음, 다중 명중 시 기본음 1회, 쿨타임·UI 차단 중 불필요한 재생 없음과 Run 재시작 후 잔상 없음을 확인했다. Profile 볼륨 0.27은 Prototype 값이며 최종 출시 확정값이 아니다. **Manual Audio Validation: Passed / Prototype Approval: Approved / Final Production Audio Approval: Pending.**

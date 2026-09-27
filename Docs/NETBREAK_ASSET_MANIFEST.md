@@ -1,5 +1,22 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## VS-2D-4 신규 Cast Net Prototype (2026-09-27, Unity 수동 검증 완료)
+
+| 필드 | 접힌 투망·전개 | 범위 물결 | 실제 명중 접촉 | 사용음 |
+|---|---|---|---|---|
+| Asset ID | TOOL-CAST-NET-BODY-001 | VFX-CAST-NET-AREA-001 | VFX-CAST-NET-HIT-001 | SFX-CAST-NET-OPEN-001 |
+| File Path | `Assets/Art/Tools/CastNet/CastNet_Folded.png`, `CastNet_Open.png` | `Assets/Art/VFX/Tools/CastNet_Area.png` | `Assets/Art/VFX/Tools/CastNet_Hit.png` | `Assets/Audio/SFX/Tools/CastNet_Open.wav` |
+| 규격 | 16×16 Ghost, 320×64/64×64×5프레임, PPU 64, 0.42초 | 256×64/64×64×4프레임, PPU 64, 0.28초 | 96×24/24×24×4프레임, PPU 64, 0.18초 | PCM mono/44.1 kHz/16-bit/0.34초, Profile 볼륨 0.3 |
+| Production Method / Source | `Tools/generate_cast_net_presentation.py` 프로젝트 내부 직접 제작 | 같은 스크립트 | 같은 스크립트 | 같은 스크립트 내부 합성 |
+| License | 외부 소재 없음; 프로젝트 소유·배포 정책에 따름 | 같은 조건 | 같은 조건 | 같은 조건 |
+| Unity Linked | Resources `CastNetPresentation.asset`, 기존 조준 원과 런타임 Ghost/전개 Sprite | Profile 및 공용 CombatVfxPool | Profile 및 공용 CombatVfxPool | Profile 및 공용 one-shot Source |
+| Automated Validation | 정적 규격·Unity Validate 통과, Cast Net EditMode 10/10 및 전체 241/241 통과 | 같은 Unity Validate·EditMode 통과 | 같은 EditMode 통과 | WAV 규격·EditMode 통과 |
+| Manual Validation | Manual Visual Validation: Passed; Ghost/Preview Passed | Manual Validation: Passed | Manual Validation: Passed | Manual Audio Validation: Passed |
+| Prototype Approval | Approved | Approved | Approved | Approved |
+| Final Approval | Final Production Art·Animation Approval: Pending | Final Production VFX Approval: Pending | Final Production VFX Approval: Pending | Final Production Audio Approval: Pending |
+
+Scene/Prefab YAML은 수정하지 않았다. 실제 게임플레이 반경과 피해 Fish 결과를 Presentation에 전달하며 별도 target search가 없다. 사용자가 Q/W 조준·범위 업그레이드·전개·Area/Hit/Miss·다중 명중·SFX·취소·Pause/Run 초기화와 기존 도구 회귀를 Play Mode에서 확인하고 현재 Prototype 품질을 승인했다. 셀 크기·PPU·Animation/VFX 시간·SFX 볼륨은 최종 출시용 확정값이 아니다.
+
 ## VS-2D-3 신규 Scoop Net Prototype (2026-09-27, Unity 수동 검증 완료)
 
 | 필드 | Ready 뜰채 | Swing | 명중 물보라 | 사용음 |

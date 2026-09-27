@@ -1,10 +1,26 @@
-# NETBREAK Tool Presentation 원칙 — VS-2D-3
+# NETBREAK Tool Presentation 원칙 — VS-2D-4
+
+## 조준형 일회성 범위 Tool — Cast Net Prototype
+
+투망 Q/W는 슬롯 키 누름에 조준, 놓음에 확정한다. 기존 우클릭·Esc 취소를 사용한다. 전술 E 긴급 투망은 별도 스킬 상태에서 같은 Controller에 확대 반경을 전달한다. 조준 Preview의 중심·원은 Controller의 실제 커서 월드 위치와 `captureRadius`를 사용한다. 타겟 유효성 제한이 없는 현재 Tool에 임의의 invalid 상태는 추가하지 않는다. 조준은 순수 시각 표시이며 피해·충전 소모·아이템 발동을 일으키지 않는다.
+
+확정 시 게임플레이가 먼저 원형 판정과 Resistance 감소를 완료하고, 실제 감소한 Fish 위치 목록을 Presentation에 전달한다. Presentation은 Fish를 검색하지 않는다. Hit/Miss 모두 목표 위치에서 원형 망 전개와 Area 물결, 사용음 1회를 표시하고 Hit일 때만 대상별 작은 접촉을 표시한다. `CombatVfxPool`의 RepeatedHit 우선순위·상한, 공용 one-shot AudioSource·중복 제한을 재사용한다. Animation Event는 판정에 관여하지 않는다. Profile/Pool/Audio가 없어도 투망 판정은 계속된다. 취소·Pause·선택 UI·슬롯 변경·Run 종료에서 조준을 정리하며 Run 초기화는 공용 VFX/Audio를 정리한다. 사용자가 Unity Play Mode에서 Q/W 동적 슬롯과 범위 업그레이드, Hit/Miss·다중 명중, 1 cast = 1 기본 SFX, 취소·입력 차단·Run 재시작, 기존 E/R·Item/Synergy·낚싯대/Net/뜰채 회귀를 확인했다. **Cast Net Manual Validation: Passed / Prototype Approval: Approved / Final Production Art·Animation·VFX·Audio Approval: Pending.**
+
+현재 Play Mode에서 확인한 도구 연출 유형은 Fishing Rod의 설치형 단일 대상 공격, Net의 드래그 설치형 지속 범위, Scoop Net의 커서 즉발형 다중 명중, Cast Net의 조준 후 확정하는 일회성 범위 다중 명중이다. 각 도구의 입력·판정·수명주기는 해당 Controller가 관리한다.
+
+Unity 수동 확인 순서:
+
+1. Unity의 Import가 끝나면 Console 컴파일 오류를 확인하고 `NETBREAK/Art/Setup Cast Net Presentation` → `NETBREAK/Art/Validate Cast Net Presentation`을 실행한다. 전체 EditMode Test Runner의 통과/실패/Skip 수를 기록한다.
+2. 새 Run에서 Lv2 또는 Lv3 선택으로 투망을 Q 또는 W에 장착한다. 해당 키를 누른 채 커서를 움직이며 작은 Ghost·원형 범위가 함께 따라가는지, 실제 반경 업그레이드와 일치하는지 확인한다. 충전 소진 중 조준이 시작되지 않는지 본다.
+3. 키를 놓아 빈 곳에 사용한다. 망 전개·물결·기본 사용음은 한 번, Fish 접촉 효과는 0개여야 한다. 한 마리 및 여러 마리에게 사용해 실제 Resistance 감소 대상만 작은 접촉이 있는지, 대상 수만큼 소리가 반복되지 않는지 확인한다.
+4. 조준 중 우클릭과 Esc를 각각 시험한다. Ghost·범위가 사라지고 피해·충전·쿨다운·VFX·SFX가 없어야 한다. E 비상 투망은 E 누름/뗌과 취소를 시험하고 확대 반경·일반 충전 보존을 확인한다.
+5. 도구 슬롯 변경, 선택 UI/성장 UI, 일시정지에서 조준·입력 차단과 새 판정/소리 없음, 일시정지 중 기존 VFX·오디오의 멈춤/재개를 확인한다. Run 종료·재시작에서 조준·망·물결·오디오 잔상이 없는지 본다. 기존 R 천망·아이템/시너지 발동 횟수와 낚싯대·설치 Net·뜰채 연출도 확인한다.
 
 ## 직접 사용형 Tool — Scoop Net Prototype
 
 뜰채는 LMB 고정 즉발형 Tool이다. 설치형 Fishing Rod/Net의 Ghost·설치물 수명주기를 사용하지 않는다. Controller가 실제 입력·커서 좌표·원형 반경·쿨타임·대상 정렬·`TakeCaptureDamage`를 소유한다. 사용 가능한 동안만 기존 Range 원과 뜰채 Ready Sprite를 커서에 표시한다. Range 크기는 Controller의 실제 `captureRadius` 변경 경로를 따르며 UI/HUD에 별도 반경 상수를 두지 않는다.
 
-한 번의 사용에서 모든 기본·연쇄 피해 판정이 끝난 뒤, 실제 Resistance가 감소한 Fish와 당시 위치의 목록을 Presentation에 전달한다. Presentation은 Fish를 다시 검색하지 않고 Swing 1회, 실제 피해 위치마다 작은 Hit VFX, 기본 SFX 1회를 요청한다. 0명일 때는 Swing과 사용음만 나타낸다. 공용 CombatVfxPool RepeatedHit/상한과 one-shot Source/중복 제한을 재사용한다. Swing 길이는 공격 쿨타임과 독립적이며 Animation Event에서 피해를 발생시키지 않는다. 선택 UI·Pause·Run 초기화에서 커서/Animation/VFX/Audio 상태를 정리한다. 이 규칙은 이후 Cast Net 등 즉발형 Tool의 최소 후보이며 해당 도구의 판정·입력은 구현할 때 별도로 조사한다. 사용자가 실제 hit Fish 목록과 VFX 대상 일치, Miss·다중 Hit·1 use = 1 기본 SFX, Ready→Swing→Ready, UI/Pause/Run 정리 및 기존 Tool Presentation 회귀를 Play Mode에서 확인했다. Damage·range·cooldown·max targets·input binding은 변경하지 않았다. **Scoop Net Manual Validation: Passed / Prototype Approval: Approved / Final Production Art·Animation·VFX·Audio Approval: Pending.**
+한 번의 사용에서 모든 기본·연쇄 피해 판정이 끝난 뒤, 실제 Resistance가 감소한 Fish와 당시 위치의 목록을 Presentation에 전달한다. Presentation은 Fish를 다시 검색하지 않고 Swing 1회, 실제 피해 위치마다 작은 Hit VFX, 기본 SFX 1회를 요청한다. 0명일 때는 Swing과 사용음만 나타낸다. 공용 CombatVfxPool RepeatedHit/상한과 one-shot Source/중복 제한을 재사용한다. Swing 길이는 공격 쿨타임과 독립적이며 Animation Event에서 피해를 발생시키지 않는다. 선택 UI·Pause·Run 초기화에서 커서/Animation/VFX/Audio 상태를 정리한다. 이 단락은 뜰채의 직접 사용형 패턴이고 투망의 Q/W 조준형 패턴은 위 절을 따른다. 사용자가 실제 hit Fish 목록과 VFX 대상 일치, Miss·다중 Hit·1 use = 1 기본 SFX, Ready→Swing→Ready, UI/Pause/Run 정리 및 기존 Tool Presentation 회귀를 Play Mode에서 확인했다. Damage·range·cooldown·max targets·input binding은 변경하지 않았다. **Scoop Net Manual Validation: Passed / Prototype Approval: Approved / Final Production Art·Animation·VFX·Audio Approval: Pending.**
 
 낚싯대와 그물에 공통으로 확인된 최소 규칙이다. 각 도구의 배치와 공격 방식은 해당 Controller가 소유한다.
 

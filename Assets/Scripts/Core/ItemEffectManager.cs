@@ -236,12 +236,14 @@ public sealed class ItemEffectManager : MonoBehaviour
     private float lastFishingRodSoundTime = float.NegativeInfinity;
     private float lastNetPlaceSoundTime = float.NegativeInfinity;
     private float lastScoopNetSoundTime = float.NegativeInfinity;
+    private float lastCastNetSoundTime = float.NegativeInfinity;
     private bool squidInkAudioPaused;
     private const float SquidInkSoundCooldown = 0.08f;
     private const float PufferfishSoundCooldown = 0.1f;
     private const float FishingRodSoundCooldown = 0.09f;
     private const float NetPlaceSoundCooldown = 0.09f;
     private const float ScoopNetSoundCooldown = 0.09f;
+    private const float CastNetSoundCooldown = 0.09f;
     private bool runWasActive;
     private int capacitorHitCount;
     private float stormOrbRemaining;
@@ -388,6 +390,36 @@ public sealed class ItemEffectManager : MonoBehaviour
         combatVfxPool.AcquireSpriteTransient(
             "ScoopNetHitVisual", presentation.HitFrames, position,
             presentation.HitDuration, .8f, 30, CombatVfxPriority.RepeatedHit);
+    }
+
+    public void ShowCastNetArea(Vector2 position, float radius,
+        CastNetPresentationProfile presentation)
+    {
+        if (presentation == null || !presentation.HasArea || radius <= 0f) return;
+        combatVfxPool ??= new CombatVfxPool(transform, GetCombatVfxSettings());
+        combatVfxPool.AcquireSpriteTransient(
+            "CastNetAreaVisual", presentation.AreaFrames, position,
+            presentation.AreaDuration, radius * 2f, 29, CombatVfxPriority.RepeatedHit);
+    }
+
+    public void ShowCastNetHit(Vector2 position, CastNetPresentationProfile presentation)
+    {
+        if (presentation == null || !presentation.HasHit) return;
+        combatVfxPool ??= new CombatVfxPool(transform, GetCombatVfxSettings());
+        combatVfxPool.AcquireSpriteTransient(
+            "CastNetHitVisual", presentation.HitFrames, position,
+            presentation.HitDuration, 1f, 30, CombatVfxPriority.RepeatedHit);
+    }
+
+    public bool PlayCastNetSound(CastNetPresentationProfile presentation)
+    {
+        if (presentation == null || presentation.CastClip == null ||
+            Time.timeScale <= 0f || Time.time - lastCastNetSoundTime < CastNetSoundCooldown)
+            return false;
+        EnsureSpecialFishAudio();
+        squidInkAudio.PlayOneShot(presentation.CastClip, presentation.CastVolume);
+        lastCastNetSoundTime = Time.time;
+        return true;
     }
 
     public bool PlayScoopNetSwingSound(ScoopNetPresentationProfile presentation)
@@ -2740,6 +2772,7 @@ public sealed class ItemEffectManager : MonoBehaviour
         lastFishingRodSoundTime = float.NegativeInfinity;
         lastNetPlaceSoundTime = float.NegativeInfinity;
         lastScoopNetSoundTime = float.NegativeInfinity;
+        lastCastNetSoundTime = float.NegativeInfinity;
         squidInkAudioPaused = false;
         electricStunVisuals.Clear();
         iceFreezeVisuals.Clear();
