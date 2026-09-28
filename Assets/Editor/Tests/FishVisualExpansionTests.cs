@@ -63,6 +63,44 @@ public sealed class FishVisualExpansionTests
         Assert.That(Fish("CoastBoss").VisualProfile, Is.SameAs(Profile("CoastBoss")));
     }
 
+    [TestCase("Sardine")]
+    [TestCase("Mackerel")]
+    [TestCase("Tuna")]
+    [TestCase("Pufferfish")]
+    [TestCase("Squid")]
+    [TestCase("CoastMiniBoss")]
+    [TestCase("CoastBoss")]
+    public void ImportedFishHaveAnEnabledAndVisibleShadowRenderer(string species)
+    {
+        Sprite shadowAsset = Resources.Load<Sprite>("Fish/FishShadow");
+        Assert.That(shadowAsset, Is.Not.Null);
+        GameObject root = Own(new GameObject(species));
+        SpriteRenderer original = root.AddComponent<SpriteRenderer>();
+        original.sortingOrder = 0;
+        FishController controller = root.AddComponent<FishController>();
+        typeof(FishController).GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic)
+            .Invoke(controller, null);
+        controller.Initialize(Fish(species));
+
+        Transform shadow = root.transform.Find("FishUnderwaterShadow");
+        Assert.That(shadow, Is.Not.Null, species);
+        SpriteRenderer renderer = shadow.GetComponent<SpriteRenderer>();
+        Assert.That(renderer.sprite, Is.SameAs(shadowAsset), species);
+        Assert.That(renderer.enabled && renderer.gameObject.activeInHierarchy, Is.True, species);
+        Assert.That(renderer.sortingLayerID, Is.EqualTo(original.sortingLayerID), species);
+        Assert.That(renderer.sortingOrder, Is.EqualTo(original.sortingOrder - 1), species);
+        Assert.That(shadow.GetComponent<Collider2D>(), Is.Null, species);
+        Assert.That(renderer.bounds.size.x, Is.GreaterThan(0.25f), species);
+        Assert.That(renderer.bounds.size.y, Is.GreaterThan(0.15f), species);
+        Assert.That(shadow.position.y, Is.LessThan(root.transform.position.y), species);
+
+        string path = Path.Combine(Application.dataPath, "Resources", "Fish", "FishShadow.png");
+        Texture2D pixels = Own(new Texture2D(2, 2, TextureFormat.RGBA32, false));
+        Assert.That(pixels.LoadImage(File.ReadAllBytes(path)), Is.True);
+        Assert.That(pixels.GetPixel(16, 8).a * renderer.color.a,
+            Is.GreaterThan(0.4f), species);
+    }
+
     [Test]
     public void GameplayValuesOfExpandedSpeciesRemainUnchanged()
     {

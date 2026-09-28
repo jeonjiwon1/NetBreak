@@ -6,6 +6,7 @@ public sealed class FishVisualController : MonoBehaviour
 {
     private SpriteRenderer prototypeRenderer;
     private SpriteRenderer customRenderer;
+    private SpriteRenderer shadowRenderer;
     private FishMovement movement;
     private FishVisualProfile profile;
     private FishVisualHeading heading;
@@ -17,6 +18,13 @@ public sealed class FishVisualController : MonoBehaviour
     private FishVisualDirection lockedDirection;
     private int specialFrame;
     private float specialTimer;
+
+    private const string ShadowResourcePath = "Fish/FishShadow";
+    private const float ShadowWidthRatio = 0.78f;
+    private const float ShadowHeightRatio = 0.44f;
+    private const float ShadowOffsetRatio = 0.18f;
+    private const float ShadowOpacity = 0.8f;
+    private static Sprite shadowSprite;
 
     public bool UsesCustomVisual => profile != null;
     public int FrameIndex => frameIndex;
@@ -44,6 +52,7 @@ public sealed class FishVisualController : MonoBehaviour
 
         if (profile == null)
         {
+            if (shadowRenderer != null) shadowRenderer.enabled = false;
             if (customRenderer != null)
             {
                 customRenderer.sprite = null;
@@ -66,6 +75,42 @@ public sealed class FishVisualController : MonoBehaviour
             profile.VisualScale.x / Mathf.Max(Mathf.Abs(rootScale.x), 0.0001f),
             profile.VisualScale.y / Mathf.Max(Mathf.Abs(rootScale.y), 0.0001f), 1f);
         customRenderer.sprite = profile.HorizontalFrames[0];
+        InitializeShadow();
+    }
+
+    private void InitializeShadow()
+    {
+        if (shadowSprite == null)
+            shadowSprite = Resources.Load<Sprite>(ShadowResourcePath);
+        if (shadowSprite == null) return;
+
+        if (shadowRenderer == null)
+        {
+            GameObject shadow = new GameObject("FishUnderwaterShadow");
+            shadow.transform.SetParent(transform, false);
+            shadowRenderer = shadow.AddComponent<SpriteRenderer>();
+        }
+
+        Sprite source = profile.HorizontalFrames[0];
+        Vector2 sourceSize = source.bounds.size;
+        Vector2 shadowSize = shadowSprite.bounds.size;
+        Vector3 rootScale = transform.localScale;
+        float width = sourceSize.x * profile.VisualScale.x * ShadowWidthRatio;
+        float height = sourceSize.y * profile.VisualScale.y * ShadowHeightRatio;
+        float offset = sourceSize.y * profile.VisualScale.y * ShadowOffsetRatio;
+
+        shadowRenderer.sprite = shadowSprite;
+        shadowRenderer.sharedMaterial = prototypeRenderer.sharedMaterial;
+        shadowRenderer.sortingLayerID = prototypeRenderer.sortingLayerID;
+        shadowRenderer.sortingOrder = prototypeRenderer.sortingOrder - 1;
+        shadowRenderer.maskInteraction = prototypeRenderer.maskInteraction;
+        shadowRenderer.color = new Color(1f, 1f, 1f, ShadowOpacity);
+        shadowRenderer.transform.localPosition = new Vector3(
+            0f, -offset / Mathf.Max(Mathf.Abs(rootScale.y), 0.0001f), 0f);
+        shadowRenderer.transform.localScale = new Vector3(
+            width / (shadowSize.x * Mathf.Max(Mathf.Abs(rootScale.x), 0.0001f)),
+            height / (shadowSize.y * Mathf.Max(Mathf.Abs(rootScale.y), 0.0001f)), 1f);
+        shadowRenderer.enabled = true;
     }
 
     private void EnsureCustomRenderer()

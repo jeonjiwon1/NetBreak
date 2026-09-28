@@ -207,6 +207,35 @@ public sealed class FishVisualPipelineTests
         Assert.That(PixelRenderer().flipY, Is.False);
     }
 
+    [Test]
+    public void ShadowTracksFishAndResetsAcrossPoolReuse()
+    {
+        Sprite shadowAsset = Resources.Load<Sprite>("Fish/FishShadow");
+        Assert.That(shadowAsset, Is.Not.Null);
+        rootRenderer.sortingOrder = 4;
+        fish.Initialize(sardine);
+
+        Transform shadow = fish.transform.Find("FishUnderwaterShadow");
+        Assert.That(shadow, Is.Not.Null);
+        SpriteRenderer renderer = shadow.GetComponent<SpriteRenderer>();
+        Assert.That(renderer.sprite, Is.SameAs(shadowAsset));
+        Assert.That(renderer.sortingLayerID, Is.EqualTo(rootRenderer.sortingLayerID));
+        Assert.That(renderer.sortingOrder, Is.EqualTo(3));
+        Assert.That(shadow.GetComponent<Collider2D>(), Is.Null);
+        Assert.That(shadow.position.y, Is.LessThan(fish.transform.position.y));
+
+        fish.transform.position = new Vector3(2f, 3f, 0f);
+        Assert.That(shadow.position.x, Is.EqualTo(2f).Within(0.001f));
+        fish.gameObject.SetActive(false);
+        Assert.That(renderer.gameObject.activeInHierarchy, Is.False);
+        fish.Initialize(fallback);
+        fish.gameObject.SetActive(true);
+        Assert.That(renderer.enabled, Is.False);
+        fish.Initialize(sardine);
+        Assert.That(renderer.enabled, Is.True);
+        Assert.That(fish.GetComponentsInChildren<SpriteRenderer>().Length, Is.EqualTo(3));
+    }
+
     private SpriteRenderer PixelRenderer() => fish.transform.Find("FishPixelVisual").GetComponent<SpriteRenderer>();
 
     private T Own<T>(T item) where T : Object

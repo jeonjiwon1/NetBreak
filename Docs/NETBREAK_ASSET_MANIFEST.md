@@ -1,5 +1,21 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## Fish Shadow 가시성 수정 (2026-09-28)
+
+`FishShadow.png`와 `.meta`는 가시성 수정 때 변경하지 않았다. 첫 사용자 Game View에서 그림자가 거의 보이지 않아 PNG 알파와 Renderer alpha의 중복 곱을 확인했고, `FishVisualController` Renderer alpha만 0.48→0.8로 수정했다. 합성 알파는 약 0.23/0.35/0.45이며 Asset GUID·Import·Sprite 크기는 유지된다. 자산·참조·계산 정적 검사는 통과했다. 사용자가 수정 후 Area 1을 Play해 C# 소스 실행과 그림자 가시성·크기·Offset·어군 혼잡도·기존 Fish/Background 가독성을 확인하고 Prototype으로 승인했다. **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play) / Asset·Reference Static Checks: Passed / EditMode Tests: Not Run / Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.** Water Motion/Overlay는 후속 단계다. 아래 1차 구현의 Pending 수치는 수정 전 이력이다.
+
+## Fish Shadow / Underwater Depth Presentation 1차 (2026-09-28, 수정 전 초기 기록)
+
+| 항목 | 내용 |
+|---|---|
+| 자산 | `Assets/Resources/Fish/FishShadow.png` 및 `.meta`; 폴더 `.meta` |
+| 출처·재생성 | 프로젝트 내부 제작 `Tools/generate_fish_shadow.py`; 기존 Fish/Background PNG 사용 또는 변경 없음 |
+| 규격·Import | 32×16 투명 RGBA, 어두운 청록 3단계 픽셀 타원, Single/83 PPU/Point/무압축/Mipmap Off/중앙 Pivot |
+| 연결 | 공용 `FishVisualController`가 Resources에서 로드하여 일반 3종·특수 2종·MiniBoss Giant Tuna·Boss Shark에 적용. Fish order 0 기준 그림자 -1, 배경 -1000 |
+| 승인 | **Implementation Complete: Complete / Static Validation: Partial (asset/reference checks passed; Unity compile/tests pending due to open Editor) / Unity Manual Validation: Pending / Prototype Approval: Pending / Final Production Approval: Pending** |
+
+Water Motion/Overlay는 별도 후속 작업이다.
+
 ## Area 1 MiniBoss Giant Tuna 1차 자산 (2026-09-28)
 
 | 항목 | 내용 |

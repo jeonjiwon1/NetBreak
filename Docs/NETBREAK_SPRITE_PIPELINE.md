@@ -1,5 +1,13 @@
 # NETBREAK 물고기 Sprite Pipeline — VS-2B 방향별 수영 프로토타입
 
+## Fish Shadow 가시성 수정 (2026-09-28)
+
+1차 수동 Game View에서 그림자가 거의 보이지 않아, PNG 알파 72/112/144와 Renderer alpha 0.48의 곱(약 0.14/0.21/0.27)을 원인으로 확인했다. 공통 `FishVisualController`의 Renderer alpha만 0.8로 바꿔 약 0.23/0.35/0.45가 되도록 했다. Asset·Import·GUID, 월드 크기·아래 간격·Sorting, Profile/Pool 경로는 그대로다. 사용자 Area 1 Play 재검증에서 그림자 표시·바다 위 가시성·어군 혼잡도·크기·Offset과 Fish/Background 가독성을 확인하고 폭 0.78·높이 0.44·아래 간격 0.18·Renderer alpha 0.8을 Prototype 기준으로 승인했다. **Source Compile: Passed (사용자 Unity Play) / Asset·Reference Static Checks: Passed / EditMode Tests: Not Run / Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.** Water Motion/Overlay는 별도 후속 단계다. 아래 0.48과 Pending은 수정 전 기록이다.
+
+## 공통 Fish Shadow 연결 (2026-09-28, 수정 전 초기 기록)
+
+`FishVisualController.Initialize`는 유효한 FishVisualProfile의 첫 가로 프레임 크기로 그림자 크기·아래 간격을 계산한다. `Resources/Fish/FishShadow` 단일 Sprite를 런타임 자식 `FishUnderwaterShadow`에 연결하며 기존 수영 프레임·방향·flip·FPS를 건드리지 않는다. Fish와 같은 Sorting Layer에서 order를 1 낮게 설정한다. Profile이 없는 fallback에서는 그림자를 숨기고 다음 Pool 사용에서 다시 계산한다. Root Disable/Destroy는 자식도 함께 비표시/제거한다. 수영 Sprite의 원본 16프레임과 Import 설정은 그대로다. 새 그림자 Sprite는 32×16 RGBA, 83 PPU, Point, Mipmap Off, 무압축/Single/중앙 Pivot이다. Water Motion/Overlay는 후속 단계다. **Unity Manual Validation: Pending / Prototype Approval: Pending.**
+
 ## Area 1 MiniBoss Giant Tuna 확장 (2026-09-28, Prototype 승인)
 
 `CoastMiniBoss_Swim.png`는 352×352 RGBA, 88×88 셀 16개(E/N/NE/NW 각 4프레임)다. 기존 Fish/Boss Shark처럼 83 PPU·Point·무압축·Mipmap Off·8 FPS·중앙 Pivot 및 반대 방향 flipX+flipY를 쓴다. `CoastMiniBoss_VisualProfile.asset`을 `FishData_CoastMiniBoss.asset`에 연결해 공용 `FishVisualController`가 root fallback을 숨기고 자식 SpriteRenderer에 수영을 표시한다. Profile visualScale 1이며 기존 MiniBoss FishData의 gameplay scale·Resistance·돌진 설정은 유지한다. `MiniBossController`의 기존 예고 색 점멸은 현재 표시 Renderer를 대상으로 한다. Animator나 돌진 전용 Sprite는 없다. `FishArtSetup.Validate`와 방향별 EditMode 테스트 기대 목록에 MiniBoss가 추가됐다. 아래 역사적 MiniBoss fallback 문장은 연결 이전 결과다. Unity Import·C# 컴파일·Pipeline Validate가 성공했고 관련 EditMode 23/23을 통과했다. 사용자가 실제 Encounter에서 Sprite·방향·수영·돌진·HUD·Resistance·포획·E 보상·도주 흐름과 기존 Fish/Boss Shark 정상 동작을 확인했다. **Static Validation: Complete / Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.**

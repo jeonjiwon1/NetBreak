@@ -1,5 +1,13 @@
 # NETBREAK 아트 스타일 가이드 — VS-2 초안
 
+## Fish Shadow 가시성 수정 (2026-09-28, Prototype 승인)
+
+사용자 Area 1 Game View에서 1차 그림자가 거의 보이지 않았다. PNG 알파 72/112/144와 Renderer alpha 0.48의 중복 적용으로 합성 알파가 약 0.14/0.21/0.27에 그쳤고, Fish 몸체 뒤에 가려진 면적을 제외하면 작은 어종의 대비가 약했다. Renderer alpha만 0.8로 조정해 약 0.23/0.35/0.45로 높였다. Sprite·크기·간격·Sorting은 유지한다. 사용자가 재검증에서 밝은 바다 위 가시성, Fish보다 낮은 시각 우선순위, 여러 Fish가 있을 때의 화면 정돈, 자연스러운 수중 깊이감, 적절한 크기·Offset 및 Fish Sprite/Background 가독성을 확인했다. 폭 0.78·높이 0.44·아래 간격 0.18·Renderer alpha 0.8을 Prototype 시각 기준으로 승인했다. **Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.** Water Motion/Overlay는 별도 후속 작업이다. 아래 alpha 0.48과 Pending은 수정 전 1차 구현 이력이다.
+
+## Area 1 Fish 수중 그림자 1차 (2026-09-28, 가시성 검증 실패·수정 전 기록)
+
+일반어 3종, 특수어 2종, 거대 참치 MiniBoss와 상어 Boss는 공통 `FishShadow.png`의 어두운 청록 픽셀 타원을 수영 Sprite 아래에 표시한다. 방향별 복제 그림자는 쓰지 않는다. 32×16 RGBA/83 PPU/Point/무압축 스프라이트의 중심이 약간 아래에 놓이고, 실제 수영 Sprite 셀 크기에 비례한다. 기준값은 폭 0.78·높이 0.44·아래 간격 0.18·Renderer alpha 0.48이다. 여러 Fish가 겹칠 때 번짐과 화면 혼잡도는 사용자 Unity Play 검증에서 판단한다. 배경 PNG·기존 Fish/Boss/MiniBoss 아트와 Water Motion/Overlay는 변경하지 않았다. **Unity Manual Validation: Pending / Prototype Approval: Pending / Final Production Approval: Pending.**
+
 ## Area 1 MiniBoss Giant Tuna 1차 아트 (2026-09-28, Prototype 승인)
 
 연안 MiniBoss는 탑다운 거대 참치다. 일반 Tuna보다 긴 유선형 몸통과 깊게 갈라진 큰 꼬리, 가늘게 휜 등·배 지느러미 및 소량의 금색 finlet으로 상위 개체를 구분한다. 남색 외곽·청록 등면·밝은 배색과 83 PPU 방향 규칙은 기존 Fish를 따른다. Boss Shark보다 좁고 빠른 실루엣을 유지한다. 88×88 셀의 E/N/NE/NW 4방향×4프레임 기본 수영만 있으며 돌진 예고는 현재 보이는 Sprite의 색 점멸을 사용한다. 돌진·피격·포획 전용 프레임과 Animator는 후속 후보다. 사용자가 Unity에서 Giant Tuna의 크기·스타일·방향·수영과 돌진 예고·이동·포획·E 보상 흐름을 확인했다. **Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending.**

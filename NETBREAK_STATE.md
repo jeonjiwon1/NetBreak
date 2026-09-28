@@ -1,5 +1,20 @@
 # NETBREAK 인수인계
 
+## Fish Shadow 가시성 수정 (2026-09-28, 사용자 수동 검증 완료·Prototype 승인)
+
+- 사용자 Area 1 Game View 검증에서 Fish는 정상이나 그림자가 거의 식별되지 않았다. 이전 구현의 PNG 알파 72/112/144에 Renderer alpha 0.48이 다시 곱해져 실제 중심 알파가 최대 약 0.271이었다. 그림자 일부는 Fish Sprite 아래에 가려지므로 노출 면적과 대비가 더 줄었다. 정어리 기준 그림자 월드 크기는 약 0.301×0.170, 아래 간격은 약 0.069(83 PPU에서 약 25×14px, 5.76px)다. 같은 Default Sorting Layer에서 배경 -1000, 그림자 -1, Fish 0으로 정렬되며 PNG의 Runtime Import 기록이 있어 Sorting/자산 누락보다 낮은 합성 알파가 확인된 원인이다. 다만 실제 Play Hierarchy 상태는 이번 작업에서 직접 관찰하지 않았다.
+- 최소 수정으로 `FishVisualController`의 Renderer alpha만 0.48→0.8로 올렸다. PNG·크기·간격·Sorting·Fish Art는 유지한다. 실제 알파는 72/112/144 기준 약 0.226/0.351/0.452다. 일곱 FishData의 실제 프로필을 사용하는 테스트에 Sprite/활성/Sorting/월드 크기/중심 합성 알파 검사를 추가했다.
+- PNG 중앙 알파·Import 설정·일곱 FishData/Profile 연결·GUID 342개 고유성·정어리 계산값·변경 파일 diff 공백 검사는 통과했다. 당시 열린 Unity 인스턴스 때문에 Codex가 변경 후 EditMode 테스트와 Console을 확인하지 못했다. 이후 사용자가 실제 Area 1 Game View를 Play해 현재 C# 소스가 실행을 막지 않음을 확인했다. **EditMode Tests: Not Run**이며 Console Error 0은 별도로 확인된 결과로 기록하지 않는다.
+- 사용자가 수정 결과에서 밝은 Turquoise Ocean 위 그림자 표시, Fish보다 낮은 시각 우선순위, 여러 Fish가 함께 있을 때의 절제된 진하기와 혼잡도, Fish 아래 수중 깊이감, 적절한 크기·Offset 및 기존 Fish Sprite/Background 가독성을 확인했다. Renderer alpha 0.8과 폭 0.78·높이 0.44·아래 간격 0.18을 **Prototype Visual Baseline**으로 승인했다. **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play) / Asset·Reference Static Checks: Passed / EditMode Tests: Not Run / Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.** 이전 1차 구현의 alpha 0.48과 수동 가시성 실패·대기 기록은 수정 전 이력이다. Water Motion과 Water Overlay는 각각 별도 후속 단계다. 이번 문서 마감에서 Computer Use 및 git add/commit/push는 수행하지 않는다.
+
+## Fish Shadow / Underwater Depth Presentation 1차 (2026-09-28, 가시성 수동 검증 실패·수정 전 기록)
+
+- `FishVisualController`가 유효한 `FishVisualProfile`로 표시되는 Fish마다 `FishUnderwaterShadow` 자식 SpriteRenderer를 만들고 공통 `Resources/Fish/FishShadow` Sprite를 표시한다. 정어리·고등어·참치·복어·오징어·거대 참치·상어 보스의 기존 FishData/Profile 연결을 공통 경로로 사용한다. 프리팹·씬 직렬화와 Gameplay/Collider/Input/경로/Resistance/보상은 변경하지 않았다.
+- 그림자는 32×16 RGBA 픽셀 타원, 83 PPU, Point, Mipmap Off, 무압축이다. 기준 수영 Sprite 셀의 월드 크기에 폭 0.78·높이 0.44를 곱하고 높이 0.18만큼 아래로 둔다. Sprite 자체의 남색 3단계 알파와 Renderer 불투명도 0.48을 조합한다. Fish와 같은 Sorting Layer에서 Fish보다 order 1 낮게 배치한다. Area 1 배경 order -1000과 Fish order 0 사이의 -1이며 방향별 flip/프레임과 독립이다.
+- `FishController.Initialize` 호출 때 크기·위치·표시를 갱신한다. 프로필이 없으면 숨기고 재사용 시 다시 표시하며, Fish 루트 Disable/Destroy 때 함께 사라진다. `FishVisualPipelineTests`에 자산·정렬·콜라이더 부재·추적·풀 재사용 검사를 추가했다.
+- PNG 32×16 RGBA·Import 83 PPU/Point/Single/Mipmap Off/무압축·Assets GUID 342개 중복 없음·코드 참조·`git diff --check`를 정적으로 확인했다. Unity 배치 EditMode 검증은 같은 프로젝트를 다른 Unity 인스턴스가 사용 중이라 시작되지 못했다. 따라서 C# 컴파일·테스트·Console은 미검증이다.
+- **Implementation Complete: Complete / Static Validation: Partial (asset/reference checks passed; Unity compile/tests pending) / Unity Manual Validation: Pending / Prototype Approval: Pending / Final Production Approval: Pending.** 실제 화면에서 불투명도·크기·간격·어군 혼잡도를 조정할 수 있다. Water Motion/Overlay는 별도 후속 작업이다. 사용자 지시대로 Computer Use와 git add/commit/push는 수행하지 않는다.
+
 ## Area 1 MiniBoss Giant Tuna Sprite / Presentation 1차 연결 (2026-09-28, Prototype 승인)
 
 - Area 1 MiniBoss 어종을 거대 참치로 확정했다. 기존 Tuna를 중심으로 정어리·고등어·복어·오징어 및 승인된 Boss Shark의 픽셀 밀도와 실루엣·팔레트를 참고했다. ImageGen 초안은 형태 참고만 했고 실제 게임용 `Tools/generate_coast_miniboss_tuna.py`에서 88×88 셀, E/N/NE/NW 4방향×4프레임의 탑다운 RGBA 수영 시트를 제작했다. 일반 Tuna보다 긴 유선형 몸통·큰 갈라진 꼬리·가는 지느러미·소량의 금색 finlet으로 구분한다.
