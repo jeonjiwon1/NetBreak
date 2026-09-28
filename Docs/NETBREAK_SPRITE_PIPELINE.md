@@ -1,5 +1,9 @@
 # NETBREAK 물고기 Sprite Pipeline — VS-2B 방향별 수영 프로토타입
 
+## Area 1 Boss Shark 확장 (2026-09-28, Prototype 승인)
+
+`CoastBoss_Swim.png`는 384×384 RGBA, 96×96 셀 16개(E/N/NE/NW 각 4프레임)다. 기존 다섯 어종과 같은 83 PPU·Point·무압축·Mipmap Off·8 FPS·중앙 Pivot 및 반대 방향 flipX+flipY를 쓴다. `CoastBoss_VisualProfile.asset`을 `FishData_CoastBoss.asset`에 연결해 공용 `FishVisualController`가 root 사각형 fallback 대신 자식 SpriteRenderer에 상어 수영을 표시한다. 기존 Boss Transform의 gameplay scale은 유지하고 프로필의 visualScale 1이 실제 Sprite 표시 크기를 정한다. Animator는 없다. MiniBoss는 여전히 fallback이다. `FishArtSetup.Validate`와 관련 EditMode 테스트의 기대 목록에 Boss가 추가됐다. 기존 문단의 Boss fallback 설명과 과거 테스트 통과 수치는 당시 기록이다. 사용자가 Unity에서 Sprite import·Profile 연결·방향·수영과 Boss encounter의 Phase·도주·포획 흐름을 확인했고 관련 Console Error/Exception은 없었다. **Static Validation: Complete / Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.** 별도 EditMode Test Runner 통과는 이 승인에 포함하지 않는다.
+
 ## 상태와 목적
 
 첫 적용 대상인 정어리는 후속 일반 어종의 첫 프로토타입 기준으로 승인됐다. VS-2B-2에서 고등어·참치 시트와 프로필을 같은 파이프라인으로 확장했고 전체 EditMode 168/168과 사용자 Unity 수동 시각 검증을 완료했다. 고등어·참치는 **정어리 기준 Directional Fish Sprite Pipeline을 성공적으로 확장한 승인된 프로토타입**이다. 최종 출시용 Art Lock과 전체 어종 규격 확정은 아직 하지 않았다. 게임플레이 이동·충돌·포획과 시각 표현은 분리한다.

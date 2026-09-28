@@ -31,7 +31,8 @@ public static class FishArtSetup
     private static readonly Species Tuna = new Species("Tuna", "참치", 64);
     private static readonly Species Pufferfish = new Species("Pufferfish", "복어", 48);
     private static readonly Species Squid = new Species("Squid", "오징어", 64);
-    private static readonly Species[] All = { Sardine, Mackerel, Tuna, Pufferfish, Squid };
+    private static readonly Species CoastBoss = new Species("CoastBoss", "연안 보스", 96);
+    private static readonly Species[] All = { Sardine, Mackerel, Tuna, Pufferfish, Squid, CoastBoss };
     private static readonly string[] Directions = { "horizontal", "vertical", "diagonal", "diagonal_nw" };
 
     [MenuItem("NETBREAK/Art/Setup All Fish Visuals")]
@@ -187,7 +188,7 @@ public static class FishArtSetup
             if (data == null) continue;
             valid &= data.VisualProfile == (expectedData.TryGetValue(data, out FishVisualProfile profile) ? profile : null);
         }
-        if (valid) Debug.Log("Fish sprite pipeline valid: Sardine, Mackerel, Tuna, Pufferfish and Squid each have 16 slices, import settings and FishData links; remaining species use fallback.");
+        if (valid) Debug.Log("Fish sprite pipeline valid: five regular/special species and CoastBoss each have 16 slices, import settings and FishData links; MiniBoss uses fallback.");
         else Debug.LogError("Fish sprite pipeline validation failed. Check import, frame references, FishData links and fallback species.");
     }
 

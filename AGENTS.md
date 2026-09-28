@@ -26,6 +26,7 @@
 - 직렬화된 필드/씬/프리팹 참조와 `.meta` GUID를 보존하며 점진적으로 이관한다. 중복 Manager를 만들지 않는다.
 - `FishSpecialType` 순서 `None, Pufferfish, Squid, MiniBoss, Boss`를 절대 바꾸지 않는다. 다른 직렬화 enum도 재정렬하지 않는다.
 - 도구 구조 작업 중 기존 보스 다중 회유를 불필요하게 재설계하거나 관련 없는 밸런스 값을 바꾸지 않는다.
+- Area 1 Boss의 어종은 상어다. `CoastBoss_VisualProfile`의 방향별 수영 Sprite는 시각 표현만 담당하며 기존 3회 회유·Phase·Resistance·보상·실패 흐름을 유지한다. 사용자 Unity 수동 검증을 통과해 Prototype은 승인됐으며 Final Production Art Approval은 Pending이다.
 - Scene/Prefab/Inspector 수정은 Computer Use가 가능하면 Unity Editor를 우선한다. 복잡한 Unity YAML을 추측해 수정하지 않는다.
 - 의미 있는 코드 변경 후 컴파일 및 관련 검증을 수행하고 Unity Console을 확인한다. 컴파일 오류를 해결하기 전에 다음 주요 기능으로 넘어가지 않는다.
 - 반복 가능한 기능 검사는 수동 Computer Use 재현보다 결정론적 Unity Editor/PlayMode 검증 스크립트를 우선한다. Computer Use는 시각·UI·상호작용처럼 코드로 신뢰성 있게 검증하기 어려운 항목에 주로 사용한다.

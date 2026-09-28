@@ -1,5 +1,13 @@
 # NETBREAK 인수인계
 
+## Area 1 Boss Shark Sprite / Presentation 1차 연결 (2026-09-28, Prototype 승인)
+
+- Area 1 Boss 어종을 상어로 확정했다. 정어리·고등어·참치·복어·오징어의 방향 시트, 83 PPU, Point/무압축 Import, 짙은 외곽과 청록 면 분리를 참고했다. ImageGen 초안의 상어 지느러미·꼬리 실루엣을 참고하되 실제 게임용으로는 탑다운 픽셀 격자에서 `Tools/generate_coast_boss_shark.py`로 96×96 셀, 4방향(E/N/NE/NW)×4프레임의 투명 RGBA 시트를 제작했다.
+- `Assets/Art/Fish/CoastBoss/CoastBoss_Swim.png`와 분할 `.meta`, `CoastBoss_VisualProfile.asset`과 `.meta`를 추가했다. Profile은 8 FPS, visualScale 1, white tint다. 기존 `FishData_CoastBoss.asset`에 Profile 참조 한 필드만 추가했다. 공용 `FishVisualController`가 root placeholder를 숨기고 자식 SpriteRenderer에 방향 프레임을 표시하며 반대 방향은 flipX+flipY다. Animator는 사용하지 않는다.
+- `FishArtSetup` 검증 범위와 `FishVisualExpansionTests`의 Boss 기대값을 갱신했다. Boss gameplay·3회 회유·Phase·Resistance·HUD·R 보상·Run 결과, MiniBoss, Scene/Prefab, 기존 5종 물고기 자산은 수정하지 않았다. 임시 미리보기 파일은 최종 자산이 아니다.
+- PNG 384×384 RGBA, 16개 96×96 분할, Sprite 참조·GUID 중복 없음·Main Scene의 기존 Boss FishData 참조, `git diff --check`를 정적으로 확인했다. 같은 프로젝트를 연 Unity 인스턴스가 있어 배치 모드 컴파일/Validate는 프로젝트 중복 열기 오류로 중단됐다. 따라서 Unity import·C# 컴파일·Console·EditMode·Play Mode는 이번 세션에서 확인하지 못했다. **Static Asset/Reference Validation: Complete / Unity Import·Compile·Console·Gameplay/Visual Validation: Pending / Boss Art Approval: Pending.** 사용자 수동 검증 전 Passed로 표시하지 않는다. 요청에 따라 Computer Use, 임시 Unity 프로젝트, git add/commit/push는 수행하지 않았다.
+- 후속 사용자 Unity 수동 검증에서 상어 Sprite import·VisualProfile 연결, 방향 전환·기본 수영, 일반 Fish/MiniBoss 대비 크기와 실루엣을 확인했다. 실제 Boss encounter에서 Resistance HUD·Phase·1/2차 도주 후 재등장과 Resistance 회복·3차 도주 Run Fail·포획 후 R Reward/결과 흐름이 정상이고 기존 Fish/MiniBoss 동작 이상과 이번 작업 관련 Console Error/Exception이 없음을 확인했다. **Implementation Complete: Complete / Static Validation: Complete / Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.** 위 배치 모드 중단과 당시 미검증 기록은 이전 작업 시점의 이력이며, 별도 EditMode Test Runner 통과를 의미하지 않는다.
+
 ## Area 1 TAB 성장 관리 UI Prototype 승인 (2026-09-28)
 
 - 사용자가 Unity Game View에서 현재 성장 관리 UI를 직접 확인했다. Area 1 메인 HUD와 같은 해양 픽셀 UI 계열, 관리 창의 구조·정보 계층, Galmuri11 계열의 짧은 텍스트, 스킬 트리/아이템 탭의 밝은 청록 선택·어두운 청록 비선택 상태를 Prototype 기준으로 승인했다. 비선택 탭의 노란/로프색 강조 문제는 해결됐다.

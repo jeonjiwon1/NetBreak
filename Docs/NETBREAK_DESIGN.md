@@ -88,7 +88,7 @@ Run 시작 → 뜰채만 소유 → Lv2 Core/Q → Lv3 Partner/W → Tool Tree �
 ## 성공·실패와 보스
 일반 물고기의 Destination 도달은 미포획으로 처리하며 즉시 패배하지 않는다. 최종 보스 포획이 지역 진행 조건이다. 보스가 마지막 회유에서 도주하면 Run 실패다. 어획률은 보상/등급 지표이며 주 클리어 조건이 아니다. 제거된 Legacy Final Fishing 타이머를 복원하지 않는다.
 
-현재 Area 1 보스는 3회 회유를 지원한다. 도구 로드아웃 작업 중 불필요하게 재설계하지 않는다. 직렬화 enum FishSpecialType의 순서는 `None → Pufferfish → Squid → MiniBoss → Boss`로 보존한다.
+현재 Area 1 보스는 3회 회유를 지원한다. 어종은 탑다운 상어로 확정하고 방향별 기본 수영 Sprite를 연결했다. 사용자 Unity에서 표시와 Boss encounter 흐름을 검증해 Prototype을 승인했으며 Final Production Approval은 Pending이다. 도구 로드아웃 작업 중 회유 구조를 불필요하게 재설계하지 않는다. 직렬화 enum FishSpecialType의 순서는 `None → Pufferfish → Squid → MiniBoss → Boss`로 보존한다.
 
 ## 아트 및 시각 디자인 방향
 

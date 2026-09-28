@@ -1,5 +1,17 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## Area 1 Boss Shark 1차 자산 (2026-09-28)
+
+| 항목 | 내용 |
+|---|---|
+| 자산 | `Assets/Art/Fish/CoastBoss/CoastBoss_Swim.png` 및 `.meta`, `CoastBoss_VisualProfile.asset` 및 `.meta` |
+| 출처·제작 | 이 프로젝트 내부 제작. 내장 ImageGen 상어 초안을 실루엣 참고로 사용하고 `Tools/generate_coast_boss_shark.py`에서 탑다운 픽셀 시트로 재구성. 외부 에셋 직접 사용 없음 |
+| 규격 | 384×384 투명 RGBA, 96×96 셀×16, E/N/NE/NW 각 4 수영 프레임, PPU 83·8 FPS·Point·무압축·Mipmap Off |
+| 연결 | `FishData_CoastBoss.asset` → `CoastBoss_VisualProfile.asset` → 시트의 16 Sprite. 공용 FishVisualController 재사용, Animator 없음 |
+| 검증·승인 | 정적 확인 Complete. 사용자 Unity에서 Sprite import·Profile 연결·방향·수영·Boss encounter 전 흐름과 기존 Fish/MiniBoss 정상 동작 확인, 관련 Console Error/Exception 없음. **Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending** |
+
+Phase별 변형, 포획·도주·피격 전용 연출은 아직 없다. 기존 Boss gameplay·HUD·Reward·Run 결과와 MiniBoss/일반 Fish 자산은 유지한다.
+
 ## TAB 성장 관리 UI Prototype 승인 자산 상태 (2026-09-28)
 
 사용자가 Unity Game View에서 현재 성장 관리 UI의 해양 픽셀 프레임·Galmuri11 짧은 텍스트·탭 대비·4개 아이템 슬롯·단일/복합 시너지 구분과 공통 빈 슬롯 + 표시를 확인했다. 메인 `ItemHUD`와 TAB `GrowthItemPage`는 기존 `Assets/Resources/UI/Area1/icon_empty.png`(GUID `cd6e4b5cb2af00c1e9ce18d88d049d35`)를 공유한다. 메인 HUD의 기존 Rect와 TAB 전용 빈 슬롯 Rect를 분리하며 새 TAB PNG는 없다. 긴 Tooltip/설명은 기존 NanumGothic 계열을 유지한다. **Implementation: Complete / Static Validation: Complete / Unity Manual Growth Management Visual Validation: Passed / Prototype Growth Management UI Approval: Approved / Final Production Growth Management UI Approval: Pending.** 아래 성장 관리 관련 Pending 표기는 승인 전 자산 반복의 이력이다. 이번 마감에서 자산 파일은 수정하지 않았다.

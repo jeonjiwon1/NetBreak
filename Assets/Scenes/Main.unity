@@ -12528,7 +12528,6 @@ MonoBehaviour:
   refundThreshold: 8
   refundAmount: 2
   castVisual: {fileID: 214365347}
-  visualDuration: 0.2
 --- !u!4 &821204957
 Transform:
   m_ObjectHideFlags: 0
@@ -27115,6 +27114,37 @@ MonoBehaviour:
     frostSwordSlowPercentage: 0.2
     frostSwordSlowDuration: 1.5
     frostSwordCooldown: 6
+  combatVfx:
+    maximumActiveVisuals: 48
+    lineWidthMultiplier: 1
+    effectSizeMultiplier: 1
+    squidTrajectoryDuration: 0.22
+    squidImpactDuration: 0.3
+    squidTrajectoryColor: {r: 0.24, g: 0.05, b: 0.34, a: 0.95}
+    squidImpactColor: {r: 0.55, g: 0.12, b: 0.68, a: 1}
+    hitEmphasisDuration: 0.22
+    electricChainColor: {r: 0.45, g: 1, b: 0.95, a: 1}
+    electricHitColor: {r: 0.72, g: 1, b: 1, a: 1}
+    electricStunColor: {r: 0.25, g: 0.95, b: 1, a: 0.95}
+    thunderstormColor: {r: 1, g: 0.84, b: 0.22, a: 1}
+    soulSlashColor: {r: 0.72, g: 0.9, b: 1, a: 1}
+    additionalSlashColor: {r: 0.78, g: 0.55, b: 1, a: 1}
+    swordRainColor: {r: 1, g: 0.76, b: 0.28, a: 1}
+    coldWaveColor: {r: 0.4, g: 0.8, b: 1, a: 0.95}
+    freezeColor: {r: 0.72, g: 0.94, b: 1, a: 1}
+    frostBurstColor: {r: 0.78, g: 0.96, b: 1, a: 1}
+    stormOrbColor: {r: 0.32, g: 0.82, b: 1, a: 0.95}
+    capacitorCoilColor: {r: 0.78, g: 0.96, b: 1, a: 0.9}
+    spectralScabbardColor: {r: 0.82, g: 0.62, b: 1, a: 0.95}
+    swordArrayColor: {r: 1, g: 0.42, b: 0.22, a: 0.95}
+    frostSigilColor: {r: 0.42, g: 0.86, b: 1, a: 0.9}
+    frostCrystalColor: {r: 0.72, g: 0.95, b: 1, a: 0.95}
+    combinedBurstDuration: 0.42
+    combinedHitDuration: 0.28
+    conductiveMarkColor: {r: 1, g: 0.84, b: 0.25, a: 0.95}
+    thunderSwordColor: {r: 0.95, g: 0.72, b: 1, a: 1}
+    superconductivityColor: {r: 0.34, g: 1, b: 0.92, a: 1}
+    frostSwordColor: {r: 0.58, g: 0.84, b: 1, a: 1}
   stormOrbMaximumLevel: 5
   stormOrbUnlimitedMaximumLevel: 0
   stormOrbDamageBonusPerLevel: 0.2

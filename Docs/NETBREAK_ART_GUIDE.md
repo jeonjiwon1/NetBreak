@@ -1,5 +1,9 @@
 # NETBREAK 아트 스타일 가이드 — VS-2 초안
 
+## Area 1 Boss Shark 1차 아트 (2026-09-28, Prototype 승인)
+
+연안 Boss는 탑다운 상어다. 96×96 셀의 넓은 머리·뾰족한 주둥이, 위아래로 뻗은 가슴지느러미, 등지느러미와 갈라진 꼬리로 참치 및 MiniBoss와 실루엣을 구분한다. 기존 Fish처럼 남색 1~2픽셀 외곽, 청록 등면, 밝은 가장자리·배색을 쓰고 투명 여백을 둔다. 4방향×4프레임의 기본 수영만 제작했다. Phase별 별도 Sprite, 피격·포획·도주 전용 애니메이션은 후속 후보이며 현재 Phase 색 점멸·속도 변화·HUD를 유지한다. 사용자가 Unity에서 Boss의 크기·실루엣·방향·수영과 Phase·도주·포획 흐름을 확인했다. **Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending.**
+
 ## TAB 성장 관리 UI Prototype 확정 스타일 (2026-09-28)
 
 사용자가 Unity Game View에서 현재 TAB 성장 관리 UI의 시각 결과를 확인해 **Prototype Growth Management UI Approval: Approved**로 승인했다. 출시용 최종 승인은 **Final Production Growth Management UI Approval: Pending**이다. 아래 성장 관리 관련 Pending/후보 표기는 승인 전 반복 작업의 이력이다.

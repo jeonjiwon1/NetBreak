@@ -25,6 +25,7 @@ public sealed class FishVisualExpansionTests
     [TestCase("Tuna", 64)]
     [TestCase("Pufferfish", 48)]
     [TestCase("Squid", 64)]
+    [TestCase("CoastBoss", 96)]
     public void ExpandedProfileHasExactImportedFramesAndFishDataLink(string species, int cell)
     {
         FishVisualProfile profile = Profile(species);
@@ -57,8 +58,9 @@ public sealed class FishVisualExpansionTests
     public void SardineAndPrototypeFallbackLinksRemainCorrect()
     {
         Assert.That(Fish("Sardine").VisualProfile, Is.SameAs(Profile("Sardine")));
-        foreach (string name in new[] { "CoastMiniBoss", "CoastBoss" })
+        foreach (string name in new[] { "CoastMiniBoss" })
             Assert.That(Fish(name).VisualProfile, Is.Null, name);
+        Assert.That(Fish("CoastBoss").VisualProfile, Is.SameAs(Profile("CoastBoss")));
     }
 
     [Test]
@@ -115,6 +117,7 @@ public sealed class FishVisualExpansionTests
     [TestCase("Tuna")]
     [TestCase("Pufferfish")]
     [TestCase("Squid")]
+    [TestCase("CoastBoss")]
     public void SpecialFishUseImportedFramesForAllEightHeadings(string species)
     {
         Texture2D texture = Own(new Texture2D(1, 1));
