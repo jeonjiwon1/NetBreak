@@ -1,5 +1,40 @@
 # NETBREAK 인수인계
 
+## Area 1 TAB 성장 관리 UI Prototype 승인 (2026-09-28)
+
+- 사용자가 Unity Game View에서 현재 성장 관리 UI를 직접 확인했다. Area 1 메인 HUD와 같은 해양 픽셀 UI 계열, 관리 창의 구조·정보 계층, Galmuri11 계열의 짧은 텍스트, 스킬 트리/아이템 탭의 밝은 청록 선택·어두운 청록 비선택 상태를 Prototype 기준으로 승인했다. 비선택 탭의 노란/로프색 강조 문제는 해결됐다.
+- 아이템 페이지의 4칸·01~04·`비어 있음` 표시와 공통 `icon_empty.png`의 픽셀 +를 확인했다. 메인 HUD와 TAB은 같은 Sprite를 쓰고, 메인 HUD는 기존 표시 크기, TAB은 빈 슬롯 전용 32×32 Simple Image/Offset (-4,-2)를 쓴다. 4개 +의 크기·위치 정렬이 확인됐다. 단일 시너지 구조와 복합 시너지 제목 프레임의 하단이 카드 영역을 침범하지 않는 것도 확인했다. Q/W/E/R 성장 영역의 기본 구조·잠금 UI, 기존 TAB/페이지 구조를 확인했으며 성장 로직은 이번 UI 작업에서 변경하지 않았다.
+- **Implementation: Complete / Static Validation: Complete / Unity Manual Growth Management Visual Validation: Passed / Prototype Growth Management UI Approval: Approved / Final Production Growth Management UI Approval: Pending.** 이 승인은 Vertical Slice의 시각 UI 기준이다. 실제 아이템·성장 노드·시너지 콘텐츠가 더 채워진 뒤 출시용 UI를 재검토할 수 있다. 이번 승인만으로 별도의 Gameplay 회귀나 Console Error 0 검증을 완료했다고 기록하지 않는다. 아래 성장 관리 관련 Pending 표기는 승인 전 반복 작업의 이력이다.
+- 이번 마감은 문서 3종만 갱신한다. 구현·아트·Scene/Prefab·Font Asset 변경, Unity/Play/Test Runner/Computer Use, 임시 프로젝트, Git add/commit/push는 수행하지 않는다. 전체 `git diff --check`의 기존 `NanumGothic-Bold SDF.asset` 공백 3곳은 별도로 구분해 보고한다.
+
+## Area 1 TAB 빈 슬롯 + 표시 크기만 보정 (2026-09-28, 사용자 Unity 검증 대기)
+
+- 최신 사용자 요청에 따라 메인 HUD의 +와 공통 `icon_empty.png`를 그대로 보존했다. `ItemHUD`와 `GrowthItemPage`는 모두 `Area1HUDSkin.Frame("icon_empty")`를 읽는다. 메인 HUD는 런타임 `Area1ItemIcon`이 32×32, 중앙 Anchor/Pivot, `anchoredPosition (0,-25)`로 84×82 슬롯 중심에 놓인다. TAB의 직전 `GrowthItemIcon`은 1920×1080 기준 약 192×204 슬롯의 38% 폭/높이(약 73×78)여서 같은 32×32 Sprite가 크게 표시됐다.
+- TAB의 **빈 슬롯만** `GrowthItemIcon` Rect를 32×32, 중앙 Anchor/Pivot, 정수 `anchoredPosition (-4,-2)`로 바꿨다. 이는 기존 TAB 안쪽 프레임의 시각 중심에 맞춘 작은 좌·하 이동이다. 기존 공용 스킨에서 아이콘에도 적용됐던 `Image.Type.Tiled`를 빈 +에 한해 `Simple`로 표시하고 `preserveAspect=true`를 유지한다. 보유 아이템 아이콘은 이전 Rect 영역/Tiled 타입을 그대로 사용하며, 슬롯 크기·번호·`비어 있음`·탭·시너지·툴팁·버튼과 기능 연결은 유지한다. 메인 HUD 코드/Rect와 공통 PNG/`.meta`/GUID는 수정하지 않았다.
+- Scene 직렬화상 TAB의 ItemPage→OwnedItems→OwnedItemSlot Scale은 모두 1이고 슬롯 부모에 LayoutGroup/ContentSizeFitter가 없다. 공통 Sprite Import는 Point, 무압축, Mipmap Off, PPU 32다. CanvasScaler는 1920×1080 Match 0.5이고 Pixel Perfect는 꺼져 있으므로 실제 출력 해상도별 최종 픽셀 정렬은 Unity 확인이 필요하다. 이번 변경 파일의 `git diff --check`는 통과했고 전체 검사는 시작 전부터 변경돼 있던 `NanumGothic-Bold SDF.asset`의 trailing whitespace 3곳에서 실패한다. **Scoped Static Validation: Complete / Unity Visual·Console Validation: Pending / Approval: Pending.** 임시 프로젝트·Unity·Play·Test Runner·Computer Use·Git add/commit/push 미수행.
+
+## Area 1 공통 + 두께·TAB 슬롯 중심 보정 (2026-09-28, Unity 검증 대기)
+
+- 사용자 제공 현재 TAB 화면을 기준으로 보유 아이템 4칸의 +를 안쪽 청록 사각 프레임 중심에 맞췄다. `GrowthManagementSkin`의 `GrowthItemIcon` 영역 중심을 슬롯 기준 `(0.50, 0.55)`에서 `(0.48, 0.50)`으로 옮겼다. 슬롯/번호/`비어 있음`/탭/시너지/버튼의 배치와 이벤트는 유지했다. 메인 HUD의 `Area1ItemIcon`은 기존 84×82 슬롯 정중앙 `(0.50, 0.50)`에 있어 위치 코드를 변경하지 않았다.
+- `Assets/Resources/UI/Area1/icon_empty.png`의 십자 막대를 직전 8px에서 **2px**로 축소했다(픽셀 격자에서 가능한 75% 두께 감소, 최초 10px 체감 기준 약 80%). 양축 범위 `3..28`의 26px 길이와 이미지 중심 `(15.5, 15.5)`는 유지한다. 4톤(어두운 끝, 로프 중간, 밝은 면, 청록 포인트)의 단순한 픽셀 음영을 쓴다. `Tools/refine_area1_empty_icon.js`도 같은 결과를 재생성하도록 갱신했다. 메인 `ItemHUD`와 TAB `GrowthItemPage`는 동일한 공용 Sprite를 계속 읽는다.
+- 기존 `.meta`/GUID, Scene/Prefab, 메인 HUD 표시 코드, Gameplay/입력/아이템·시너지 로직은 건드리지 않았다. 이번 세션 시작 시 이미 변경돼 있던 Galmuri11/Nanum TMP Font Asset 3종도 보존했다. 전체 `git diff --check`는 기존 `NanumGothic-Bold SDF.asset`의 trailing whitespace 3곳으로 실패했고, 이번 수정 파일만의 `git diff --check`와 신규 소스의 공백 검사는 통과했다. PNG 규격·중앙·두께·공용 경로·GUID도 정적으로 확인했다. Unity Import·컴파일·Console·Play·수동 시각 검증은 사용자 담당이며 승인 **Pending**이다. Git add/commit/push와 임시 프로젝트 생성 없음.
+
+## Area 1 TAB 성장 관리 UI 후속 정리·공통 빈 슬롯 십자 (2026-09-28, 사용자 검증 대기)
+
+- `vertical-slice`의 직전 미커밋 성장 관리 스킨 작업을 유지한 채 표시만 조정했다. 메인 HUD `ItemHUD`와 TAB `GrowthItemPage`가 모두 `Area1HUDSkin.Frame("icon_empty")`를 쓰는 것을 코드로 확인했다. 이 공용 Sprite는 비어 있는 Q/W 도구 표시와 알 수 없는 아이템의 fallback에도 쓰이므로 해당 십자 모양도 함께 바뀐다. 기존 `Assets/Resources/UI/Area1/icon_empty.png` 한 장만 32×32 RGBA8의 가운데 정렬된 픽셀 십자로 다시 그렸고 `.meta`/GUID `cd6e4b5cb2af00c1e9ce18d88d049d35`는 보존했다. 기존 십자의 주 몸통 약 10px을 8px로 줄이고 양축 길이는 약 26px로 유지했다. 짙은 외곽·로프 중간색·밝은 모서리·작은 청록 음영을 사용한다. `Tools/refine_area1_empty_icon.js`는 이 PNG만 재생성한다.
+- TAB 빈 아이템 슬롯의 아이콘 영역을 세로 중앙에 더 가깝게 내리고 상태 텍스트 영역을 분리했다. 메인 HUD의 프레임·아이콘 RectTransform·배치·텍스트·기능은 수정하지 않았다. 두 화면은 여전히 동일한 `icon_empty` Sprite를 사용한다.
+- 성장 관리 스킨의 비선택 탭을 노란 목재 `button`에서 어둡게 착색한 청록 `selected_slot`로 바꾸고, 선택 탭은 같은 Sprite의 밝은 원색을 유지했다. 탭/페이지 이벤트와 기존 선택 제한은 그대로다. `CombinedSynergies` 제목 띠의 하단 Anchor를 `0.81→0.875`로 올려 아래 카드 영역(`0.85` 상단)과 간격을 확보했다. 다른 섹션 띠와 하단 상세 설명의 배치는 유지했다.
+- 수정/생성: `GrowthManagementSkin.cs`, `icon_empty.png`, 신규 `Tools/refine_area1_empty_icon.js` 및 본 문서·아트 가이드·에셋 목록. 앞선 미커밋 성장 UI 변경과 분리해 삭제하거나 되돌리지 않았다. Scene/Prefab, PNG `.meta`, 게임플레이, 입력, 데이터와 메인 HUD 코드에는 변경이 없다. **Static Validation: Complete / Unity Import·Visual·Interaction Validation: Pending / Prototype Approval: Pending.** 사용자 검증: 메인/TAB 4칸의 같은 십자와 중심, 보유 아이템으로 교체, 선택·비선택 탭 대비, 복합 시너지 제목 하단과 카드 간격, 작은 화면 한글/툴팁/버튼, Console 확인. Unity 실행·임시 복사 프로젝트·Play·Git add/commit/push 미수행.
+
+## Area 1 TAB 성장 관리 UI 해양 스타일 정리 (2026-09-28, 사용자 검증 대기)
+
+- 목적: 기존 Area 1 메인 HUD와 TAB 성장 관리 창을 같은 해양 픽셀 UI 세트로 맞추고, 전체 창·헤더·탭·도구 트리·아이템·시너지·툴팁의 정보 계층과 가독성을 정리한다. Scene의 `SkillTreeUI/TreePanel` 직렬화 참조와 배치, TAB 입력, 성장/아이템/시너지 판정은 유지한다.
+- `GrowthManagementSkin.cs`와 `.meta`를 추가했다. 기존 `Assets/Resources/UI/Area1/`의 `panel`, `header`, `button`, `slot`, `selected_slot`, `ref_item_slot`, `icon_empty`, 6종 아이템 아이콘과 조개·산호·잎·로프 장식을 재사용한다. 신규 PNG/PNG `.meta`는 0개이며 기존 PNG/GUID는 수정하지 않는다. 창은 어두운 해양 오버레이 위의 둥근 픽셀 프레임, 목재 헤더와 표지판형 활성/비활성 탭으로 표현한다.
+- 스킬 트리는 Q/W/E/R Branch 배경과 도구 Root/동적 성장 노드에 같은 프레임을 적용하고, 연결선과 노드의 잠김·선택 가능·완료 상태를 청록·회청·모래색으로 구분한다. 아이템 페이지는 4칸 각각에 번호/아이콘/이름·상태 영역을 나누고, 전기·검·얼음 단일 시너지와 복합 카드/설명/변경 버튼을 별도 섹션으로 묶는다. 툴팁은 같은 프레임을 사용하며 기존 최상위 표시 경로를 유지한다.
+- Typography: 짧은 제목·탭·버튼·노드/상태는 Galmuri11 Bold 또는 Galmuri11, 숫자·레벨·숙련 포인트는 Galmuri11을 사용한다. 긴 복합 시너지 상세/카드 설명과 성장·아이템 툴팁은 기존 NanumGothic을 보존한다. 텍스트는 영역 내 자동 크기·줄바꿈/잘림을 설정했다. 실제 한국어 줄바꿈과 세로 정렬은 Unity 확인 대기다.
+- 코드 변경은 `SkillTreeCanvas.cs`, `SkillTreeBranchView.cs`, `SkillTreeNodeView.cs`, `GrowthItemPage.cs`, `SkillTreeTooltip.cs`의 표시 부분이다. 기존 버튼 이벤트, TAB 열기/닫기, 페이지 기억/전환, Q/W/E/R 획득·투자, 아이템 보유, 단일/복합 시너지 선택·쿨다운, 툴팁 내용/위치 계산은 유지한다. `Assets/Scenes/Main.unity`, Prefab, Gameplay 스크립트는 수정하지 않았다.
+- 정적 확인: `git diff --check`, 리소스 PNG/`.meta` 존재·GUID 중복·코드 경로와 Main Scene의 연결 대상 확인. Unity Import·컴파일·Console·Play·수동 시각/상호작용 검증은 사용자 요청으로 수행하지 않는다. 사용자는 ① TAB 열기/닫기와 모달 계층 ② 스킬 트리/아이템 탭 전환과 필수 획득 제한 ③ Q/W/E/R 잠김·가능·완료 노드/연결선과 툴팁 ④ 4칸 빈/보유 아이템 아이콘·텍스트 ⑤ 단일/복합 시너지 카드·상세·버튼/툴팁 ⑥ 1920×1080 및 축소 Game View의 한글 잘림·Console을 확인해야 한다. **Static Validation: Complete / Unity Manual Validation: Pending / Prototype Approval: Pending.** Git add/commit/push 및 Computer Use 미수행.
+
 ## Area 1 UI Galmuri11 Typography Pass (2026-09-28, Prototype 승인)
 
 - 공식 `quiple/galmuri` 저장소의 커밋 `71e1cacf1437a11220307120e63e30bc275312d4`에서 `Galmuri11.ttf`, `Galmuri11-Bold.ttf`, `dist/LICENSE.txt`를 원본 이름과 바이트 그대로 `Assets/UI/Fonts/Galmuri/`에 추가했다. 라이선스는 SIL Open Font License 1.1이다.

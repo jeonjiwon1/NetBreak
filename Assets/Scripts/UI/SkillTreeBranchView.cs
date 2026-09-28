@@ -102,6 +102,20 @@ public sealed class SkillTreeBranchView : MonoBehaviour
     private void ConfigureCompactRoot()
     {
         if (rootButton == null) return;
+        connectionLockedColor = new Color32(67, 103, 111, 220);
+        connectionReadyColor = new Color32(111, 217, 205, 255);
+        Image rootImage = rootButton.GetComponent<Image>();
+        if (rootImage != null && rootImage.sprite == null)
+        {
+            rootImage.sprite = Area1HUDSkin.Frame("slot");
+            rootImage.type = Image.Type.Tiled;
+        }
+        if (branchTitleText != null)
+            Area1Typography.Apply(branchTitleText, Area1Typography.Role.Title);
+        if (rootTitleText != null)
+            Area1Typography.Apply(rootTitleText, Area1Typography.Role.Title);
+        if (rootStatusText != null)
+            Area1Typography.Apply(rootStatusText, Area1Typography.Role.Body);
         RectTransform rootRect = rootButton.transform as RectTransform;
         rootRect.anchorMin = rootRect.anchorMax = new Vector2(0.5f, 1f);
         rootRect.pivot = new Vector2(0.5f, 1f);

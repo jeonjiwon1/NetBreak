@@ -120,10 +120,12 @@ public sealed class SkillTreeTooltip : MonoBehaviour
         panel.pivot = new Vector2(0f, 1f);
         if (label != null)
         {
-            label.enableAutoSizing = false;
+            label.enableAutoSizing = true;
             label.fontSize = 17f;
+            label.fontSizeMin = 14f;
+            label.fontSizeMax = 17f;
             label.textWrappingMode = TextWrappingModes.Normal;
-            label.overflowMode = TextOverflowModes.Overflow;
+            label.overflowMode = TextOverflowModes.Truncate;
             label.raycastTarget = false;
             label.alignment = TextAlignmentOptions.TopLeft;
         }

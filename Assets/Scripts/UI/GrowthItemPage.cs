@@ -15,7 +15,21 @@ public sealed class GrowthItemPage : MonoBehaviour
         {
             if (label != null)
             {
-                label.text = BuildItemSlotText(slotIndex, inventory);
+                bool occupied = inventory != null &&
+                    slotIndex < inventory.OwnedItems.Count;
+                label.text = occupied
+                    ? BuildItemSlotText(slotIndex, inventory)
+                    : "비어 있음";
+                Transform iconTransform = label.transform.parent?.Find("GrowthItemIcon");
+                Image icon = iconTransform != null
+                    ? iconTransform.GetComponent<Image>() : null;
+                if (icon != null)
+                {
+                    icon.sprite = occupied
+                        ? Area1HUDSkin.ItemIcon(inventory.OwnedItems[slotIndex].ItemId)
+                        : Area1HUDSkin.Frame("icon_empty");
+                    GrowthManagementSkin.PositionItemIcon(icon, occupied);
+                }
             }
         }
     }

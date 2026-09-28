@@ -1,5 +1,40 @@
 # NETBREAK 아트 스타일 가이드 — VS-2 초안
 
+## TAB 성장 관리 UI Prototype 확정 스타일 (2026-09-28)
+
+사용자가 Unity Game View에서 현재 TAB 성장 관리 UI의 시각 결과를 확인해 **Prototype Growth Management UI Approval: Approved**로 승인했다. 출시용 최종 승인은 **Final Production Growth Management UI Approval: Pending**이다. 아래 성장 관리 관련 Pending/후보 표기는 승인 전 반복 작업의 이력이다.
+
+- **Visual:** Area 1 메인 HUD와 같은 해양 픽셀 UI 계열이다. Deep navy/teal 내부, rope/wood/해양 장식 프레임을 사용하며 장식보다 정보 가독성을 우선한다. 단일·복합 시너지는 분리하고 복합 시너지 제목 프레임은 아래 카드·설명 영역을 침범하지 않게 여백을 둔다.
+- **Typography:** 짧은 제목·탭·버튼·수치·상태는 Galmuri11/Galmuri11 Bold를 사용한다. 긴 Tooltip과 설명은 기존 NanumGothic 계열을 유지할 수 있다.
+- **Tabs:** 선택 탭은 밝은 cyan/teal, 비선택 탭은 어두운 teal이다. 비선택 탭에 노란/로프색 강조를 사용하지 않아 현재 페이지가 즉시 구분된다.
+- **Empty slot:** 메인 HUD와 TAB은 공통 픽셀 Sprite `icon_empty.png`를 공유한다. 화면별 슬롯 크기에 맞춰 표시 Rect/Offset을 달리하지만 Sprite를 복제하지 않는다. 현재 메인 HUD는 기존 표시값, TAB의 빈 슬롯은 32×32 Simple Image/Offset (-4,-2)다.
+
+**Unity Manual Growth Management Visual Validation: Passed.** 이번 승인은 Prototype/Vertical Slice 시각 결과에 한하며 실제 콘텐츠 확장 후 Final Production UI를 다시 검토할 수 있다.
+
+## TAB 빈 슬롯 + 표시만 축소 (2026-09-28, 수동 확인 대기)
+
+공통 `icon_empty.png`와 메인 HUD의 32×32 중앙 표시를 유지한다. TAB에서는 같은 Sprite를 빈 슬롯일 때만 32×32 Simple Image로 표시하고, 번호·안쪽 청록 프레임·하단 `비어 있음` 사이의 시각 중심에 맞춰 중앙에서 왼쪽 4px/아래 2px 둔다. 보유 아이템 아이콘은 기존 큰 표시 영역과 타입을 유지한다. Point/무압축/PPU 32 Import를 보존하며 다른 탭·시너지·프레임 아트는 건드리지 않는다. 실제 Game View 크기별 픽셀/텍스트 간격은 사용자 검증 대기다.
+
+## 공통 + 최종 두께·위치 후보 (2026-09-28, 사용자 Unity 확인 대기)
+
+최신 요청 기준은 십자의 **길이 26px 유지, 막대 총 두께 2px**이다. 직전 8px 후보에서 픽셀 격자상 75% 줄였으며, 최초 약 10px 체감 기준의 약 80% 감소에 해당한다. 짙은 끝 픽셀·로프 중간색·밝은 면·청록 포인트의 4톤만 쓰고 부드러운 돌출 장식을 없앴다. 32×32 이미지의 비투명 범위는 양축 `3..28`, 시각 중심은 `(15.5, 15.5)`다.
+
+메인 HUD 빈 아이템 슬롯의 +는 기존 슬롯 중심 위치를 보존한다. TAB 보유 아이템 4칸은 안쪽 청록 사각 프레임의 중심에 맞추기 위해 아이콘 표시 영역만 약간 왼쪽·아래로 옮겼다. 실제 Game View에서 4칸 모두의 중심, `비어 있음`과 간격, 메인 HUD와의 공통 디자인을 확인해야 한다. **Manual Visual Validation: Pending / Prototype Approval: Pending.**
+
+## TAB UI 후속 대비·공통 빈 슬롯 십자 (2026-09-28, 검증 대기)
+
+메인 HUD와 TAB 아이템 슬롯은 같은 `icon_empty.png`를 읽는다. 십자는 32×32 투명 픽셀 아트에서 기존과 비슷한 26px 길이를 유지하고, 몸통을 약 10px에서 8px로 줄여 슬롯 중앙에 또렷하게 놓는다. 짙은 외곽, 로프 중간색, 밝은 픽셀 하이라이트와 작은 청록 음영으로 단색 십자 느낌을 피한다. TAB 슬롯의 아이콘 표시 영역만 낮춰 텍스트와 분리했으며 메인 HUD 배치는 보존한다.
+
+TAB의 활성 페이지는 밝은 Cyan 경계의 `selected_slot`, 비활성 페이지는 같은 Sprite를 어두운 청록으로 착색해 표현한다. 비활성 탭의 노란 목재 강조를 없애 선택을 한눈에 알 수 있게 한다. 복합 시너지 제목 띠는 아래 카드와 간격을 두되 기존 본문·상세·버튼 위치를 유지한다. 실제 Unity의 Sprite 필터, 슬롯 중심, 한국어 글자와 탭 대비는 사용자 확인 대기다. **Manual Visual Validation: Pending / Prototype Approval: Pending.**
+
+## TAB 성장 관리 해양 픽셀 UI (2026-09-28, 사용자 확인 대기)
+
+메인 HUD와 성장 관리 창은 같은 `Assets/Resources/UI/Area1/` 프레임·장식·아이콘을 공유한다. TAB 창은 어두운 Navy 오버레이 위에 Teal 내부와 둥근 계단형 프레임을 올려 게임 화면보다 먼저 읽힌다. 상단에는 목재/로프 헤더, 아래에는 활성 Cyan/비활성 회청 탭을 두고 페이지마다 섹션 헤더를 반복한다. 조개·산호·잎·로프는 외곽 모서리에만 작게 둔다. 장식과 아이콘은 클릭을 막지 않는다.
+
+도구 성장 페이지는 Q/W/E/R Branch → Root → 노드·연결선 순서로 읽는다. 회청은 잠김, 밝은 청록은 선택 가능, 모래/금색은 획득·완료를 뜻한다. 아이템 페이지는 HUD의 네 슬롯과 같은 해양 프레임 안에 번호·아이콘·짧은 상태를 분리하고, 오른쪽 단일 속성 전기/검/얼음 및 아래 복합 시너지를 별도 묶음으로 표시한다. 긴 카드·상세·Tooltip 설명은 NanumGothic, 제목·탭·버튼·짧은 상태는 Galmuri11/Galmuri11 Bold, 숫자·레벨·단계는 Galmuri11을 사용한다. 각 텍스트 영역은 프레임 여백과 한글 줄바꿈/잘림을 고려한다.
+
+기존 화면/입력/데이터 연결을 보존하는 표시 패스이며, Scene/Prefab 또는 PNG 수정은 없다. 실제 Game View의 한국어 오버플로, Tooltip의 최상위 표시, 페이지 전환, 노드 및 아이템·시너지 상태의 색 구분은 사용자의 Unity 확인을 기다린다. **Manual Visual Validation: Pending / Prototype Approval: Pending.**
+
 ## Reference Frame Rebuild (2026-09-28, 현재 후보)
 
 - 최신 목표는 첨부 NETBREAK UI의 디자인 재현이다. 단색 중앙과 단색으로 늘어난 긴 테두리를 사용한 이전 후보를 대체한다. 프레임도 아이콘과 같은 픽셀 단위의 재질을 가져야 한다.

@@ -76,6 +76,8 @@ public sealed class SkillTreeCanvas : MonoBehaviour
     private void Start()
     {
         originalSiblingIndex = transform.GetSiblingIndex();
+        GrowthManagementSkin.Apply(treePanel, navigationRoot, skillTreePage,
+            itemPage, closeButton, masteryPointText, noticeText);
         manager = SkillTreeManager.Instance;
         if (closeButton != null)
         {
@@ -288,6 +290,8 @@ public sealed class SkillTreeCanvas : MonoBehaviour
             itemTabButton.interactable =
                 showSkillTree && !manager.IsMandatoryAcquisition && manager.CanInteract;
         }
+        GrowthManagementSkin.RefreshTabs(skillTreeTabButton, itemTabButton,
+            showSkillTree);
 
         itemPageView?.SetPageVisible(!showSkillTree);
         if (!showSkillTree)

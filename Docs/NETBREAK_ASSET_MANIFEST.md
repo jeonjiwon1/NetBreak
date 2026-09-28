@@ -1,5 +1,44 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## TAB 성장 관리 UI Prototype 승인 자산 상태 (2026-09-28)
+
+사용자가 Unity Game View에서 현재 성장 관리 UI의 해양 픽셀 프레임·Galmuri11 짧은 텍스트·탭 대비·4개 아이템 슬롯·단일/복합 시너지 구분과 공통 빈 슬롯 + 표시를 확인했다. 메인 `ItemHUD`와 TAB `GrowthItemPage`는 기존 `Assets/Resources/UI/Area1/icon_empty.png`(GUID `cd6e4b5cb2af00c1e9ce18d88d049d35`)를 공유한다. 메인 HUD의 기존 Rect와 TAB 전용 빈 슬롯 Rect를 분리하며 새 TAB PNG는 없다. 긴 Tooltip/설명은 기존 NanumGothic 계열을 유지한다. **Implementation: Complete / Static Validation: Complete / Unity Manual Growth Management Visual Validation: Passed / Prototype Growth Management UI Approval: Approved / Final Production Growth Management UI Approval: Pending.** 아래 성장 관리 관련 Pending 표기는 승인 전 자산 반복의 이력이다. 이번 마감에서 자산 파일은 수정하지 않았다.
+
+## TAB 전용 공통 + 표시 Rect 보정 (2026-09-28)
+
+`icon_empty.png`와 기존 `.meta`/GUID는 변경하지 않는다. 메인 `Area1ItemIcon`은 기존 32×32 배치 그대로이고, TAB의 `GrowthItemIcon`만 빈 슬롯에서 32×32/중앙 Anchor·Pivot/Offset (-4,-2)로 표시한다. 보유 아이템은 이전 크기 영역을 유지한다. 이번 갱신 파일은 표시 코드 `GrowthManagementSkin.cs`, `GrowthItemPage.cs`와 문서 3종이며 신규 PNG는 없다. Unity 수동 시각 확인과 승인은 Pending이다.
+
+## 공통 + 2px 후보·TAB 중심 보정 (2026-09-28)
+
+| 항목 | 파일·역할 | 상태 |
+|---|---|
+| 공통 + Sprite | `Assets/Resources/UI/Area1/icon_empty.png` | 32×32 RGBA8, 십자 26px 길이/2px 두께/4톤, 기존 `.meta` GUID `cd6e4b5cb2af00c1e9ce18d88d049d35` 유지 |
+| 자산 재생성 | `Tools/refine_area1_empty_icon.js` | 공통 PNG 한 장만 생성; 다른 Sprite나 `.meta` 수정 없음 |
+| TAB 위치 | `Assets/Scripts/UI/GrowthManagementSkin.cs` | `GrowthItemIcon` 중심을 `(0.48, 0.50)`으로 보정; 슬롯 크기·번호·상태 텍스트 유지 |
+
+메인 `ItemHUD`와 TAB `GrowthItemPage`는 공통 `icon_empty`를 계속 참조한다. 메인 HUD 아이콘은 기존 슬롯 중앙 배치를 유지한다. Scene/Prefab, 탭·시너지·버튼 구조는 변경하지 않았다. Unity Import·시각/Console 확인과 승인은 **Pending**이다.
+
+## 공통 빈 아이템 슬롯 십자·TAB 선택 대비 (2026-09-28)
+
+| 자산/코드 | 경로/역할 | 상태 |
+|---|---|---|
+| 공통 빈 슬롯 십자 | `Assets/Resources/UI/Area1/icon_empty.png` | 기존 32×32 RGBA PNG 교체, `.meta`/GUID `cd6e4b5cb2af00c1e9ce18d88d049d35` 유지; 메인 `ItemHUD`와 TAB `GrowthItemPage`가 동일 Sprite 로드. 빈 Q/W 도구 및 알 수 없는 아이템 fallback도 이 Sprite 사용 |
+| 결정론적 재생성 | `Tools/refine_area1_empty_icon.js` | 신규. `icon_empty.png`만 생성하고 `.meta`는 건드리지 않음 |
+| TAB 표시 | `Assets/Scripts/UI/GrowthManagementSkin.cs` | 같은 `selected_slot` Sprite를 선택 시 원색/비선택 시 어두운 청록 착색, TAB 슬롯 아이콘 위치 및 복합 시너지 제목 띠 높이 조정 |
+
+기존 메인 HUD 코드·RectTransform, 다른 PNG 38종과 `ref_` PNG, Scene/Prefab/입력·데이터 구조는 유지한다. 기존 HUD 일괄 생성기는 이전 후보를 다시 출력할 수 있으므로 이 십자 디자인을 재생성할 때는 위 전용 스크립트를 사용한다. **Static Validation: Complete / Unity Import·Visual Validation: Pending / Prototype Approval: Pending.**
+
+## TAB 성장 관리 UI 스킨 (2026-09-28)
+
+| 항목 | 프로젝트 경로/사용 | 상태 |
+|---|---|---|
+| 성장 창 표시 코드 | `Assets/Scripts/UI/GrowthManagementSkin.cs` + `.meta`; `SkillTreeCanvas`, `SkillTreeBranchView`, `SkillTreeNodeView`, `GrowthItemPage`, `SkillTreeTooltip` 표시 연결 | 신규 코드 1쌍, 기존 코드 5개 수정 |
+| 공용 프레임 | `Assets/Resources/UI/Area1/{panel,header,button,slot,selected_slot,ref_item_slot}.png` | 기존 PNG/.meta/GUID 재사용, 수정 0 |
+| 아이템/장식 | 같은 폴더의 `icon_empty`, 6종 기존 아이템 아이콘, `decor_{rope_knot,shell,coral,leaf}` | 기존 PNG/.meta/GUID 재사용, 수정 0 |
+| 서체 | `Assets/Resources/UI/Fonts/Galmuri11 SDF.asset`, `Galmuri11 Bold SDF.asset`; 기존 NanumGothic-Bold SDF | 짧은 UI/숫자 Galmuri11, 긴 설명·Tooltip NanumGothic |
+
+변경 화면: 전체 창·헤더·스킬 트리/아이템 탭, Q/W/E/R Branch·노드·연결선, 네 아이템 슬롯, 단일/복합 시너지 섹션·카드·상세·확인 버튼, 성장/아이템/속성 Tooltip. Scene/Prefab, PNG/PNG `.meta`, gameplay·TAB·페이지/선택 이벤트는 수정하지 않았다. Unity Import·컴파일·시각/상호작용 검증과 승인은 사용자 확인 대기다. **Static Validation: Complete / Manual Validation: Pending / Prototype Approval: Pending.**
+
 ## Galmuri11 UI Typography Prototype (2026-09-28)
 
 | 자산 | 출처 | 프로젝트 경로 | 사용/상태 |

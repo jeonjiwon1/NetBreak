@@ -35,6 +35,7 @@ public sealed class SkillTreeNodeView : MonoBehaviour,
         role = treeRole;
         definition = treeDefinition;
         node = nodeDefinition;
+        ApplyMarineStyle();
 
         if (purchaseButton != null)
         {
@@ -56,6 +57,7 @@ public sealed class SkillTreeNodeView : MonoBehaviour,
         definition = treeDefinition;
         node = nodeDefinition;
         isAbilityNode = true;
+        ApplyMarineStyle();
 
         if (purchaseButton != null)
         {
@@ -63,6 +65,21 @@ public sealed class SkillTreeNodeView : MonoBehaviour,
             purchaseButton.onClick.AddListener(HandlePurchase);
         }
         Refresh();
+    }
+
+    private void ApplyMarineStyle()
+    {
+        availableColor = Color.white;
+        unavailableColor = new Color32(133, 157, 160, 255);
+        completedColor = new Color32(255, 218, 159, 255);
+        if (background != null)
+        {
+            background.sprite = Area1HUDSkin.Frame("slot");
+            background.type = Image.Type.Tiled;
+        }
+        if (titleText != null) Area1Typography.Apply(titleText, Area1Typography.Role.Title);
+        if (rankText != null) Area1Typography.Apply(rankText, Area1Typography.Role.Number);
+        if (lockText != null) Area1Typography.Apply(lockText, Area1Typography.Role.Body);
     }
 
     public void Refresh()
@@ -104,7 +121,12 @@ public sealed class SkillTreeNodeView : MonoBehaviour,
         }
         if (purchaseButton != null) purchaseButton.interactable = available;
         if (background != null)
-            background.color = completed ? completedColor : available ? availableColor : unavailableColor;
+        {
+            background.sprite = Area1HUDSkin.Frame(
+                completed || available ? "selected_slot" : "slot");
+            background.color = completed ? completedColor
+                : available ? availableColor : unavailableColor;
+        }
 
         if (isHovered)
         {
