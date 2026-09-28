@@ -1,0 +1,19 @@
+ M Assets/Scripts/Core/SignatureSkillManager.cs
+ M Assets/Scripts/Core/TacticalSkillManager.cs
+ M Assets/Scripts/Core/ToolSlotInput.cs
+ M Assets/Scripts/Gear/FishingRodPlacementController.cs
+ M Assets/Scripts/Gear/GearRepositionController.cs
+ M Assets/Scripts/Gear/NetPlacementController.cs
+ M Assets/Scripts/UI/ItemHUD.cs
+ M Assets/Scripts/UI/PrototypeHUDCanvas.cs
+ M Docs/NETBREAK_ART_GUIDE.md
+ M Docs/NETBREAK_ASSET_MANIFEST.md
+ M NETBREAK_STATE.md
+?? Artifacts/
+?? Assets/Resources/UI.meta
+?? Assets/Resources/UI/
+?? Assets/Scripts/UI/Area1HUDSkin.cs
+?? Assets/Scripts/UI/Area1HUDSkin.cs.meta
+?? Assets/Scripts/UI/DraggableHudPanel.cs
+?? Assets/Scripts/UI/DraggableHudPanel.cs.meta
+?? Tools/generate_area1_hud_art.js

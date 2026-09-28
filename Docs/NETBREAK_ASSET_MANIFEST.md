@@ -1,5 +1,42 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## Reference Frame Rebuild (2026-09-28, 현재 적용)
+
+- 기존 39 PNG 경로/GUID 유지. 변경 8개: panel.png, header.png, button.png, slot.png, selected_slot.png, key.png, decor_rope_knot.png, decor_wave.png. 나머지 31 PNG는 세션 시작본 그대로다.
+- 프레임 6개: 32×32→64×64, 최대 Import 크기 64, PPU 100, Border 사방 12px. 로프: 기존 48×48/Importer 유지. 파도: 48×48→256×48, 최대 Import 크기 256, 기존 Border 0/PPU 유지. 모든 Point/무압축/무MipMap/GUID는 유지한다. 프레임 이미지가 커진 것은 화면 UI 크기 변경이 아니다.
+- 내장 ImageGen 8회 제작, 원본·프롬프트는 Artifacts/MarineUIReference/Sources 및 generation-manifest.json. 출력은 Tools/pack_area1_reference_frames.ps1, 연결은 Area1HUDSkin.cs. 기존 생성 스크립트를 다시 실행하면 이전 후보로 덮어쓸 수 있으므로 최신 스크립트/산출물을 사용한다.
+- 현재 PNG와 필요한 메타데이터는 Artifacts/MarineUIReference/REFERENCE_UI_ASSETS.zip에 보관한다. 이 ZIP만으로 코드 변경을 대신할 수는 없다. 이전 자산은 BEFORE_ASSETS.zip. 정적 검사는 static-validation.json, 사용자 검증은 UNITY_CHECKLIST.md.
+- 실제 Unity Import/컴파일/Play 및 Reference 동일성 승인은 Pending. 이번 작업에서는 실행하지 않았다.
+
+## Area 1 Marine Refinement (2026-09-28, 39 PNG 적용)
+
+- Assets/Resources/UI/Area1/의 기존 39 PNG: 프레임 6개/아이콘 22개는 32×32, 장식 11개는 48×48. RGBA8, Alpha 0/255. 파일명·경로·39 .meta/GUID·Point/무압축/무MipMap·Sprite Border를 보존했다. 신규 Unity 에셋은 없다.
+- 이전 후보 39종을 공통 팔레트와 픽셀 밀도로 재패킹했다. decor_wave만 새 ImageGen 연속 파도 소재를 사용한다. 원본과 프롬프트: Artifacts/MarineUIRefine/wave-source.png 및 WAVE_PROVENANCE.md. 다른 원본은 BEFORE_39.zip과 이전 MarineUI/generation-manifest.json에서 추적한다.
+- 생성·연결 범위: Tools/refine_area1_hud_art.ps1, Assets/Scripts/UI/Area1HUDSkin.cs, Assets/Scripts/UI/PrototypeHUDCanvas.cs. 정적 비교/미리보기/검증/ZIP은 Artifacts/MarineUIRefine/에 저장한다. 전체 39개 파일별 결과는 static-validation.json, 목록은 FINAL_REPORT.md 참조.
+- 실제 Unity Import/컴파일/Play/TMP 한글·오버플로·버튼/드래그/툴팁 검증은 수행하지 않았다. 사용자 수동 확인 대기이며 제작 완료 승인으로 기록하지 않는다.
+
+## Area 1 HUD 39 PNG 전면 재제작 후보 (2026-09-28, 현재 적용·승인 대기)
+
+Assets/Resources/UI/Area1/의 39 PNG 전체를 교체했다. 프레임 6개와 아이콘 22개는 32×32, 기존 장식 11개는 48×48이다. 신규 Unity Asset은 없다. current_ui_39.zip과 일치했던 시작본 39개 모두 새 해시로 바뀌었고, 기존 파일명·경로·39개 .meta/GUID/PPU/Point/무 Mipmap/무압축 및 Border(프레임 사방 5px, 나머지 0)는 보존됐다. 파일별 실제 연결·역할·GUID·원본 ZIP 비교는 ../Artifacts/MarineUI/ASSET_AUDIT.md와 asset-audit-before.json에 있다.
+
+제작은 내장 ImageGen의 파일별 개별 생성이며 CLI/API 대체는 사용하지 않았다. 프롬프트/원본 경로는 generation-manifest.json, 원래 규격의 최근접 샘플링·hard alpha·9-slice 패킹은 export-candidates.ps1에 기록했다. 이전 Tools/generate_area1_hud_art.js는 이번 후보의 원본 생성기가 아니다. PNG CRC·RGBA8·크기·알파·메타 보존·참조 및 6종 Stretch 영역 검사가 통과했고 ZIP 39개는 적용 PNG와 모두 같은 해시다. 최종 ZIP/비교 시트/정적 합성/검증 JSON/33개 사용자 확인 항목은 ../Artifacts/MarineUI/에 있다. **Manual Visual Validation: Pending / Prototype Approval: Pending / Final Production UI Approval: Pending.** Unity 실행·컴파일·Console·Play/Tests 검증은 이번에 수행하지 않았다.
+
+## Area 1 HUD/UI Marine Decoration Iteration 4 (2026-09-27, 승인 대기)
+
+`icon.zip`의 28개 PNG는 현재 `Assets/Resources/UI/Area1/`와 동일한 시작본이었다. 파일명·용도·기존 `.meta` GUID를 보존한 채 6개 9-slice 프레임과 22개 의미별 아이콘의 Deep Navy/Teal·Cyan·Wood/Rope·Sand 표현을 갱신했다. `Tools/generate_area1_hud_art.js`는 기존 `.meta`가 있으면 덮어쓰지 않으며 28개 PNG 모두 원본 ZIP과 해시가 달라졌다.
+
+새 장식 11종 `decor_palm`, `decor_gull`, `decor_starfish`, `decor_shell`, `decor_coral`, `decor_leaf`, `decor_rope_knot`, `decor_bobber`, `decor_wave`, `decor_crate`, `decor_clock`는 각각 48×48 RGBA/Point/무 Mipmap/무압축 Sprite다. 출처는 첨부 Sprite Sheet의 디자인 언어를 참고한 프로젝트 내부 결정론적 픽셀 제작이며, 원본 Sheet에서 7×4 순서 절단·임의 의미 매핑을 하지 않았다. 장식은 `Area1HUDSkin`이 Canvas의 각 패널 외곽에 Raycast를 막지 않는 `Image`로 별도 배치한다. 9-slice의 Stretch 영역에는 포함하지 않는다.
+
+Unity 6000.3.11f1에서 39 PNG Import 및 컴파일을 확인하고 작은 Game View에서 장식과 텍스트를 확인했다. 최종 전체 화면 확대 검토와 기능 회귀·사용자 승인은 대기한다. **Manual Visual Validation: Partial / Prototype Approval: Pending / Final Production UI Approval: Pending.**
+
+## Area 1 HUD/UI Visual Iteration 3 (2026-09-27, 사용자 Unity 검증 대기)
+
+Iteration 2의 작은 목재 프레임 반복을 줄이고 선택한 두 번째 UI 레퍼런스에 맞춰 Deep Navy/Teal 내부, 얇은 Cyan 경계, 필요한 바깥 모서리에만 목재·로프 강조를 사용한다. `panel`, `slot`, `button`, `key`의 기존 GUID를 유지하면서 `header`, `selected_slot`을 별도 32×32 9-slice Sprite로 추가했다. 기존 14종 도구·스킬·아이템 아이콘에 정보 7종(`icon_stat_*`)과 배속 파도(`icon_speed`)를 더해 총 28개 독립 PNG다. 모두 `Assets/Resources/UI/Area1/`에 있고 Point/무 Mipmap/무압축, 9-slice는 5px Border다. `Tools/generate_area1_hud_art.js`가 PNG와 `.meta`를 재생성한다. UI 전체를 고정 이미지로 만들지 않고 런타임 RectTransform 크기에 맞춰 재사용한다. Unity Import/Play 시각 검증과 승인은 남아 있다. **Manual Visual Validation: Pending / Prototype Approval: Pending / Final Production UI Approval: Pending.**
+
+## Area 1 HUD/UI 픽셀 프레임 (2026-09-27, 사용자 Unity 검증 대기)
+
+Visual Iteration 2에서 `Assets/Resources/UI/Area1/`의 `panel`, `slot`, `button`, `key`는 32×32 RGBA 9-slice 경계를 사방 8→5px로 줄이고 Deep Navy/Teal·얇은 Cyan 테두리로 다시 제작했다. 기존 도구/스킬/빈 상태 아이콘 8종에 `icon_storm_orb`, `icon_capacitor_coil`, `icon_spectral_scabbard`, `icon_autonomous_sword_array`, `icon_frost_sigil`, `icon_frost_crystal` 6종을 더해 총 18 PNG다. 모두 Point/무 Mipmap/무압축 Sprite Import 설정이며 `Tools/generate_area1_hud_art.js`로 결정론적으로 재생성한다. 기존 GameCanvas의 정적 HUD와 런타임 핫바가 Resources 경로로 읽고 새 Item HUD 아이콘은 기존 Inventory 상태에 맞춰 표시한다. Unity Import/Play 화면/Console 검증과 최종 UI 승인은 사용자 확인 전이다. **Manual Visual Validation: Pending / Prototype Approval: Pending / Final Production UI Approval: Pending.**
+
 ## AREA1-BG-001 — 고품질 정적 배경 후보 (2026-09-27, 현재 적용)
 
 | 항목 | 내용 |

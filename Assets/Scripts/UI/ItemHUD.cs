@@ -3,6 +3,7 @@ using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public sealed class ItemHUD : MonoBehaviour
 {
@@ -16,6 +17,15 @@ public sealed class ItemHUD : MonoBehaviour
     private int hoveredSlotIndex = -1;
     private ItemElement? hoveredElement;
     private RunItemInventory boundInventory;
+    private Image[] slotIcons = Array.Empty<Image>();
+    private TMP_Text[] slotDetailTexts = Array.Empty<TMP_Text>();
+
+    public void ConfigureVisuals(Image[] icons, TMP_Text[] details)
+    {
+        slotIcons = icons ?? Array.Empty<Image>();
+        slotDetailTexts = details ?? Array.Empty<TMP_Text>();
+        Refresh();
+    }
 
     private void OnEnable()
     {
@@ -86,9 +96,30 @@ public sealed class ItemHUD : MonoBehaviour
 
         if (tooltipPanel != null)
         {
+            PositionSlotTooltip();
             tooltipPanel.SetActive(true);
             tooltipPanel.transform.SetAsLastSibling();
         }
+    }
+
+    private void PositionSlotTooltip()
+    {
+        RectTransform panel = transform.Find("ItemHUD") as RectTransform;
+        RectTransform tooltip = tooltipPanel.transform as RectTransform;
+        RectTransform container = transform as RectTransform;
+        if (panel == null || tooltip == null || container == null ||
+            tooltip.parent != container) return;
+
+        float margin = 8f;
+        Vector2 position = panel.anchoredPosition +
+            new Vector2(0f, -panel.rect.height - margin);
+        float minimumY = -container.rect.height + tooltip.rect.height + margin;
+        if (position.y < minimumY)
+            position.y = panel.anchoredPosition.y + tooltip.rect.height + margin;
+        position.x = Mathf.Clamp(position.x,
+            -container.rect.width + tooltip.rect.width + margin, -margin);
+        position.y = Mathf.Clamp(position.y, minimumY, -margin);
+        tooltip.anchoredPosition = position;
     }
 
     public void HideTooltip()
@@ -149,14 +180,20 @@ public sealed class ItemHUD : MonoBehaviour
 
             if (inventory == null || i >= inventory.OwnedItems.Count)
             {
-                text.text = $"{i + 1}\n비어 있음";
+                text.text = "비어 있음";
+                SetSlotIcon(i, Area1HUDSkin.Frame("icon_empty"));
+                SetSlotDetail(i, string.Empty);
                 continue;
             }
 
             RunItemInstance owned = inventory.OwnedItems[i];
-            text.text = ItemCatalog.TryGet(owned.ItemId, out ItemDefinition definition)
-                ? $"{definition.ShortLabel}\n{definition.ElementDisplayName} · Lv.{owned.Level}"
-                : $"알 수 없음\nLv.{owned.Level}";
+            bool known = ItemCatalog.TryGet(owned.ItemId, out ItemDefinition definition);
+            text.text = known
+                ? definition.ShortLabel : "알 수 없음";
+            SetSlotIcon(i, known
+                ? Area1HUDSkin.ItemIcon(owned.ItemId)
+                : Area1HUDSkin.Frame("icon_empty"));
+            SetSlotDetail(i, $"Lv.{owned.Level}");
         }
 
         if (elementLevelText != null)
@@ -168,6 +205,19 @@ public sealed class ItemHUD : MonoBehaviour
             }
             elementLevelText.gameObject.SetActive(!string.IsNullOrEmpty(presentation));
         }
+    }
+
+    private void SetSlotIcon(int index, Sprite sprite)
+    {
+        if (index >= slotIcons.Length || slotIcons[index] == null) return;
+        slotIcons[index].sprite = sprite;
+        slotIcons[index].enabled = sprite != null;
+    }
+
+    private void SetSlotDetail(int index, string value)
+    {
+        if (index >= slotDetailTexts.Length || slotDetailTexts[index] == null) return;
+        slotDetailTexts[index].text = value;
     }
 
     public static string BuildElementLevelText(RunItemInventory inventory)

@@ -46,6 +46,7 @@ public sealed class ToolSlotInput
              PrototypeGameFlowManager.Instance.IsBossRewardPending));
 
     public static bool IsWorldPointerReserved =>
+        DraggableHudPanel.BlocksWorldPointer ||
         TacticalSkillManager.IsTargeting || SignatureSkillManager.IsTargeting ||
         RunManager.Instance == null || RunManager.Instance.ToolInput.PointerReserved;
 
@@ -94,8 +95,9 @@ public sealed class ToolSlotInput
         bool rodMode = FishingRodPlacementController.IsRodModeActive;
         bool preparation = PrototypeGameFlowManager.Instance != null &&
             PrototypeGameFlowManager.Instance.IsPreparation;
+        bool hudPointer = DraggableHudPanel.BlocksWorldPointer;
 
-        worldPointerReserved = netMode || rodMode || reposition || cancel ||
+        worldPointerReserved = hudPointer || netMode || rodMode || reposition || cancel ||
             TacticalSkillManager.IsTargeting || SignatureSkillManager.IsTargeting;
         bool pressAccepted = false;
         bool placementPressed = false;
@@ -104,12 +106,16 @@ public sealed class ToolSlotInput
             ToolId tool = loadout.GetSlot(i);
             ButtonControl key = GetSlotKey(keyboard, i);
             bool toolBlocked = cancel || reposition || tacticalTargeting || tool == ToolId.None ||
+                (hudPointer && held[i]) ||
                 (netMode && tool != ToolId.Net) || (rodMode && tool != ToolId.FishingRod) ||
                 (preparation && tool != ToolId.Net && tool != ToolId.FishingRod);
-            bool pressed = !toolBlocked && !pressAccepted && key != null && key.wasPressedThisFrame;
-            bool released = !toolBlocked && held[i] && key != null && key.wasReleasedThisFrame;
+            bool pressed = !hudPointer && !toolBlocked && !pressAccepted &&
+                key != null && key.wasPressedThisFrame;
+            bool released = !hudPointer && !toolBlocked && held[i] &&
+                key != null && key.wasReleasedThisFrame;
             states[i] = new ToolInputState(pressed, released, toolBlocked);
-            held[i] = !toolBlocked && (pressed || (held[i] && key != null && key.isPressed));
+            held[i] = !hudPointer && !toolBlocked &&
+                (pressed || (held[i] && key != null && key.isPressed));
             pressAccepted |= pressed;
             if (pressed && (tool == ToolId.Net || tool == ToolId.FishingRod))
             {

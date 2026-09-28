@@ -86,7 +86,7 @@ public class GearRepositionController : MonoBehaviour
         }
 
         if (!Mouse.current.leftButton
-            .wasPressedThisFrame)
+            .wasPressedThisFrame || DraggableHudPanel.BlocksWorldPointer)
         {
             return;
         }

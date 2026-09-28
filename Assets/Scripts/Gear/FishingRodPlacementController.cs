@@ -143,7 +143,8 @@ public class FishingRodPlacementController : MonoBehaviour
 
     private void HandlePlacementInput()
     {
-        if (!Mouse.current.leftButton.wasPressedThisFrame)
+        if (!Mouse.current.leftButton.wasPressedThisFrame ||
+            DraggableHudPanel.BlocksWorldPointer)
         {
             return;
         }

@@ -1,0 +1,384 @@
+{
+  "status": "PASS",
+  "pngCount": 39,
+  "changedPngCount": 8,
+  "preservedGuidCount": 39,
+  "changedImporterCount": 7,
+  "unchangedImporterCount": 32,
+  "changedFiles": [
+    "Assets/Resources/UI/Area1/button.png",
+    "Assets/Resources/UI/Area1/button.png.meta",
+    "Assets/Resources/UI/Area1/decor_rope_knot.png",
+    "Assets/Resources/UI/Area1/decor_wave.png",
+    "Assets/Resources/UI/Area1/decor_wave.png.meta",
+    "Assets/Resources/UI/Area1/header.png",
+    "Assets/Resources/UI/Area1/header.png.meta",
+    "Assets/Resources/UI/Area1/key.png",
+    "Assets/Resources/UI/Area1/key.png.meta",
+    "Assets/Resources/UI/Area1/panel.png",
+    "Assets/Resources/UI/Area1/panel.png.meta",
+    "Assets/Resources/UI/Area1/selected_slot.png",
+    "Assets/Resources/UI/Area1/selected_slot.png.meta",
+    "Assets/Resources/UI/Area1/slot.png",
+    "Assets/Resources/UI/Area1/slot.png.meta",
+    "Assets/Scripts/UI/Area1HUDSkin.cs",
+    "Docs/NETBREAK_ART_GUIDE.md",
+    "Docs/NETBREAK_ASSET_MANIFEST.md",
+    "NETBREAK_STATE.md"
+  ],
+  "assets": [
+    {
+      "name": "button.png",
+      "width": 64,
+      "height": 64,
+      "guidPreserved": true,
+      "importerChanges": "maxTextureSize=64; PPU=100; border=12",
+      "tileColors": 2,
+      "changed": true
+    },
+    {
+      "name": "decor_bobber.png",
+      "width": 48,
+      "height": 48,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "decor_clock.png",
+      "width": 48,
+      "height": 48,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "decor_coral.png",
+      "width": 48,
+      "height": 48,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "decor_crate.png",
+      "width": 48,
+      "height": 48,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "decor_gull.png",
+      "width": 48,
+      "height": 48,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "decor_leaf.png",
+      "width": 48,
+      "height": 48,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "decor_palm.png",
+      "width": 48,
+      "height": 48,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "decor_rope_knot.png",
+      "width": 48,
+      "height": 48,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": true
+    },
+    {
+      "name": "decor_shell.png",
+      "width": 48,
+      "height": 48,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "decor_starfish.png",
+      "width": 48,
+      "height": 48,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "decor_wave.png",
+      "width": 256,
+      "height": 48,
+      "guidPreserved": true,
+      "importerChanges": "maxTextureSize=256",
+      "tileColors": 0,
+      "changed": true
+    },
+    {
+      "name": "header.png",
+      "width": 64,
+      "height": 64,
+      "guidPreserved": true,
+      "importerChanges": "maxTextureSize=64; PPU=100; border=12",
+      "tileColors": 2,
+      "changed": true
+    },
+    {
+      "name": "icon_autonomous_sword_array.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_bait.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_capacitor_coil.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_cast.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_empty.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_frost_crystal.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_frost_sigil.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_landing.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_net.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_rod.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_signature.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_spectral_scabbard.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_speed.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_stat_area.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_stat_catch.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_stat_exp.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_stat_gold.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_stat_level.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_stat_rate.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_stat_stage.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_storm_orb.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "icon_tactical.png",
+      "width": 32,
+      "height": 32,
+      "guidPreserved": true,
+      "importerChanges": "none",
+      "tileColors": 0,
+      "changed": false
+    },
+    {
+      "name": "key.png",
+      "width": 64,
+      "height": 64,
+      "guidPreserved": true,
+      "importerChanges": "maxTextureSize=64; PPU=100; border=12",
+      "tileColors": 2,
+      "changed": true
+    },
+    {
+      "name": "panel.png",
+      "width": 64,
+      "height": 64,
+      "guidPreserved": true,
+      "importerChanges": "maxTextureSize=64; PPU=100; border=12",
+      "tileColors": 2,
+      "changed": true
+    },
+    {
+      "name": "selected_slot.png",
+      "width": 64,
+      "height": 64,
+      "guidPreserved": true,
+      "importerChanges": "maxTextureSize=64; PPU=100; border=12",
+      "tileColors": 2,
+      "changed": true
+    },
+    {
+      "name": "slot.png",
+      "width": 64,
+      "height": 64,
+      "guidPreserved": true,
+      "importerChanges": "maxTextureSize=64; PPU=100; border=12",
+      "tileColors": 2,
+      "changed": true
+    }
+  ],
+  "unity": "NOT RUN: user validation pending",
+  "referenceIdentity": "Visual target; exact identity not verified; existing UI sizes and TMP font preserved"
+}

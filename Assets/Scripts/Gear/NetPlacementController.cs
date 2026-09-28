@@ -148,7 +148,8 @@ public class NetPlacementController : MonoBehaviour
     private void HandlePlacement()
     {
         if (!isDragging &&
-            Mouse.current.leftButton.wasPressedThisFrame)
+            Mouse.current.leftButton.wasPressedThisFrame &&
+            !DraggableHudPanel.BlocksWorldPointer)
         {
             StartPlacement();
         }

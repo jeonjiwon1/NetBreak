@@ -1,0 +1,14 @@
+warning: in the working copy of 'Assets/Scripts/Core/SignatureSkillManager.cs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Assets/Scripts/Core/TacticalSkillManager.cs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Assets/Scripts/Core/ToolSlotInput.cs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Assets/Scripts/Gear/FishingRodPlacementController.cs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Assets/Scripts/Gear/GearRepositionController.cs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Assets/Scripts/Gear/NetPlacementController.cs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Assets/Scripts/UI/ItemHUD.cs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Assets/Scripts/UI/PrototypeHUDCanvas.cs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Assets/UI/Fonts/NanumGothic-Bold SDF.asset', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Assets/UI/Fonts/NanumGothic-Regular SDF.asset', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Docs/NETBREAK_ART_GUIDE.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Docs/NETBREAK_ASSET_MANIFEST.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'NETBREAK_STATE.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ProjectSettings/TimeManager.asset', LF will be replaced by CRLF the next time Git touches it

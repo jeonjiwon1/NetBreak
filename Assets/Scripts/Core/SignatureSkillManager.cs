@@ -591,6 +591,7 @@ public sealed class SignatureSkillManager : MonoBehaviour
         PrototypeGameFlowManager flow = PrototypeGameFlowManager.Instance;
         return Time.timeScale > 0f &&
             !ToolSlotInput.IsSelectionOrEndBlocked &&
+            !DraggableHudPanel.BlocksWorldPointer &&
             !TacticalSkillManager.IsTargeting &&
             flow != null && flow.IsFishingStarted &&
             !flow.IsPreparation && !flow.IsGameEnded;

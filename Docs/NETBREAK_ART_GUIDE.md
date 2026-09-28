@@ -1,5 +1,31 @@
 # NETBREAK 아트 스타일 가이드 — VS-2 초안
 
+## Reference Frame Rebuild (2026-09-28, 현재 후보)
+
+- 최신 목표는 첨부 NETBREAK UI의 디자인 재현이다. 단색 중앙과 단색으로 늘어난 긴 테두리를 사용한 이전 후보를 대체한다. 프레임도 아이콘과 같은 픽셀 단위의 재질을 가져야 한다.
+- 프레임 6종을 64×64 픽셀로 재제작했다. 중앙에는 낮은 대비의 청록 픽셀 군집, 목재에는 Cream 하이라이트/황토 중간색/짙은 갈색 홈/부분적인 청록 벗겨짐을 남긴다. 12px 고정 모서리에는 실제 가닥이 보이는 로프 감김이 들어간다. Tiled로 그려 중앙과 레일의 픽셀이 늘어나지 않게 한다.
+- 별도 로프는 세 가닥의 꼬임과 겹친 접합부를 갖는다. 간판·아이템 프레임·Hotbar 상하 접합부에 걸치며 raycast/레이아웃 공간을 차지하지 않는다. 파도는 반복 산 모양 대신 양 끝 큰 말림과 중앙 포말을 갖는 한 장의 띠다.
+- 좌측/시간/준비/아이템/Hotbar/배속/성장에 공통 재질을 적용한다. 성장 내부는 레퍼런스의 Navy, 슬롯은 청록 경계, 뜰채·선택 배속은 Cyan 강조다. 아이콘과 기존 TMP 폰트, 주요 배치는 유지한다.
+- 참조와 완전히 동일하다는 승인 기록이 아니다. 실제 Unity 화면 비교·글자 잘림·프레임 정합성은 사용자 확인 대기다. 프롬프트/원본/정적 합성/검증은 Artifacts/MarineUIReference에 보존한다.
+
+## Area 1 Marine Refinement (2026-09-28, 현재 후보)
+
+- 현재 레이아웃을 유지하고 Deep Navy/Teal, Cyan, 목재·로프·조개·산호·야자수 색을 27색으로 통일한다. 기존 ImageGen 도형을 재패킹하며 48px 장식은 24px 논리 그리드로 단순화한다. 완전히 새 레이아웃이나 고해상도 장식 세트로 바꾸지 않는다.
+- 32px 프레임은 기존 5px Slice 안에 계단형 곡선 모서리를 닫힌 형태로 넣는다. 중앙 단색/가장자리 일정 단면을 유지한다. 표시 두께는 UI Image multiplier로 줄이되 .meta는 유지한다. header 내부는 짙은 목재, 기본 패널은 Navy/Teal, 조업/성장 버튼은 Sand다.
+- NETBREAK 목재 간판은 패널 위로 약간 돌출하며 야자수·갈매기가 양 끝에 걸린다. 경험치 숫자 밑의 얇은 게이지는 읽기 전용이다. 준비 패널의 물고기 음영은 기존 물고기 아이콘을 낮은 불투명도로 재사용한다. 하단 파도는 별도 ImageGen 소재를 타일로 반복하고 양 끝 픽셀을 맞춘다.
+- 슬롯 번호는 독립된 어두운 배지/밝은 숫자, Hotbar는 목재 연결 기둥/명확한 끝 로프로 정리한다. 장식은 raycastTarget=false이고 Hotbar 장식은 Layout을 차지하지 않는다.
+- 정적 합성은 미술 배치 참고용이다. 실제 TMP·한글·해상도별 프레임/텍스트 겹침과 사용자 레퍼런스 부합 여부는 Unity에서 사용자 승인 대기다. 자세한 파일/검증 결과는 Artifacts/MarineUIRefine/FINAL_REPORT.md 참조.
+
+## Area 1 HUD 39종 Marine Rebuild 후보 (2026-09-28, 승인 대기)
+
+현재 Game View의 배치·크기와 기존 Text RectTransform을 보존하고, 39종 PNG를 내장 ImageGen의 개별 생성 아트로 교체했다. Wood/Rope 재질 프레임과 Deep Navy/Teal 내부, Cyan 선택 경계, Sand 버튼을 공유하며 야자수·갈매기·산호·조개·잎·로프·찌·포말 등 11종 독립 장식과 22종 의미별 아이콘을 재제작했다. 원래 32×32/48×48 규격과 모든 Import/.meta를 유지한다. 9-slice 고정 모서리와 가장자리 단면을 보존·패킹하고 중앙은 불투명 단색으로 정리했다. 제목 바와 키 배지는 기존 작은 높이에서 글자가 읽히도록 얇은 테두리와 어두운 안쪽 여백을 사용한다. 외곽 장식의 위치·수량·크기는 기존 코드 그대로다.
+
+정적 합성 및 원본 대비 시트는 ../Artifacts/MarineUI/에 있다. 실제 게임 화면 검증을 뜻하지 않는다. **Manual Visual Validation: Pending / Prototype Approval: Pending / Final Production UI Approval: Pending.** 이전 Iteration 4 기록은 이번 재제작 이전 상태다.
+
+## Area 1 HUD 해양 장식 시안 (2026-09-27, 승인 대기)
+
+현재 배치·정보 우선순위를 유지하면서 각 UI의 독립 9-slice 프레임 바깥에 작은 해양 장식을 놓는다. 좌측 정보 HUD는 야자수·갈매기·불가사리·잎/조개, 조업 준비는 야자수·낚시 찌·로프 매듭·산호·파도, 아이템은 잎·상자·조개, 핫바와 성장 버튼은 잎·산호·조개·로프를 사용한다. 시간은 시계/조개만, 배속은 기존 작은 파도 아이콘만 사용한다. 장식은 텍스트·슬롯 아이콘·클릭을 가리지 않고 9-slice Stretch 영역과 분리한다. Tropical Marine Sprite Sheet는 개별 장식 종류와 픽셀아트 색감·밀도 참고로 사용하며 icon.zip의 28개와 순서 매핑하지 않는다. 실제 Unity 작은 Game View에서 표시를 확인했으나 최종 전체 화면의 세부 가독성과 Prototype 승인은 대기한다.
+
 ## VS-2D-4 Cast Net Prototype — Unity 수동 검증 완료
 
 일회성 범위 도구는 실제 판정 중심과 반경을 먼저 읽히게 한다. 투망은 기존 커서 원형 표시와 같은 실제 `captureRadius`를 사용하고, 중심의 작은 접힌 Ghost를 투명하게 표시한다. 사용 후에는 64×64 셀/PPU 64의 5프레임 방사형 망이 목표 위치에서 약 0.42초 펼쳐진다. 확장 물결과 실제 피해 Fish의 작은 접촉 표시는 잠깐만 남는다. 지속 설치 Net의 길게 뻗은 Mesh/Rope와 실루엣 및 수명을 구분한다. 플레이어 캐릭터나 투척 원점이 없어서 임의의 비행 경로를 만들지 않았다. 사용자가 Unity Play Mode에서 Q/W 조준 Ghost와 실제 범위의 동위치 추적, 범위 업그레이드, 전개 Animation, 일회성 Area VFX, 실제 피해 대상만의 작은 Hit VFX, Miss와 다중 명중의 가독성을 확인하고 Prototype 품질을 승인했다. **Cast Net Pixel Art/Ghost: Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending. Cast/Open Animation: Manual Validation: Passed / Prototype Approval: Approved / Final Production Animation Approval: Pending. Area/Hit VFX: Manual Validation: Passed / Prototype Approval: Approved / Final Production VFX Approval: Pending.** PPU·셀 크기·5프레임·속도·VFX 수명은 최종 출시 규격이 아니다.
@@ -111,6 +137,10 @@ VS-2C-2는 성공한 먹물 판정 뒤 Attack animation → 기존 Release 구�
 VS-2C-3 복어 연출은 **실제 활성 그물 접촉으로 기존 3초 중단이 먼저 성공한 경우**에만 재생한다. 48px 복어 몸체를 두 프레임 동안 조금 키워 가시·외곽의 접촉 반응을 보여준 뒤 현재 방향 Swim으로 복귀한다. 이는 순간 반응이며 지속 팽창·가시 피해·경고 행동을 뜻하지 않는다. 접촉점의 24px 노랑·물색 Impact는 중단 원인을 짧게 알리고, 기존 그물 어두워짐은 중단 지속 상태를 알린다. 사용자는 Play Mode에서 실제 중단 판정과 애니메이션·Swim 복귀·Impact, 지속 접촉의 중복 방지, Pause·Pool 재사용·Run 재시작 및 기존 전투 흐름을 확인했다. Net 중단 시간·판정·감속·포획·Resistance 수치는 변경하지 않았다. 4방향축×4프레임·12 FPS·약 0.33초 및 0.28초 Impact는 최종 출시 확정값이 아니다. **Puffer Disrupt Sprite: Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending. Puffer Net Impact VFX: Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production VFX Approval: Pending.**
 
 ## 8. UI 및 폰트
+
+Area 1 HUD Visual Iteration 3은 사용자가 선택한 두 번째 콘셉트의 Deep Teal/Navy 패널·얇은 Cyan 경계·큰 아이콘을 기준으로 한다. 좌우 패널을 화면 모서리 20px 여백에 배치하고 정보 256×254, 아이템 388×132, 핫바 716×120으로 한국어 가독성을 회복했다. 정보 행은 아이콘·라벨·값 열을 분리하고 Content Mask와 TMP 줄바꿈 해제·잘림 제한을 적용한다. 바깥 패널에만 작은 목재·로프 강조를 두고 슬롯은 어두운 해양 프레임으로 처리한다. `panel`, `slot`, `selected_slot`, `header`, `button`, `key`의 독립 9-slice Sprite와 정보·도구·아이템 아이콘을 재사용한다. 기존 Drag/Canvas Clamp와 Tooltip/입력 차단, HUD 정보 의미를 유지한다. 초기 모서리 배치가 Fish/Boss 경로를 실제 Game View에서 얼마나 가리는지는 사용자가 확인해야 한다. **Manual Visual Validation: Pending / Prototype Approval: Pending / Final Production UI Approval: Pending.**
+
+Visual Iteration 2는 사용자 Game View에서 좌우 패널이 화면 안쪽에 있고 글자가 작거나 프레임과 겹치며 작은 목재 테두리가 과도하다고 확인되어 승인되지 않았다. 당시 정보 225×232, 아이템 255×79, 핫바 602×84의 축소 배치는 역사적 기록이다.
 
 픽셀아트와 일관된 프레임·아이콘을 사용하되 한국어 가독성을 우선한다. 기존 Canvas, TextMeshPro, Button 구조와 동적 Q/W/E/R 슬롯, 성장 관리·아이템·툴팁의 정보량을 유지한다.
 

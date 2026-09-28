@@ -45,6 +45,10 @@ public class PrototypeHUDCanvas : MonoBehaviour
         new TMP_Text[ActiveSlotBindings.Length + 1];
     private readonly Image[] hotbarCooldownOverlays =
         new Image[ActiveSlotBindings.Length + 1];
+    private readonly Image[] hotbarIcons =
+        new Image[ActiveSlotBindings.Length + 1];
+    private Image[] speedButtonImages;
+    private Image experienceFill;
     private RectTransform hotbarRoot;
     private LandingNetController landingNet;
     private BaitController bait;
@@ -60,6 +64,11 @@ public class PrototypeHUDCanvas : MonoBehaviour
         netPlacement = FindFirstObjectByType<NetPlacementController>();
         rodPlacement = FindFirstObjectByType<FishingRodPlacementController>();
 
+        speedButtonImages = Area1HUDSkin.ApplyStatic(transform,
+            goldText, captureText, catchRateText, levelText, expText,
+            stageText, phaseText, runTimeText,
+            preparationPanel, startFishingButton);
+        experienceFill = Area1HUDSkin.CreateExperienceGauge(expText);
         BuildHotbar();
 
         if (startFishingButton != null)
@@ -85,6 +94,10 @@ public class PrototypeHUDCanvas : MonoBehaviour
 
         UpdatePreparationUI();
         UpdateAnnouncementUI();
+        Area1HUDSkin.RefreshSpeedSelection(speedButtonImages,
+            PrototypeGameFlowManager.Instance != null
+                ? PrototypeGameFlowManager.Instance.CurrentTestSpeedMultiplier
+                : 1f);
     }
 
     // =========================================================
@@ -103,34 +116,29 @@ public class PrototypeHUDCanvas : MonoBehaviour
 
         if (goldText != null)
         {
-            goldText.text =
-                $"골드: {run.CurrentGold}";
+            goldText.text = run.CurrentGold.ToString();
         }
 
         if (captureText != null)
         {
-            captureText.text =
-                $"포획 수: {run.CapturedFishCount}";
+            captureText.text = run.CapturedFishCount.ToString();
         }
 
         if (catchRateText != null)
         {
-            catchRateText.text =
-                $"어획률: {run.CatchRate * 100f:F1}%";
+            catchRateText.text = $"{run.CatchRate * 100f:F1}%";
         }
 
         if (levelText != null)
         {
-            levelText.text =
-                $"레벨: {run.CurrentLevel}";
+            levelText.text = run.CurrentLevel.ToString();
         }
 
         if (expText != null)
         {
-            expText.text =
-                $"경험치: {run.CurrentExp} / " +
-                $"{run.ExpToNextLevel}";
+            expText.text = $"{run.CurrentExp} / {run.ExpToNextLevel}";
         }
+        Area1HUDSkin.RefreshExperience(experienceFill, run.CurrentExp, run.ExpToNextLevel);
     }
 
     private void UpdateRunTimeInfo()
@@ -170,22 +178,17 @@ public class PrototypeHUDCanvas : MonoBehaviour
             if (fishSpawner.HasStarted)
             {
                 stageText.text =
-                    $"조업 단계: " +
-                    $"{fishSpawner.CurrentStageIndex} / " +
-                    $"{fishSpawner.TotalStageCount}";
+                    $"{fishSpawner.CurrentStageIndex} / {fishSpawner.TotalStageCount}";
             }
             else
             {
-                stageText.text =
-                    "조업 단계: 준비";
+                stageText.text = "준비";
             }
         }
 
         if (phaseText != null)
         {
-            phaseText.text =
-                $"현재 구간: " +
-                $"{fishSpawner.CurrentPhaseName}";
+            phaseText.text = fishSpawner.CurrentPhaseName;
         }
     }
 
@@ -203,6 +206,8 @@ public class PrototypeHUDCanvas : MonoBehaviour
         GameObject rootObject = new GameObject(
             "DynamicHotbar",
             typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image),
             typeof(HorizontalLayoutGroup)
         );
         rootObject.layer = gameObject.layer;
@@ -211,13 +216,15 @@ public class PrototypeHUDCanvas : MonoBehaviour
         hotbarRoot.anchorMin = new Vector2(0.5f, 0f);
         hotbarRoot.anchorMax = new Vector2(0.5f, 0f);
         hotbarRoot.pivot = new Vector2(0.5f, 0f);
-        hotbarRoot.anchoredPosition = new Vector2(0f, 24f);
-        hotbarRoot.sizeDelta = new Vector2(1100f, 84f);
+        hotbarRoot.anchoredPosition = new Vector2(0f, 14f);
+        hotbarRoot.sizeDelta = new Vector2(716f, 120f);
+        Area1HUDSkin.SetFrame(rootObject.GetComponent<Image>(), "ref_hotbar_board", false);
 
         HorizontalLayoutGroup layout =
             rootObject.GetComponent<HorizontalLayoutGroup>();
         layout.childAlignment = TextAnchor.MiddleCenter;
-        layout.spacing = 12f;
+        layout.padding = new RectOffset(10, 10, 7, 7);
+        layout.spacing = 4f;
         layout.childControlWidth = true;
         layout.childControlHeight = true;
         layout.childForceExpandWidth = false;
@@ -234,6 +241,8 @@ public class PrototypeHUDCanvas : MonoBehaviour
                 i
             );
         }
+
+        Area1HUDSkin.DecorateHotbar(hotbarRoot);
 
         legacyCastNetText.gameObject.SetActive(false);
     }
@@ -254,15 +263,17 @@ public class PrototypeHUDCanvas : MonoBehaviour
         slotObject.transform.SetParent(hotbarRoot, false);
 
         Image background = slotObject.GetComponent<Image>();
-        background.color = isFixedTool
-            ? new Color(0.10f, 0.28f, 0.42f, 0.88f)
-            : new Color(0.04f, 0.08f, 0.14f, 0.82f);
-        background.raycastTarget = false;
+        Area1HUDSkin.SetFrame(background,
+            isFixedTool ? "ref_hotbar_selected" : "ref_hotbar_slot", false);
+        if (background.sprite != null)
+        {
+            background.color = Color.white;
+        }
 
         LayoutElement layoutElement =
             slotObject.GetComponent<LayoutElement>();
-        layoutElement.preferredWidth = 205f;
-        layoutElement.preferredHeight = 84f;
+        layoutElement.preferredWidth = 136f;
+        layoutElement.preferredHeight = 106f;
 
         GameObject overlayObject = new GameObject(
             $"HotbarCooldown_{binding}",
@@ -274,7 +285,7 @@ public class PrototypeHUDCanvas : MonoBehaviour
         overlayObject.transform.SetParent(slotObject.transform, false);
 
         Image overlay = overlayObject.GetComponent<Image>();
-        overlay.color = new Color(0.02f, 0.04f, 0.08f, 0.72f);
+        overlay.color = new Color(0.02f, 0.06f, 0.10f, 0.68f);
         overlay.raycastTarget = false;
         hotbarCooldownOverlays[slotIndex] = overlay;
 
@@ -284,6 +295,45 @@ public class PrototypeHUDCanvas : MonoBehaviour
         overlayRect.offsetMin = Vector2.zero;
         overlayRect.offsetMax = Vector2.zero;
 
+        Image icon = Area1HUDSkin.NewImage(
+            $"HotbarIcon_{binding}", slotObject.transform,
+            slotIndex == 0
+                ? Area1HUDSkin.ToolIcon(ToolId.LandingNet)
+                : slotIndex == 3
+                    ? Area1HUDSkin.SkillIcon(false)
+                    : slotIndex == 4
+                        ? Area1HUDSkin.SkillIcon(true)
+                        : Area1HUDSkin.ToolIcon(ToolId.None));
+        icon.enabled = icon.sprite != null;
+        icon.preserveAspect = true;
+        Area1HUDSkin.Place(icon.rectTransform, new Vector2(0f, -12f),
+            new Vector2(45f, 45f), new Vector2(0.5f, 1f),
+            new Vector2(0.5f, 1f));
+        hotbarIcons[slotIndex] = icon;
+
+        Image keycap = Area1HUDSkin.NewImage(
+            $"HotbarKey_{binding}", slotObject.transform,
+            Area1HUDSkin.Frame("key"));
+        Area1HUDSkin.SetFrame(keycap, "key", false);
+        Area1HUDSkin.Place(keycap.rectTransform, new Vector2(6f, -5f),
+            new Vector2(binding == "LMB" ? 47f : 29f, 23f),
+            new Vector2(0f, 1f), new Vector2(0f, 1f));
+
+        TMP_Text keyText = Instantiate(legacyCastNetText, keycap.transform);
+        keyText.gameObject.name = $"HotbarKeyText_{binding}";
+        keyText.text = binding;
+        keyText.fontSize = 15f;
+        keyText.enableAutoSizing = false;
+        keyText.enableWordWrapping = false;
+        keyText.overflowMode = TextOverflowModes.Truncate;
+        keyText.alignment = TextAlignmentOptions.Center;
+        keyText.color = new Color(0.94f, 0.98f, 0.96f);
+        keyText.raycastTarget = false;
+        keyText.rectTransform.anchorMin = Vector2.zero;
+        keyText.rectTransform.anchorMax = Vector2.one;
+        keyText.rectTransform.offsetMin = Vector2.zero;
+        keyText.rectTransform.offsetMax = Vector2.zero;
+
         TMP_Text slotText = Instantiate(
             legacyCastNetText,
             slotObject.transform
@@ -292,15 +342,18 @@ public class PrototypeHUDCanvas : MonoBehaviour
         slotText.gameObject.name = $"HotbarText_{binding}";
         slotText.raycastTarget = false;
         slotText.alignment = TextAlignmentOptions.Center;
-        slotText.fontSize = 22f;
+        slotText.fontSize = 16f;
+        slotText.enableAutoSizing = true;
+        slotText.fontSizeMin = 15f;
+        slotText.fontSizeMax = 16f;
+        slotText.enableWordWrapping = false;
+        slotText.overflowMode = TextOverflowModes.Truncate;
+        slotText.color = new Color(0.96f, 0.96f, 0.84f);
 
         RectTransform textRect = slotText.rectTransform;
-        textRect.anchorMin = Vector2.zero;
-        textRect.anchorMax = Vector2.one;
-        textRect.pivot = new Vector2(0.5f, 0.5f);
-        textRect.anchoredPosition = Vector2.zero;
-        textRect.offsetMin = new Vector2(6f, 4f);
-        textRect.offsetMax = new Vector2(-6f, -4f);
+        Area1HUDSkin.Place(textRect, new Vector2(0f, 4f),
+            new Vector2(124f, 52f), new Vector2(0.5f, 0f),
+            new Vector2(0.5f, 0f));
 
         return slotText;
     }
@@ -317,8 +370,7 @@ public class PrototypeHUDCanvas : MonoBehaviour
                 ? RunManager.Instance.ToolSlots
                 : null;
 
-        hotbarSlotTexts[0].text =
-            "[LMB]\n뜰채\n고정 도구";
+        hotbarSlotTexts[0].text = "뜰채\n고정 도구";
         SetCooldownOverlay(
             0,
             landingNet != null
@@ -332,10 +384,13 @@ public class PrototypeHUDCanvas : MonoBehaviour
                 ? loadout.GetSlot(i)
                 : ToolId.None;
             hotbarSlotTexts[i + 1].text =
-                GetSlotText(
-                    tool,
-                    ActiveSlotBindings[i]
-                );
+                GetSlotText(tool);
+            if (hotbarIcons[i + 1] != null)
+            {
+                hotbarIcons[i + 1].sprite = Area1HUDSkin.ToolIcon(tool);
+                hotbarIcons[i + 1].enabled =
+                    hotbarIcons[i + 1].sprite != null;
+            }
             SetCooldownOverlay(
                 i + 1,
                 GetCooldownNormalized(tool)
@@ -344,26 +399,24 @@ public class PrototypeHUDCanvas : MonoBehaviour
 
         TacticalSkillManager tactical = TacticalSkillManager.Instance;
         hotbarSlotTexts[3].text =
-            $"[E]\n{(tactical != null ? tactical.HotbarStatus : "잠김\n미니보스 보상")}";
+            tactical != null ? tactical.HotbarStatus : "잠김\n미니보스 보상";
         SetCooldownOverlay(
             3,
             tactical != null ? tactical.CooldownNormalized : 0f);
 
         SignatureSkillManager signature = SignatureSkillManager.Instance;
         hotbarSlotTexts[4].text =
-            $"[R]\n{(signature != null ? signature.HotbarStatus : "잠김\n보스 보상")}";
+            signature != null ? signature.HotbarStatus : "잠김\n보스 보상";
         SetCooldownOverlay(
             4,
             signature != null ? signature.CooldownNormalized : 0f);
     }
 
-    private string GetSlotText(
-        ToolId tool,
-        string binding)
+    private string GetSlotText(ToolId tool)
     {
         return tool == ToolId.None
-            ? $"[{binding}]\n비어 있음"
-            : $"[{binding}]\n{GetToolStatus(tool)}";
+            ? "비어 있음"
+            : GetToolStatus(tool);
     }
 
     private string GetToolStatus(ToolId tool)
@@ -397,12 +450,10 @@ public class PrototypeHUDCanvas : MonoBehaviour
 
         if (castNet.MaxCharges > 1)
         {
-            string cooldown = castNet.CurrentCharges == castNet.MaxCharges
-                ? ""
-                : $" (충전 {castNet.CooldownTimer:F1}초)";
-
-            return
-                $"투망 {castNet.CurrentCharges}/{castNet.MaxCharges}{cooldown}";
+            string charges = $"투망 {castNet.CurrentCharges}/{castNet.MaxCharges}";
+            return castNet.CurrentCharges == castNet.MaxCharges
+                ? charges
+                : $"{charges}\n충전 {castNet.CooldownTimer:F1}초";
         }
 
         return castNet.IsReady

@@ -1,5 +1,90 @@
 # NETBREAK 인수인계
 
+## Area 1 UI 하단 프레임·간판 재질 수정 (2026-09-28, 사용자 Unity 검증 대기)
+
+- 현 `vertical-slice` 작업 트리의 기존 39 PNG/26 `ref_` PNG 구조와 모든 `.meta`/GUID, 전체 UI 배치·상태·입력·슬롯·드래그 연결을 유지했다. 추가 수정된 PNG는 `ref_ready_board`, `ref_wave_strip`, `ref_hud_sign` 및 아이템/핫바/배속 보드·슬롯·연결 장식 등 13개다. 코드 수정은 `Area1HUDSkin.cs`의 장식 배치뿐이다.
+- 준비판 원본 하단의 일자 로프와 짧은 양끝 파도를 삭제했다. `ref_wave_strip` 하나에 암석·로프 꼬임·이끼 하단 프레임과 연속 포말 한 줄을 합쳐 본체 바닥에 밀착했다. 본체 내부 물고기 실루엣과 야자수·찌는 유지한다. NETBREAK 간판은 166×46→174×44로 소폭 넓히고 본체 상단에 7px 더 걸쳐, 짧은 지지부가 프레임과 이어지게 했다. 갈매기는 여전히 좌측 간판 오른쪽에만 있다.
+- 아이템·핫바·배속의 외곽과 연결부에 작은 암석·이끼 픽셀을 더해 같은 목재/로프/해양 재질감을 공유한다. 정적 미리보기와 결과 설명은 `Artifacts/MarineUIBoards/`에 갱신했다. 실제 Unity import·컴파일·Console·Play·수동 시각/상호작용 확인은 사용자 요청대로 미실시한다. 임시 복사 프로젝트 및 Git add/commit/push 없음. **Manual Visual Validation: Pending / Reference Match Approval: Pending.**
+
+## Area 1 레퍼런스 아트 적용 갱신 (2026-09-28, 사용자 Unity 검증 대기)
+
+- 최신 사용자 지시를 우선한다. 화면의 기본 배치·크기와 입력·상태 연결은 유지하면서, 첨부 해양 픽셀아트 시트의 HUD/준비판/목재 버튼 부분을 역할별로 재구성했다. 좌측 HUD는 분리된 짧은 NETBREAK 간판과 프레임에 통합된 야자수·갈매기·조개·불가사리를 쓴다. **갈매기는 NETBREAK 간판 오른쪽에만 있고 아이템 UI에는 없다.**
+- 조업 준비 보드는 야자수·찌·희미한 물고기 무늬가 있는 전용 자산이다. 324×28 파도와 로프는 패널 하단에 걸치고 패널 아래로 약 10px만 나온다. 시간판·시작 버튼·성장 버튼은 동일 목재/밧줄 소재로 맞췄다. 아이템은 4칸과 번호 배지, 핫바는 5칸과 로프 연결/선택 강조, 배속은 3개 세로 세트다.
+- 새 전용 자산은 `Assets/Resources/UI/Area1/ref_*.png` **26개**와 대응 importer 26개이며, 원본 39 PNG/39 `.meta`는 이전 묶음과 바이트 단위로 일치한다. `Artifacts/MarineUIBoards/Sources/TropicalMarineUISheet.png`를 사용한 재생성 스크립트와 역할표는 `Artifacts/MarineUIBoards/FINAL_REPORT.md`에 있다. 정적 화면 근사 미리보기는 `HUD_STATIC_PREVIEW.png`다.
+- Scene/Prefab, 게임플레이, 입력, 드래그, 툴팁, 상태 업데이트 로직은 건드리지 않았다. Unity import·컴파일·Console·Play와 최종 시각/상호작용 검증은 사용자 요청대로 미실시한다. **Manual Visual Validation: Pending / Reference Match Approval: Pending.** 임시 Unity 프로젝트, Git add/commit/push 없음.
+
+## Area 1 레퍼런스 실루엣 최종 패스 (2026-09-28, 사용자 검증 대기)
+
+- 직전 패널별 아트 후보를 기준으로 공용 둥근 네모 느낌을 줄였다. HUD·시간·준비·아이템·핫바·성장 보드가 각기 다른 픽셀 외곽을 갖도록 6종을 다시 생성했다. NETBREAK 간판은 236→206px로 줄이고, 왼쪽 프레임에 타고 오른 픽셀 야자수 1종을 추가했다. 갈매기는 좌측 HUD에서 빼고 아이템 보드 위에 앉힌 전용 Sprite로 옮겼다.
+- 조업 준비 하단 파도는 기존 큰 포말 원본을 336×48 전용 자산으로 제작해 패널 아래 22px까지 내려오게 했다. 핫바 아이콘은 38→45px, 기존 다중 명암 로프 접합부는 유지하며 외곽 end-cap을 강화했다. 배속 3개에는 투명한 세로 연결 프레임을 추가했다. 기존 해양 장식 10종의 픽셀 밀도를 맞춘 전용 변형을 새 파일로 추가해 원본 39 PNG와 .meta/GUID는 그대로 보존했다.
+- 신규 전용 자산은 총 32 PNG/32 importer다. 정적 미리보기 `Artifacts/MarineUIBoards/HUD_STATIC_PREVIEW.png`를 갱신했다. PNG 파싱, 신규 GUID 고유성, 기존 39 PNG 바이트 보존을 확인했다. 실제 Unity import·컴파일·Console·Play·TMP·버튼/드래그 검증은 사용자 요청대로 수행하지 않았다. **Manual Visual Validation: Pending / Reference Match Approval: Pending.** Git add/commit/push 없음.
+
+## Area 1 패널별 레퍼런스 아트 연결 (2026-09-28, 사용자 Unity 검증 대기)
+
+- 최신 UI 요청에 따라 기존 39개 PNG와 GUID를 유지하면서 패널별 전용 픽셀 아트 19개 및 importer를 추가했다. 좌측 정보판/간판/EXP 트랙, 시간바, 물고기 무늬 준비판/목재 시작 버튼/긴 파도, 아이템 보드/번호 배지, 핫바 슬롯/로프 연결부, 성장/배속 버튼을 `Area1HUDSkin`과 `PrototypeHUDCanvas`의 표시 경로에 연결했다.
+- 런타임 상태 값, 입력, 클릭, 드래그, 툴팁, 아이템/성장/배속/게임플레이 로직과 Scene/Prefab은 이번 작업에서 변경하지 않았다. 이전 미커밋 작업은 보존했다. 새 아트는 고정 화면 점유 크기에 맞춘 Simple Sprite이며 공용 원본 Sprite는 그대로 남는다.
+- 정적 검사에서 새 PNG 19개, importer 19개, GUID 중복 없음, 코드 참조 존재를 확인했다. `Artifacts/MarineUIBoards/HUD_STATIC_PREVIEW.png`는 배치 근사 합성이다. 실제 Unity import, 컴파일, Console, Play, TMP 잘림·클릭/드래그·시야 검증은 사용자 요청에 따라 수행하지 않았다. **Manual Visual Validation: Pending / Reference Match Approval: Pending.** Git add/commit/push 없음.
+
+## Area 1 Reference Frame Rebuild (2026-09-28, 사용자 검증 대기)
+
+- 사용자가 첨부 레퍼런스와 동일한 디자인을 목표로 창 배경/목재/여러 가닥 로프를 재제작하도록 요청했다. 이전 단색 Stretch 후보는 최종 승인본이 아니다. 내장 ImageGen으로 프레임 6종, 로프, 파도 총 8종을 재제작했다. 기존 아이콘을 포함한 나머지 PNG 31종은 유지했다.
+- 프레임은 64×64, Border 12px/PPU 100/Point로 갱신하고 Area1HUDSkin에서 Tiled로 표시해 픽셀 무늬와 나뭇결을 길게 늘리지 않는다. 중앙 음영은 낮은 대비의 두 톤으로 정리하고 반복 구간 양 끝 픽셀을 일치시켰다. .meta 6종은 크기/PPU/Border만, 파도 .meta는 최대 크기만 변경했다. 모든 GUID 보존.
+- 로프는 여러 가닥의 명암/꼬임이 있는 48×48 감김 소재로 변경하고 간판·아이템 외곽·Hotbar 접합부에 연결했다. 파도는 256×48의 한 장짜리 포말 띠로 교체해 양 끝 큰 곡선과 중앙 낮은 거품을 유지한다. 성장 버튼은 목재/짙은 청록 내부/밝은 글자, 아이템 슬롯은 청록 경계, 배속 선택은 Cyan 경계로 정리했다.
+- 변경 코드: Area1HUDSkin.cs의 표현만. 주요 UI Anchor/위치/크기, 텍스트 의미, 슬롯 수, PrototypeHUDCanvas/드래그/입력/툴팁/게임플레이/Scene/Prefab/ProjectSettings는 세션 시작 해시 대비 보존했다. 문서 3종과 Tools/pack_area1_reference_frames.ps1 및 Artifacts/MarineUIReference 산출물을 추가/갱신했다.
+- 정적 PNG/알파/GUID/Importer 허용 필드/타일 이음새/변경 범위 확인 통과. 실제 Unity Import/컴파일/Play/한글·상호작용은 사용자 확인 대기. 기존 화면 크기와 TMP 폰트를 유지하므로 참조 이미지와 픽셀 단위 동일함을 확인한 결과는 아니다. Unity 실행/임시 프로젝트/Git add·commit·push를 하지 않았다. **Manual Visual Validation: Pending / Reference Match Approval: Pending.**
+
+## Area 1 HUD Marine Refinement (2026-09-28, 현재 적용·사용자 검증 대기)
+
+- 최신 사용자 요청에 따라 기존 39 PNG 후보를 재정리했다. 패널 기본 Anchor/위치/크기와 4개 아이템/5개 Hotbar 슬롯을 유지했다. 공통 27색 팔레트, 24 논리 픽셀 장식, 닫힌 라운드 모서리, 얇은 표시 테두리를 적용했다. PNG의 이름·32/48 규격·RGBA8와 39개 .meta/GUID는 보존했다.
+- 좌측 NETBREAK를 위로 4px 돌출된 목재 간판으로 변경했다. 경험치 숫자 아래에 기존 RunManager.CurrentExp/ExpToNextLevel을 읽는 게이지를 추가했다. 경험치/레벨 계산은 수정하지 않았다. 준비 패널은 물고기 음영과 8개 연속 파도 타일, 확대된 로프를 사용한다. 아이템 번호는 고대비 배지로 분리하고 Hotbar에는 연결 기둥, 성장/배속에는 해양 장식을 적용했다.
+- 이번 코드 변경은 Area1HUDSkin.cs의 표현과 PrototypeHUDCanvas.cs의 게이지 생성/표시 호출뿐이다. 세션 시작 해시 대비 Scene/Prefab/ProjectSettings/URP/게임플레이/입력/드래그/툴팁/아이템·성장 로직은 보존했다. 기존 미커밋 변경은 그대로 유지한다.
+- 산출물: Artifacts/MarineUIRefine/의 BEFORE_39.zip, NETBREAK_UI_MARINE_REFINED_CANDIDATE.zip, PNG_BEFORE_AFTER.png, HUD_STATIC_PREVIEW.png, static-validation.json, FINAL_REPORT.md, UNITY_CHECKLIST.md. 재출력: Tools/refine_area1_hud_art.ps1. 이전 MarineUI 폴더는 이전 후보 이력이다.
+- 정적 PNG/9-slice/.meta/변경 범위 확인만 수행한다. 실제 TMP 한글 잘림·오버플로·9-slice 표시·컴파일·상호작용은 사용자 Unity 검증 대기다. Unity 실행/Play/임시 프로젝트/컴파일/Console 확인 및 Git add/commit/push는 하지 않았다. **Manual Visual Validation: Pending / Prototype Approval: Pending / Final Production UI Approval: Pending.**
+
+## Area 1 HUD/UI Marine Rebuild — 39 PNG 후보 적용 (2026-09-28, 사용자 검증 대기)
+
+- 시작 자료는 current_ui_39.zip이다. 프로젝트 PNG 39개와 전부 SHA-256이 일치했으며, 32×32 프레임 6개/아이콘 22개와 48×48 장식 11개로 조사했다. 39개 모두 정적 코드 참조가 있고 미참조 파일은 없다. 아이템 6종은 보유 시 표시 경로이며 정상 Area 1의 아이템 지급 규칙은 변경하지 않았다.
+- 내장 ImageGen으로 39종을 역할별로 개별 제작했다. 생성 한도로 중단됐던 마지막 key도 재개 후 완료했다. Tropical Marine Sprite Sheet의 임의 순서 절단/매핑은 하지 않았다. 목재·로프 프레임, Cyan 선택 경계, Sand 버튼, 입체적 해양 장식과 도구/아이템/정보 실루엣을 갱신했다. 실제 UI 문자열은 PNG에 넣지 않았다.
+- 기존 규격으로 최근접 샘플링하고 Alpha를 0/255로 정리했다. 프레임은 생성물의 고정 모서리·가장자리 단면을 재사용하면서 중앙을 불투명 단색, 늘어나는 가장자리를 일정한 단면으로 패킹했다. 짧은 제목 바/키 배지는 글자 영역을 확보하도록 테두리 소재를 더 얇게 패킹했다. 6종 Sprite Border 사방 5px, 나머지 0과 모든 .meta/GUID/Import 설정을 바이트 단위로 보존했다.
+- Assets/Resources/UI/Area1/의 39 PNG를 실제 교체했다. 신규 Unity Asset 0개. 세션 시작 해시와 비교해 UI/Gameplay 코드, Anchor/Position/Size/Text RectTransform, DraggableHudPanel, Scene/Prefab, 입력/Inventory/Tooltip/Growth/Run/Fish/Boss/Tool/Item/Synergy는 변경하지 않았다. 기존 미커밋 변경은 보존했다.
+- Static Validation: 39/39 PNG CRC·압축 데이터·RGBA8·투명도·원래 규격·이름·경로·변경 해시 및 39/39 메타데이터 보존, 6/6 프레임 Stretch 안전성 통과. 최종 ZIP의 39 PNG는 프로젝트 적용본과 모두 동일하다. 정적 합성 미리보기는 Unity 화면이나 TMP 렌더링/상호작용 검증이 아니다.
+- 결과: Artifacts/MarineUI/NETBREAK_UI_MARINE_FINAL_CANDIDATE.zip, ASSET_AUDIT.md, FINAL_REPORT.md, UNITY_CHECKLIST.md, PNG_BEFORE_AFTER.png, HUD_STATIC_PREVIEW.png. 개별 생성 프롬프트와 원본 경로는 generation-manifest.json에 있다. 이전 Tools/generate_area1_hud_art.js는 이번 ImageGen 후보를 재현하는 생성기가 아니며 이번 작업에서 수정/실행하지 않았다.
+- 사용자 요청에 따라 Computer Use, Unity 실행/Import/compile/Console/PlayMode/Test Runner/Batch, 임시 프로젝트 복사, Git add/commit/push는 하지 않았다. **Manual Visual Validation: Pending / Prototype Approval: Pending / Final Production UI Approval: Pending.** 목표 Reference와의 충분한 유사성 및 실제 가독성/기능은 사용자 Unity 검증 전이다.
+
+## Area 1 HUD/UI Marine Decoration Iteration 4 (2026-09-27, 전체 화면 재검증 대기)
+
+- **입력 자료:** 현재 Game View는 배치·크기 기준, 목표 화면은 시각 기준, Tropical Marine Sprite Sheet는 해양 픽셀아트의 형태·색·밀도 참고로만 사용했다. Sprite Sheet를 7×4로 분할하거나 gameplay 의미가 다른 파일에 순서대로 연결하지 않았다. `icon.zip` 28개는 작업 전 `Assets/Resources/UI/Area1/`의 28개 PNG와 SHA-256까지 같았고, 작업 후 28개 모두 새 해시로 교체됐다.
+- **표현:** 기존 32×32의 `panel`, `slot`, `selected_slot`, `header`, `button`, `key`와 도구·스킬·아이템·정보·배속 아이콘 22개를 의미별 파일명/기존 `.meta` GUID를 유지해 다시 그렸다. Deep Navy/Teal 바탕, Cyan 선택 강조, Sand 버튼, 얇은 Wood/Rope 경계와 아이콘 외곽선을 사용한다. 새 독립 48×48 Point Sprite 장식 11종(`palm`, `gull`, `starfish`, `shell`, `coral`, `leaf`, `rope_knot`, `bobber`, `wave`, `crate`, `clock`)을 9-slice 이미지의 늘어나는 부분과 분리했다. 프레임 외부 일부 돌출, `raycastTarget=false`, 버튼/Slot Icon 우선을 유지한다.
+- **배치:** 기존 HUD의 패널 크기·Anchor·슬롯 위치와 1920×1080 기준 배치를 유지한다. 좌측 정보 HUD와 조업 준비에 장식을 가장 많이, 아이템 HUD·핫바·성장 버튼에는 중간, 시간·배속에는 적게 적용했다. 좌측 제목의 글자 시작을 야자수와 분리하고 시작/성장 버튼 글자를 Sand 위의 어두운 색으로 조정했다. 드래그 손잡이·아이템 갱신·Q/W 동적 표시·버튼 이벤트는 기존 경로를 유지한다. Scene/Prefab YAML과 gameplay 판정은 변경하지 않았다.
+- **검증:** 생성기 실행, PNG 39종과 `.meta` 존재, 기존 28개 전부 교체, Unity 6000.3.11f1의 Sprite Import·C# 컴파일을 확인했다. 컴파일 오류는 없고 기존 TMP `enableWordWrapping` 폐기 경고가 남는다. 새로고침 후 Play 화면에서 좌측 HUD의 야자수·갈매기, 준비 패널의 찌/파도, 아이템의 상자, 핫바·성장 버튼의 장식과 주요 정보/슬롯 글자 표시를 확인했다. Play 중 스크립트 Domain Reload 직후 한때 `RunManager.Update` 172행의 `NullReferenceException` 반복이 발생했으며, Play 종료·에셋 새로고침 후 다시 연 화면에서는 새 오류가 보이지 않았다. 이는 정식 Gameplay 회귀 테스트를 대체하지 않는다. 최종 배치의 Game View 확대 더블클릭은 자동 승인 검토가 게임 입력 부작용 위험을 이유로 거부해 수행하지 않았다. **Manual Visual Validation: Partial / Prototype Approval: Pending / Final Production UI Approval: Pending.**
+- **Git:** 이번 Iteration은 이전 미커밋 HUD 작업을 이어받아 수정한 것이므로 기존 사용자 작업을 분리 보존했다. 전체 변경을 검증·승인받기 전에는 add/commit/push하지 않는다.
+
+## Area 1 HUD/UI Visual Iteration 3 (2026-09-27, 사용자 Unity 검증 대기)
+
+- **Iteration 2 사용자 확인 결과:** 좌우 HUD가 모서리에서 과하게 안쪽에 있었고, 글자가 프레임과 겹치거나 너무 작았다. 밝은 목재 조각의 반복도 선택한 두 번째 Deep Teal/Navy 레퍼런스와 달랐다. Iteration 2는 승인되지 않았다.
+- **기본 배치:** 1920×1080 Canvas 기준 좌측 정보 패널은 Top Left/Pivot Top Left `(20,-20)`, 256×254, 우측 네 슬롯은 Top Right/Pivot Top Right `(-20,-20)`, 388×132다. 시간·준비 패널은 Top Center에서 수직 정렬하고, LMB/Q/W/E/R 핫바는 Bottom Center에서 아래 14px, 716×120이다. 배속은 오른쪽 아래 130px부터, 성장 버튼은 오른쪽/아래 20px 여백에 맞춘다. 초기 모서리 배치에서는 Route의 가장자리 진입·이탈 구간과 겹칠 가능성이 남으므로 실제 Fish/Boss 가시성은 사용자가 확인한다.
+- **정보·글자:** 일곱 정보의 기존 직렬화 TMP 값 참조를 유지하면서 런타임에 Header/마스킹된 Content/아이콘/라벨/값 열로 분리했다. 25px 행과 구분선, 14~16px 값, 줄바꿈 해제·잘림 제한·Content RectMask2D로 프레임 침범을 막는다. 슬롯은 84×82, 상태 텍스트 13~15px와 38px 아이콘, 핫바는 136×106 슬롯과 38px 아이콘 및 15~16px 상태로 키와 정보를 구분한다. 상단 시간·준비와 우하단 UI도 읽기 쉬운 크기로 조정했다.
+- **아트·구조:** 32×32 독립 Point Sprite 9-slice `panel`, `slot`, `selected_slot`, `header`, `button`, `key`를 사용한다. 패널 본체는 Deep Navy/Teal, 경계는 얇은 Cyan, 목재/로프는 바깥 프레임의 작은 강조로 제한한다. 기존 도구/아이템 아이콘에 정보 7종과 배속 파도 아이콘을 더했다. 기존 Sprite GUID와 TMP 폰트 자산을 유지했다. 고정 크기 전체 패널 이미지는 사용하지 않는다.
+- **유지·범위:** 두 HUD의 제목 바 전용 Drag, Canvas Clamp, Tool 입력 차단, 기존 Inventory/Run 정보와 버튼 이벤트를 유지한다. Main Scene 직렬화상 `ItemHUD` 컴포넌트가 슬롯 패널의 상위 `ItemSystemUI`에 있어 아이콘 갱신 연결과 Tooltip 위치 기준을 실제 슬롯 패널에 맞게 바로잡았다. Gameplay, Fish/Boss/Route, Tool/Item/Synergy/Growth 판정과 Scene/Prefab YAML을 변경하지 않았다. `Tools/generate_area1_hud_art.js`로 UI PNG와 `.meta`를 재생성했고 코드·자산·문서만 수정했다.
+- **검증·승인:** 정적 자산 참조·GUID/Import 설정·코드 diff·`git diff --check`를 확인한다. 사용자 요청에 따라 Computer Use, Unity Editor/Batch/PlayMode/EditMode/Test Runner/Console, 임시 프로젝트 복사, Git add/commit/push는 수행하지 않는다. 실제 Import/컴파일/시각 가독성/겹침/상호작용은 사용자 직접 확인 대기다. **Manual Visual Validation: Pending / Prototype Approval: Pending / Final Production UI Approval: Pending.**
+
+## Area 1 HUD/UI Visual Iteration 2 (2026-09-27, 사용자 Unity 검증 대기)
+
+- **사용자 관찰·방향:** 이전 HUD가 Game View에서 크고 좌상단 Fish 진입을 가렸으며 밝은 목재 프레임이 시안보다 강했다. 프레임을 Deep Navy/Teal 내부, 얇은 Cyan 경계, 작은 목재·로프 모서리 강조로 다시 제작했다. 기존 32×32 Point/무 Mipmap/무압축 Sprite 경로와 GUID를 유지하고 9-slice 경계를 8px→5px로 줄였다. 아이템 6종의 작은 개별 아이콘을 추가했다. TMP 폰트 자산은 변경하지 않았다.
+- **실제 Route와 기본 배치:** Main Scene의 `FishSpawner.activeRoute=CoastRoute_01`, 일반 경로 `(-10,8)→(-8,2)→(8,-2)→(10,-8)`, `spawnHalfWidth=1.2`, 카메라 Orthographic Size 6.5/16:9를 정적 확인했다. 어종별 Spawn 확산과 전방 흔들림까지 고려한 첫 화면 진입은 상단 왼쪽 대략 x=20~320px 범위다. 좌측 패널은 기존 300×314→225×232(약 25~26% 축소), 기본 위치를 Canvas 좌상단 `(355,16)`으로 옮겨 초기 진입 띠를 비웠다. 우측 슬롯은 318×100→255×79(약 20~21% 축소), 오른쪽에서 283px 떨어져 보스 2차 우상단 이탈(화면 x≈1750px)과 분리했다. 중앙 핫바는 708×100→602×84(약 15~16% 축소)로 하단 중앙 고정이다. 시간/조업 준비도 소폭 줄였다. 이는 정적 좌표 검토이며 실제 Game View 시각 검증은 아니다.
+- **UI 표시·드래그:** 좌측 일곱 정보와 기존 갱신 경로는 유지한다. 두 패널 각각의 21px 제목 바에만 `DraggableHudPanel`을 붙여 독립 이동·Canvas 모서리 8px Clamp를 구현했다. UI 이벤트는 New Input System EventSystem을 사용하고 Pause 중에도 시간값 없이 동작한다. 비활성화/Run 재시작 시 포인터 캡처를 해제하며 위치 영구 저장은 없다. 손잡이의 LMB는 뜰채·그물·낚싯대 설치·장비 재배치·전술/시그니처 대상 지정과 겹치지 않도록 해당 입력 진입점에서만 차단한다. Tool 판정·쿨다운·Resistance·Fish/Route·Inventory/Tooltip 로직은 바꾸지 않았다.
+- **아이템·핫바:** 아이템 네 슬롯의 번호·아이콘·`비어 있음`/짧은 이름·Lv 표기를 작은 영역에 나누고 기존 Inventory/Tooltip 연결과 Tooltip의 속성·효과 정보를 유지했다. 슬롯 Tooltip은 패널 이동 위치를 따라 Canvas 안에서 아래/위로 배치하고, 속성 Tooltip은 이동한 기본 패널과 겹치지 않게 내렸다. 획득 아이템은 6종 전용 아이콘으로 표시한다. LMB/Q/W/E/R 키·도구/스킬 아이콘·상태·잠금·쿨다운과 동적 Q/W는 기존 런타임 상태를 그대로 읽는다. x1/x2/x3, 성장 관리 [Tab]은 기능과 크기를 유지하면서 새 프레임 색만 공유한다.
+- **수정·생성:** `Assets/Scripts/UI/Area1HUDSkin.cs`, `PrototypeHUDCanvas.cs`, `ItemHUD.cs`, 신규 `DraggableHudPanel.cs`와 `.meta`; 손잡이 입력 차단에 한한 `ToolSlotInput.cs`, `NetPlacementController.cs`, `FishingRodPlacementController.cs`, `GearRepositionController.cs`, `TacticalSkillManager.cs`, `SignatureSkillManager.cs`; `Tools/generate_area1_hud_art.js`, `Assets/Resources/UI/Area1/`의 기존 프레임/아이콘과 신규 아이템 아이콘 6쌍, 본 문서·아트 가이드·에셋 목록. Scene/Prefab YAML은 수정하지 않았다.
+- **검증·승인:** Computer Use, Unity Editor/Batch/Play/EditMode/Console, 임시 프로젝트 복사, Git add/commit/push는 사용자 요청에 따라 수행하지 않았다. Import/컴파일, 실제 Game View의 Fish·Boss 가시성·텍스트 잘림·드래그/Clamp·입력 충돌·Tooltip·Pause/재시작·Console은 사용자 직접 확인 대기다. **Manual Visual Validation: Pending / Prototype Approval: Pending / Final Production UI Approval: Pending.**
+
+## 이전 Area 1 HUD/UI 시안 반영 (Iteration 1, 사용자 검증에서 크기·배치 문제 확인)
+
+- **범위:** 첨부된 열대 바다 픽셀 UI 시안의 청록 패널·나무/로프 테두리·밝은 모래색 버튼과 슬롯 구성을 현재 GameCanvas에 맞게 반영했다. 1920×1080 CanvasScaler와 16:9 화면을 기준으로 좌상단 300×314, 상단 시간 304×52/준비 316×105, 우상단 아이템 318×100, 하단 핫바 708×100, 우하단 성장 211×57/배속 106×34로 정리했다. Scene/Prefab YAML과 기존 Inspector 참조는 변경하지 않고 `PrototypeHUDCanvas.Awake`에서 기존 UI의 외형·배치를 적용한다.
+- **표시·동작:** 좌상단 골드·포획 수·어획률·레벨·경험치·조업 단계·현재 구간, 상단 시간·조업 시작, 우상단 네 아이템 슬롯, LMB/Q/W/E/R 상태·쿨다운, 성장 관리 [Tab], x1/x2/x3의 기존 텍스트 의미와 버튼 이벤트를 유지했다. Q/W 아이콘은 현재 Run 도구에 따라 바뀐다. 빈 슬롯과 E/R 잠금도 기존 런타임 상태를 표시한다. 시각 선택 표시만 배속 버튼에 추가했다. Fish/Tool/Boss/Item/Synergy/VFX/SFX 및 게임플레이 로직은 변경하지 않았다.
+- **아트·폰트:** `Assets/Resources/UI/Area1/`에 Point 필터·Mipmap Off·무압축 32×32 RGBA 픽셀 프레임 4종과 도구/스킬 아이콘 8종을 추가했다. 프레임은 8px 9-slice이며 생성기는 `Tools/generate_area1_hud_art.js`다. 현재 TMP 폰트 자산은 변경하지 않았다. 갈무리 9는 기존 아트 가이드의 우선 후보 상태를 유지하며 이번 UI 배치의 검증 완료를 뜻하지 않는다.
+- **변경 파일:** `Assets/Scripts/UI/PrototypeHUDCanvas.cs`, 신규 `Area1HUDSkin.cs`와 `.meta`, `Assets/Resources/UI.meta`, 신규 `Assets/Resources/UI/Area1.meta` 및 12쌍의 `.png`/`.png.meta`, `Tools/generate_area1_hud_art.js`, 본 문서와 `Docs/NETBREAK_ART_GUIDE.md`·`Docs/NETBREAK_ASSET_MANIFEST.md`.
+- **검증 상태:** 사용자 요청에 따라 Computer Use, Unity 실행/컴파일/Console, PlayMode, EditMode, 수동 화면 확인, 임시 복사본 프로젝트, Git add/commit/push를 수행하지 않았다. 따라서 실제 Import, 16:9 Game View 배치·텍스트 잘림·시안 대비 시야 점유, 빈/획득 슬롯 Hover, Q/W 도구 교체·E/R 해금·쿨다운, 준비→시작, Tab/배속 버튼, Boss/공지/결과/성장 창과의 겹침, Pause/Run 재시작 및 Console은 **사용자 직접 확인 대기**다. 정적 변경 검토와 `git diff --check` 결과는 이번 작업 보고에 별도 기록한다.
+
 ## Area 1 고품질 정적 배경 Prototype 승인 (2026-09-27, 사용자 Play Mode 검증 완료)
 
 - **적용:** 사용자 첨부 1672×941 RGB 탑다운 바다 이미지를 실제 적용 기준으로 삼고 내장 ImageGen 정밀 편집으로 경로와 겹치는 큰 암초·바위·해초·산호를 정리했다. 원본과 같은 해상도·16:9 구도·세밀한 수면광·픽셀아트 질감을 유지했다. 최종 후보를 기존 `Assets/Resources/Area1/CoastBackground.png` 경로에 덮어썼으며 `.meta` GUID는 유지했다. 중앙은 열린 바다, 장식은 주로 상·하단의 경로 밖에 둔다. 모래는 물 아래 작은 해저 포켓이다.

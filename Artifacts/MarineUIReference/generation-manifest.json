@@ -1,0 +1,42 @@
+[
+  {
+    "name": "panel",
+    "prompt": "One reusable square UI panel background, no text or icons. Match EXACTLY the attached NETBREAK reference window materials: deep navy/teal subtly mottled pixel interior, weathered golden wood outer rails with ivory glints and dark brown stepped shadows, occasional turquoise chipped paint, clipped rounded stair-step corners. Rope is tightly wound three-strand tan cord with alternating light and dark diagonal twists binding each corner to the wooden rail, NOT a flat solid line or loose bow. Pixel art logical 64x64 enlarged, crisp blocky pixels, restrained 16-bit shading not photoreal. Frame sits exactly against all four image edges with only transparent cut-out corners, border thickness 8 of 64 pixels, center 48x48 dark teal with sparse low contrast pixel clusters. No leaves, gull, shells or added objects; those are separate game layers. Square asset fills canvas, no margins, no labels. Center texture must not be erased.",
+    "path": "C:\\Users\\전지원\\.codex\\generated_images\\01a0e2e5-97c2-75a2-9fa2-21a9fa9881d0\\exec-183b971a-301d-43ea-aee7-854bb77b9cf4.png"
+  },
+  {
+    "name": "header",
+    "prompt": "One square reusable wooden NETBREAK sign background WITHOUT ANY text. Match the raised nameplate at top left of attached reference exactly in material: dark navy teal inset, substantial honey wood beveled rim, cream top-edge glint, brown chipped pixel shadows, multiple tight tan twisted rope wraps at four clipped corner joints. NOT plain brown rectangle. Logical 64x64 crisp pixel art enlarged, 8px thick fixed borders, 48x48 quiet dark teal center with subtle pixel patches. Shape touches all four canvas edges; only outside rounded staircase corners transparent. No palm/gull/text/icons since separate runtime layers. Wood grain visible as short horizontal pixel dashes, no gradients.",
+    "path": "C:\\Users\\전지원\\.codex\\generated_images\\01a0e2e5-97c2-75a2-9fa2-21a9fa9881d0\\exec-ffe6e2dd-384f-4645-871a-cc7b591ae1c1.png"
+  },
+  {
+    "name": "button",
+    "prompt": "One square reusable golden parchment/wood START BUTTON background matching attached reference's 조업 시작 button exactly, but NO text. Soft sand golden center, discrete pixel highlight patches near edges, gold ochre wood bevel, cream top left glints, tiny dark corner rivets, rounded clipped staircase corners. Logical64x64 pixel art enlarged; border 8 pixels thick, center48x48 quiet pale golden with subtle block shading, no smooth gradients. Fill entire square canvas with only clipped corner transparency, no margins. No decorative objects, letters or symbols.",
+    "path": "C:\\Users\\전지원\\.codex\\generated_images\\01a0e2e5-97c2-75a2-9fa2-21a9fa9881d0\\exec-50cce8ef-5444-4a69-8f10-87be7fbdcecd.png"
+  },
+  {
+    "name": "slot",
+    "prompt": "One square EMPTY HOTBAR SLOT background from attached NETBREAK reference, same deep teal pixel-art material, NO objects/text/keybadge. Thin warm wooden outer rim, ivory glints, dark brown undershadow, cyan/teal inside outline, corners fastened with several distinguishable twisted tan rope wraps. Slightly rounded pixel stair-step corners. Dark navy center with sparse low contrast teal pixel clusters like reference, no flat featureless fill. Logical64x64 enlarged crisp pixelart. Border8px, middle48px. Asset fills canvas to edges, transparent only clipped outside corners. No plus, icons, letters, leaves.",
+    "path": "C:\\Users\\전지원\\.codex\\generated_images\\01a0e2e5-97c2-75a2-9fa2-21a9fa9881d0\\exec-44e1d77c-f954-455d-866d-fe71e118ede5.png"
+  },
+  {
+    "name": "selected_slot",
+    "prompt": "One square EMPTY SELECTED HOTBAR SLOT background matching left cyan highlighted NETBREAK reference slot, no net, no text, no badge. Stepped rounded corners, vivid cyan double pixel rim with white cyan glints, dark teal bevel and navy center with sparse low-contrast mottled teal pixel clusters. Restrained two-pixel cyan halo, hard pixel clusters not soft blur. Logical64x64 enlarged. Border8px center48px. Frame fills square edge-to-edge, transparent only cut corners. No objects/letters.",
+    "path": "C:\\Users\\전지원\\.codex\\generated_images\\01a0e2e5-97c2-75a2-9fa2-21a9fa9881d0\\exec-93c62f26-0717-43c8-8544-aefde264e70b.png"
+  },
+  {
+    "name": "key",
+    "prompt": "One square reusable dark marine KEY BADGE / SPEED BUTTON frame matching attached reference's LMB/Q badges and x2 speed button, NO text or icons. Crisp clipped rounded staircase corners, double cyan teal inner rim, cream highlight only top/left edge, navy black pixel drop rim, dark navy/teal center with a few subtle chunky pixel patches. Logical64x64 pixelart enlarged; 8px fixed borders with48px center. Fill canvas edge-to-edge, only cut-out corners transparent. No wood, no objects, no soft blur, no gradients.",
+    "path": "C:\\Users\\전지원\\.codex\\generated_images\\01a0e2e5-97c2-75a2-9fa2-21a9fa9881d0\\exec-0eeeff28-bf0e-4c32-b5a2-23b76a012e91.png"
+  },
+  {
+    "name": "decor_rope_knot",
+    "prompt": "One isolated small rope lashing for a wooden nautical UI FRAME CORNER, copy rope construction in attached NETBREAK reference. Three thick golden tan twisted strands wound tightly side-by-side diagonally around an invisible frame joint, crossing once with a short tucked end. Clear dark-brown grooves, ochre half-tones, pale cream pixel highlights on EACH twisted strand so it reads as braided physical rope rather than a flat line. Diagonal compact corner wrap, NOT a circular bow or hanging loose knot. Crisp chunky logical32x32 pixel art enlarged; transparent background, no wood, no other objects, no text. Occupy80% of squarecanvas, restrained detail consistent with reference.",
+    "path": "C:\\Users\\전지원\\.codex\\generated_images\\01a0e2e5-97c2-75a2-9fa2-21a9fa9881d0\\exec-13d5daef-1b45-42cf-a23d-3b2962b02b2a.png"
+  },
+  {
+    "name": "decor_wave",
+    "prompt": "One isolated repeating horizontal FOAM WAVE BORDER sprite matching the wave and bubbles underneath the main preparation panel in the attached NETBREAK reference. Compact two curling turquoise waves with white rounded pixel foam clusters and tiny navy shadow gaps. Several white bubbles at crests, thick cream-white foam edge with cyan intermediate shade; navy-teal solid connecting water base across entire width. NOT angular mountain peaks or a straight zigzag. True chunky 16-bit pixelart logical48x24 enlarged. Transparent upper background, wave strip fills lower half and connects left to right at matching water level. No text, no UI frame, no sea background. Use exact reference palette and lively curling foam shapes.",
+    "path": "C:\\Users\\전지원\\.codex\\generated_images\\01a0e2e5-97c2-75a2-9fa2-21a9fa9881d0\\exec-a245d712-a1e7-4a4e-9179-1ee4d8427b91.png"
+  }
+]
