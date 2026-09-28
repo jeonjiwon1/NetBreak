@@ -1,5 +1,13 @@
 # NETBREAK 인수인계
 
+## Area 1 UI Galmuri11 Typography Pass (2026-09-28, Prototype 승인)
+
+- 공식 `quiple/galmuri` 저장소의 커밋 `71e1cacf1437a11220307120e63e30bc275312d4`에서 `Galmuri11.ttf`, `Galmuri11-Bold.ttf`, `dist/LICENSE.txt`를 원본 이름과 바이트 그대로 `Assets/UI/Fonts/Galmuri/`에 추가했다. 라이선스는 SIL Open Font License 1.1이다.
+- `Assets/Resources/UI/Fonts/`에 Galmuri11 / Galmuri11 Bold Dynamic SDF TMP Font Asset이 생성되었다. 두 Asset은 각 원본 TTF를 참조하고 기존 NanumGothic-Bold SDF를 fallback으로 참조한다. 기존 Nanum 폰트와 Scene 직렬화 참조는 보존된다.
+- `Area1Typography`를 통해 Area 1의 Major Title·주요 버튼/Heading·Key 강조에는 Galmuri11 Bold, HUD Body·숫자·짧은 상태 Text에는 Galmuri11을 사용한다. 긴 Tooltip과 설명문은 기존 NanumGothic 계열을 유지한다. 두 서체는 현재 Area 1 Prototype Typography의 기본 Font Family로 승인되었다. 전용 TMP Material preset/outline/glow는 추가하지 않고 기본 SDF Material과 기존 텍스트 색상을 사용한다.
+- 사용자 Unity Game View에서 NETBREAK, 조업 준비/시작, 플레이 시간, 좌측 HUD Label/Value와 EXP, Inventory 제목·1/2/3/4·비어 있음, Hotbar LMB/Q/W/E/R·Tool 이름·잠김 상태, x1/x2/x3, 성장 관리 [Tab]의 Typography를 직접 확인했다. 현재 Galmuri11 스타일이 해양 Pixel UI와 어울리는 것으로 판단하여 Prototype Typography를 승인했다. 이 승인은 별도의 Gameplay 회귀 또는 Console Error 0 확인을 뜻하지 않는다.
+- 공식 원본 파일·라이선스, 두 TMP Asset의 원본 TTF 및 Nanum fallback 참조, 기존 Nanum Asset 보존과 문서 상태를 정적으로 확인했다. 이번 문서 마감에서는 Unity/Computer Use/Play Mode/Test Runner를 실행하지 않았고 구현 코드·UI Art도 추가 수정하지 않았다. 전체 `git diff --check`는 이번 마감 전부터 변경돼 있던 `NanumGothic-Bold SDF.asset`의 공백 3곳을 지적하며, 이번에 수정한 문서 3개만의 검사는 통과한다. **Implementation: Complete / Static Validation: Complete / Unity Manual Typography Visual Validation: Passed / Prototype Typography Approval: Approved / Final Production Font Approval: Pending.** 최종 출시용 폰트 승인은 별도이며, Git add/commit/push는 사용자가 직접 한다.
+
 ## Area 1 UI 하단 프레임·간판 재질 수정 (2026-09-28, 사용자 Unity 검증 대기)
 
 - 현 `vertical-slice` 작업 트리의 기존 39 PNG/26 `ref_` PNG 구조와 모든 `.meta`/GUID, 전체 UI 배치·상태·입력·슬롯·드래그 연결을 유지했다. 추가 수정된 PNG는 `ref_ready_board`, `ref_wave_strip`, `ref_hud_sign` 및 아이템/핫바/배속 보드·슬롯·연결 장식 등 13개다. 코드 수정은 `Area1HUDSkin.cs`의 장식 배치뿐이다.
@@ -627,7 +635,7 @@
 - 정상 Area 1은 Boss 포획 뒤 R을 얻고 곧 결과로 진행하므로 R을 사용할 후속 전투가 없다. R 전투 연출의 완성도는 Area 2 등 후속 전투 구간이 실제로 연결된 뒤 다시 검증한다. UX-F3는 대규모 구현이나 이후 아트 작업의 필수 차단 단계가 아니다.
 - 외부 플레이테스트 전 순서는 `VS-1 기존 피드백 최소 점검 → VS-2 Area 1 아트 방향 확정·별도 아트 기획서 작성 → VS-3 기본 아트·애니메이션 제작/적용 → VS-4 정식 핵심 VFX → VS-5 SFX·최소 BGM → VS-6 UX-F4 최소 튜토리얼 → VS-7 통합 검증 → VS-8 소규모 외부 플레이테스트`다. 상세 범위와 통과 기준은 `Docs/NETBREAK_ROADMAP.md`를 따른다.
 - VS-2에서 정식 아트의 1차 방향을 **밝고 읽기 쉬운 탑다운 픽셀아트**로 확정했다. 간결한 표현을 기본으로 하고 특수어·MiniBoss·Boss·주요 전투 연출에는 포인트 디테일을 사용한다. `Docs/NETBREAK_ART_GUIDE.md`에 확정 원칙, 권장 초안, 미정 규격과 검증 계획을 기록했다.
-- 현재 적용 폰트는 NanumGothic-Bold SDF, Dynamic atlas다. 정식 픽셀아트 UI는 갈무리 9를 우선 후보로 검토하지만 폰트 임포트, TMP Font Asset 생성, 기존 UI 교체와 공식 라이선스 검증은 아직 수행하지 않았다.
+- 이 계획 작성 당시 적용 폰트는 NanumGothic-Bold SDF, Dynamic atlas였다. 갈무리 9 우선 검토와 미도입 기록은 이후 상단의 Galmuri11 Prototype Typography 승인 이전 상태다.
 - 실제 Sprite·배경·아이콘 제작과 Unity 적용은 수행하지 않았다. 세부 Sprite 크기, PPU, Pixel Perfect Camera, 내부 해상도, 최종 팔레트와 애니메이션 규격도 미정이다. 다음 작업은 현재 Camera·Sprite·PPU·UI Scaling 조사와 일반 물고기 1종, 오징어, 낚싯대, 바다 배경, 기본 UI 아이콘 일부의 첫 프로토타입 제작이다.
 - 정식 VFX, SFX와 BGM은 아직 완료되지 않았다. 이번 문서 작업은 Unity 실행·검증을 추가하지 않았고 기존 UX-F2-A/B 검증 결과를 변경하지 않는다.
 - 외부 테스트 뒤에는 확인된 구조적 문제를 먼저 처리하고 G7 상점·Gold 경제, G8 해역별 성장·보상, Area 2와 해역 전환, 새 도구·아이템·스킬·시너지, Area 3~6, Meta·Hard Mode, 전체 밸런스·최적화·출시 준비 순으로 진행한다. 새 콘텐츠는 가능한 한 gameplay, 아트·애니메이션, VFX, SFX, UI와 검증을 한 단위로 묶고 최종 폴리싱·오디오 믹싱은 출시 준비에 남긴다.

@@ -147,7 +147,8 @@ internal static class Area1HUDSkin
             row.transform.SetParent(content, false);
             row.text = string.Empty;
             ConfigureHudText(row, 16f, 14f, TextAlignmentOptions.Right,
-                i == 0 ? Gold : i >= 5 ? Aqua : Cream);
+                i == 0 ? Gold : i >= 5 ? Aqua : Cream,
+                Area1Typography.Role.Number);
             Place(row.rectTransform, new Vector2(104f, y),
                 new Vector2(87f, rowHeight), new Vector2(0f, 1f),
                 new Vector2(0f, 1f));
@@ -181,8 +182,10 @@ internal static class Area1HUDSkin
     }
 
     private static void ConfigureHudText(TMP_Text text, float size,
-        float minimumSize, TextAlignmentOptions alignment, Color color)
+        float minimumSize, TextAlignmentOptions alignment, Color color,
+        Area1Typography.Role role = Area1Typography.Role.Body)
     {
+        Area1Typography.Apply(text, role);
         text.fontSize = size;
         text.enableAutoSizing = minimumSize < size;
         text.fontSizeMin = minimumSize;
@@ -203,7 +206,8 @@ internal static class Area1HUDSkin
         RectTransform rect = time.rectTransform;
         Place(rect, new Vector2(12f, -19f), new Vector2(260f, 38f),
             new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
-        ConfigureHudText(time, 21f, 21f, TextAlignmentOptions.Center, Cream);
+        ConfigureHudText(time, 21f, 21f, TextAlignmentOptions.Center, Cream,
+            Area1Typography.Role.Number);
 
         Image backdrop = NewImage("Area1TimeFrame", canvas, Frame("ref_time_board"));
         SetFrame(backdrop, "ref_time_board", false);
@@ -235,7 +239,8 @@ internal static class Area1HUDSkin
         {
             Place(title.rectTransform, new Vector2(0f, -28f),
                 new Vector2(250f, 29f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));
-            ConfigureHudText(title, 24f, 24f, TextAlignmentOptions.Center, Cream);
+            ConfigureHudText(title, 24f, 24f, TextAlignmentOptions.Center, Cream,
+                Area1Typography.Role.Title);
         }
 
         if (start == null) return;
@@ -248,7 +253,7 @@ internal static class Area1HUDSkin
             Place(label.rectTransform, Vector2.zero, new Vector2(224f, 32f),
                 new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
             ConfigureHudText(label, 21f, 21f, TextAlignmentOptions.Center,
-                new Color32(57, 37, 27, 255));
+                new Color32(57, 37, 27, 255), Area1Typography.Role.Title);
         }
     }
 
@@ -292,14 +297,16 @@ internal static class Area1HUDSkin
             TMP_Text number = Object.Instantiate(label, numberBadge.transform);
             number.name = "Area1SlotNumber";
             number.text = (i + 1).ToString();
-            ConfigureHudText(number, 16f, 16f, TextAlignmentOptions.Center, Cream);
+            ConfigureHudText(number, 16f, 16f, TextAlignmentOptions.Center, Cream,
+                Area1Typography.Role.Number);
             Place(number.rectTransform, Vector2.zero,
                 new Vector2(22f, 20f), new Vector2(0f, 1f), new Vector2(0f, 1f));
 
             TMP_Text detail = Object.Instantiate(label, slot);
             detail.name = "Area1SlotLevel";
             detail.text = string.Empty;
-            ConfigureHudText(detail, 11f, 11f, TextAlignmentOptions.Right, Aqua);
+            ConfigureHudText(detail, 11f, 11f, TextAlignmentOptions.Right, Aqua,
+                Area1Typography.Role.Number);
             Place(detail.rectTransform, new Vector2(-4f, -3f),
                 new Vector2(34f, 16f), new Vector2(1f, 1f), new Vector2(1f, 1f));
             details[i] = detail;
@@ -328,7 +335,7 @@ internal static class Area1HUDSkin
         label.text = raisedSign ? title : "≡  " + title;
         ConfigureHudText(label, raisedSign ? 19f : 15f, raisedSign ? 19f : 15f,
             raisedSign ? TextAlignmentOptions.Center : TextAlignmentOptions.Left,
-            raisedSign ? Gold : Cream);
+            raisedSign ? Gold : Cream, Area1Typography.Role.Title);
         if (raisedSign)
             Place(label.rectTransform, new Vector2(0f, -5f),
                 new Vector2(148f, 27f), new Vector2(0.5f, 1f),
@@ -357,7 +364,8 @@ internal static class Area1HUDSkin
         if (label == null) return;
         Place(label.rectTransform, Vector2.zero, new Vector2(205f, 42f),
             new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
-        ConfigureHudText(label, 20f, 18f, TextAlignmentOptions.Center, Cream);
+        ConfigureHudText(label, 20f, 18f, TextAlignmentOptions.Center, Cream,
+            Area1Typography.Role.Title);
     }
 
     private static Image[] StyleSpeedButtons(Transform canvas)

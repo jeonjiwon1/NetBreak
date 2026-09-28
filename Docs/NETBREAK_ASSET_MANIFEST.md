@@ -1,5 +1,15 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## Galmuri11 UI Typography Prototype (2026-09-28)
+
+| 자산 | 출처 | 프로젝트 경로 | 사용/상태 |
+|---|---|---|---|
+| Galmuri11.ttf | 공식 `quiple/galmuri` `dist/Galmuri11.ttf` | `Assets/UI/Fonts/Galmuri/Galmuri11.ttf` | HUD Body·Numeric·짧은 상태 Text, Prototype 승인 |
+| Galmuri11-Bold.ttf | 공식 `quiple/galmuri` `dist/Galmuri11-Bold.ttf` | `Assets/UI/Fonts/Galmuri/Galmuri11-Bold.ttf` | Major Title·주요 Button/Heading·Key 강조, Prototype 승인 |
+| LICENSE.txt | 공식 `quiple/galmuri` `dist/LICENSE.txt` | `Assets/UI/Fonts/Galmuri/LICENSE.txt` | SIL Open Font License 1.1 원문 |
+
+원본 커밋: `71e1cacf1437a11220307120e63e30bc275312d4`. 공식 SIL Open Font License 1.1 원문은 프로젝트에 보존한다. `Assets/Resources/UI/Fonts/Galmuri11 SDF.asset`와 `Galmuri11 Bold SDF.asset`이 Dynamic atlas로 생성되었고 각 원본 TTF 및 기존 `NanumGothic-Bold SDF` fallback을 참조한다. 긴 Tooltip/설명문에는 NanumGothic 계열을 유지한다. 사용자가 Unity Game View의 현재 스타일을 확인하여 Area 1 Prototype Typography의 기본 Font Family로 승인했다. **Implementation: Complete / Static Validation: Complete / Unity Manual Typography Visual Validation: Passed / Prototype Typography Approval: Approved / Final Production Font Approval: Pending.**
+
 ## Reference Frame Rebuild (2026-09-28, 현재 적용)
 
 - 기존 39 PNG 경로/GUID 유지. 변경 8개: panel.png, header.png, button.png, slot.png, selected_slot.png, key.png, decor_rope_knot.png, decor_wave.png. 나머지 31 PNG는 세션 시작본 그대로다.

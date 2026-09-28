@@ -138,15 +138,21 @@ VS-2C-3 복어 연출은 **실제 활성 그물 접촉으로 기존 3초 중단�
 
 ## 8. UI 및 폰트
 
+### Galmuri11 UI Typography Prototype (2026-09-28, 사용자 승인)
+
+공식 `quiple/galmuri`의 Galmuri11 / Galmuri11 Bold를 SIL Open Font License 1.1 원문과 함께 도입했다. 두 서체는 현재 Area 1 Prototype Typography의 기본 Font Family다. Galmuri11은 HUD Body·Numeric·짧은 상태 Text, Galmuri11 Bold는 Major Title·주요 Button/Heading·Key 강조에 사용한다. 긴 Tooltip/설명문에는 NanumGothic 계열을 유지하고 기존 NanumGothic-Bold SDF는 삭제하지 않고 fallback으로도 보존한다. 두 TMP Font Asset은 Dynamic atlas이며 기본 SDF Material을 사용한다. 별도 outline·shadow·glow preset은 만들지 않았다. 사용자가 Unity Game View에서 주요 제목·버튼·HUD·Inventory 번호·Hotbar 키/상태·배속·성장 관리의 실제 표시와 해양 Pixel UI와의 조화를 직접 확인하고 현재 스타일을 Prototype 기준으로 승인했다. 별도의 Gameplay 회귀나 Console Error 0 검증을 의미하지 않는다. **Implementation: Complete / Static Validation: Complete / Unity Manual Typography Visual Validation: Passed / Prototype Typography Approval: Approved / Final Production Font Approval: Pending.**
+
+아래 갈무리 9 우선 후보 기록은 이번 Galmuri11 요청 전의 역사적 방향이다.
+
 Area 1 HUD Visual Iteration 3은 사용자가 선택한 두 번째 콘셉트의 Deep Teal/Navy 패널·얇은 Cyan 경계·큰 아이콘을 기준으로 한다. 좌우 패널을 화면 모서리 20px 여백에 배치하고 정보 256×254, 아이템 388×132, 핫바 716×120으로 한국어 가독성을 회복했다. 정보 행은 아이콘·라벨·값 열을 분리하고 Content Mask와 TMP 줄바꿈 해제·잘림 제한을 적용한다. 바깥 패널에만 작은 목재·로프 강조를 두고 슬롯은 어두운 해양 프레임으로 처리한다. `panel`, `slot`, `selected_slot`, `header`, `button`, `key`의 독립 9-slice Sprite와 정보·도구·아이템 아이콘을 재사용한다. 기존 Drag/Canvas Clamp와 Tooltip/입력 차단, HUD 정보 의미를 유지한다. 초기 모서리 배치가 Fish/Boss 경로를 실제 Game View에서 얼마나 가리는지는 사용자가 확인해야 한다. **Manual Visual Validation: Pending / Prototype Approval: Pending / Final Production UI Approval: Pending.**
 
 Visual Iteration 2는 사용자 Game View에서 좌우 패널이 화면 안쪽에 있고 글자가 작거나 프레임과 겹치며 작은 목재 테두리가 과도하다고 확인되어 승인되지 않았다. 당시 정보 225×232, 아이템 255×79, 핫바 602×84의 축소 배치는 역사적 기록이다.
 
 픽셀아트와 일관된 프레임·아이콘을 사용하되 한국어 가독성을 우선한다. 기존 Canvas, TextMeshPro, Button 구조와 동적 Q/W/E/R 슬롯, 성장 관리·아이템·툴팁의 정보량을 유지한다.
 
-현재 적용 폰트는 **NanumGothic-Bold SDF, Dynamic atlas**다. 정식 픽셀아트 UI의 우선 후보는 **갈무리 9(Galmuri 9)**이며 HUD, 버튼, 숫자, 짧은 라벨, 탭, 간단한 타이틀부터 검토한다. 장문은 실제 해상도, 작은 크기, 숫자·영문 혼합, 한글 글리프, TMP 품질, 확대 방식, 줄바꿈과 잘림을 검증한 뒤 결정한다. 갈무리 9 하나로 모든 텍스트를 통일한다고 확정하지 않는다.
+이전 기준 폰트는 **NanumGothic-Bold SDF, Dynamic atlas**였다. 당시 정식 픽셀아트 UI의 우선 후보는 **갈무리 9(Galmuri 9)**였으며 HUD, 버튼, 숫자, 짧은 라벨, 탭, 간단한 타이틀부터 검토하기로 했다. 장문은 실제 해상도, 작은 크기, 숫자·영문 혼합, 한글 글리프, TMP 품질, 확대 방식, 줄바꿈과 잘림을 검증한 뒤 결정한다. 갈무리 9 하나로 모든 텍스트를 통일한다고 확정하지 않는다.
 
-갈무리 9는 아직 임포트하지 않았고 TMP Font Asset도 만들지 않았다. 기존 NanumGothic을 제거하거나 UI를 교체하지 않았다. 공식 배포처의 라이선스 문서에서 상업 이용, 게임 패키지 포함과 재배포 조건을 확인하기 전에는 검증 완료로 표시하지 않는다.
+갈무리 9는 임포트하지 않았고 해당 TMP Font Asset도 만들지 않았다. 이 기록 시점에는 기존 NanumGothic을 제거하거나 UI를 교체하지 않았다. 공식 배포처의 라이선스 문서에서 상업 이용, 게임 패키지 포함과 재배포 조건을 확인하기 전에는 검증 완료로 표시하지 않기로 했다.
 
 ## 9. 제작 규격 — 미확정
 

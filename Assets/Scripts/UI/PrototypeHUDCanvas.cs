@@ -322,6 +322,7 @@ public class PrototypeHUDCanvas : MonoBehaviour
         TMP_Text keyText = Instantiate(legacyCastNetText, keycap.transform);
         keyText.gameObject.name = $"HotbarKeyText_{binding}";
         keyText.text = binding;
+        Area1Typography.Apply(keyText, Area1Typography.Role.Key);
         keyText.fontSize = 15f;
         keyText.enableAutoSizing = false;
         keyText.enableWordWrapping = false;
@@ -340,6 +341,7 @@ public class PrototypeHUDCanvas : MonoBehaviour
         );
 
         slotText.gameObject.name = $"HotbarText_{binding}";
+        Area1Typography.Apply(slotText, Area1Typography.Role.Body);
         slotText.raycastTarget = false;
         slotText.alignment = TextAlignmentOptions.Center;
         slotText.fontSize = 16f;
