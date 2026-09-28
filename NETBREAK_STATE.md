@@ -1,5 +1,12 @@
 # NETBREAK 인수인계
 
+## Area 1 MiniBoss Giant Tuna Sprite / Presentation 1차 연결 (2026-09-28, Prototype 승인)
+
+- Area 1 MiniBoss 어종을 거대 참치로 확정했다. 기존 Tuna를 중심으로 정어리·고등어·복어·오징어 및 승인된 Boss Shark의 픽셀 밀도와 실루엣·팔레트를 참고했다. ImageGen 초안은 형태 참고만 했고 실제 게임용 `Tools/generate_coast_miniboss_tuna.py`에서 88×88 셀, E/N/NE/NW 4방향×4프레임의 탑다운 RGBA 수영 시트를 제작했다. 일반 Tuna보다 긴 유선형 몸통·큰 갈라진 꼬리·가는 지느러미·소량의 금색 finlet으로 구분한다.
+- `Assets/Art/Fish/CoastMiniBoss/CoastMiniBoss_Swim.png`와 분할 `.meta`, `CoastMiniBoss_VisualProfile.asset`과 `.meta`를 추가하고 기존 `FishData_CoastMiniBoss.asset`에 Profile 참조 한 필드만 연결했다. 공용 `FishVisualController`가 사각형 fallback을 숨기고 방향 프레임을 표시한다. Animator/돌진 전용 프레임은 없다. 기존 `MiniBossController`의 예고 점멸은 실제로 보이는 자식 Renderer를 선택해 흰색/금색으로 표시하도록 최소 보정했다. 돌진 속도·시간·판정·Resistance 220·E 보상은 유지한다.
+- `FishArtSetup`과 `FishVisualExpansionTests`의 자산·방향 기대값을 갱신했다. PNG 352×352 RGBA, 16개 88×88 분할·Sprite ID·Profile/FishData/Main Scene 참조·GUID 중복 없음·기존 MiniBoss 수치 및 수정 코드 diff를 정적으로 확인했다. 첫 Unity 배치 실행은 Package Manager IPC 연결 실패로 중단됐지만, 재실행에서 Import·C# 컴파일과 `FishArtSetup.Validate`가 성공했다. 관련 EditMode `FishVisualExpansionTests`는 **23/23 통과**했다. 관련 C# 컴파일 오류·Exception은 없고 기존 UI의 TMP `enableWordWrapping` 폐기 경고 3건이 남아 있다. **Implementation: Complete / Static Validation: Complete / Unity Compile·Import·Pipeline Validate·Related EditMode Validation: Passed / Unity Manual Play Visual Validation: Pending / Prototype Approval: Pending / Final Production Art Approval: Pending.** Scene/Prefab, Boss Shark와 기존 일반 Fish 자산·게임플레이·UI를 수정하지 않았고 Computer Use, 임시 Unity 프로젝트, git add/commit/push는 수행하지 않았다.
+- 후속 사용자 Unity 수동 검증에서 Area 1 MiniBoss Encounter의 거대 참치 Sprite 표시·Import·VisualProfile 연결, 방향 전환·수영, 일반 Tuna/Fish 대비 크기와 Boss Shark와의 스타일 정합성을 확인했다. MiniBoss HUD·Resistance, 돌진 예고 점멸·이동 중 Sprite, 포획·E Reward·도주 흐름이 정상이고 일반 Fish/Boss Shark 이상 및 이번 작업 관련 Console Error/Exception이 없었다. **Implementation Complete: Complete / Static Validation: Complete / Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.** 위 수동 검증 대기 표기는 이전 작업 시점의 이력이다.
+
 ## Area 1 Boss Shark Sprite / Presentation 1차 연결 (2026-09-28, Prototype 승인)
 
 - Area 1 Boss 어종을 상어로 확정했다. 정어리·고등어·참치·복어·오징어의 방향 시트, 83 PPU, Point/무압축 Import, 짙은 외곽과 청록 면 분리를 참고했다. ImageGen 초안의 상어 지느러미·꼬리 실루엣을 참고하되 실제 게임용으로는 탑다운 픽셀 격자에서 `Tools/generate_coast_boss_shark.py`로 96×96 셀, 4방향(E/N/NE/NW)×4프레임의 투명 RGBA 시트를 제작했다.

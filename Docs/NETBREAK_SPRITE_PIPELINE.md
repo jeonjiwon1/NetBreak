@@ -1,5 +1,9 @@
 # NETBREAK 물고기 Sprite Pipeline — VS-2B 방향별 수영 프로토타입
 
+## Area 1 MiniBoss Giant Tuna 확장 (2026-09-28, Prototype 승인)
+
+`CoastMiniBoss_Swim.png`는 352×352 RGBA, 88×88 셀 16개(E/N/NE/NW 각 4프레임)다. 기존 Fish/Boss Shark처럼 83 PPU·Point·무압축·Mipmap Off·8 FPS·중앙 Pivot 및 반대 방향 flipX+flipY를 쓴다. `CoastMiniBoss_VisualProfile.asset`을 `FishData_CoastMiniBoss.asset`에 연결해 공용 `FishVisualController`가 root fallback을 숨기고 자식 SpriteRenderer에 수영을 표시한다. Profile visualScale 1이며 기존 MiniBoss FishData의 gameplay scale·Resistance·돌진 설정은 유지한다. `MiniBossController`의 기존 예고 색 점멸은 현재 표시 Renderer를 대상으로 한다. Animator나 돌진 전용 Sprite는 없다. `FishArtSetup.Validate`와 방향별 EditMode 테스트 기대 목록에 MiniBoss가 추가됐다. 아래 역사적 MiniBoss fallback 문장은 연결 이전 결과다. Unity Import·C# 컴파일·Pipeline Validate가 성공했고 관련 EditMode 23/23을 통과했다. 사용자가 실제 Encounter에서 Sprite·방향·수영·돌진·HUD·Resistance·포획·E 보상·도주 흐름과 기존 Fish/Boss Shark 정상 동작을 확인했다. **Static Validation: Complete / Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.**
+
 ## Area 1 Boss Shark 확장 (2026-09-28, Prototype 승인)
 
 `CoastBoss_Swim.png`는 384×384 RGBA, 96×96 셀 16개(E/N/NE/NW 각 4프레임)다. 기존 다섯 어종과 같은 83 PPU·Point·무압축·Mipmap Off·8 FPS·중앙 Pivot 및 반대 방향 flipX+flipY를 쓴다. `CoastBoss_VisualProfile.asset`을 `FishData_CoastBoss.asset`에 연결해 공용 `FishVisualController`가 root 사각형 fallback 대신 자식 SpriteRenderer에 상어 수영을 표시한다. 기존 Boss Transform의 gameplay scale은 유지하고 프로필의 visualScale 1이 실제 Sprite 표시 크기를 정한다. Animator는 없다. MiniBoss는 여전히 fallback이다. `FishArtSetup.Validate`와 관련 EditMode 테스트의 기대 목록에 Boss가 추가됐다. 기존 문단의 Boss fallback 설명과 과거 테스트 통과 수치는 당시 기록이다. 사용자가 Unity에서 Sprite import·Profile 연결·방향·수영과 Boss encounter의 Phase·도주·포획 흐름을 확인했고 관련 Console Error/Exception은 없었다. **Static Validation: Complete / Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.** 별도 EditMode Test Runner 통과는 이 승인에 포함하지 않는다.

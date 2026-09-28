@@ -38,6 +38,7 @@ public class MiniBossController : MonoBehaviour
     private Coroutine dashCoroutine;
 
     private Color normalColor;
+    private Color telegraphColor;
 
     private bool isMiniBoss;
     private bool rewardGranted;
@@ -147,12 +148,24 @@ public class MiniBossController : MonoBehaviour
             return;
         }
 
+        // Follow the displayed pixel art instead of the hidden root fallback.
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        foreach (SpriteRenderer candidate in GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (!candidate.enabled) continue;
+            spriteRenderer = candidate;
+            break;
+        }
+
         ActiveMiniBoss = this;
 
         if (spriteRenderer != null)
         {
             normalColor =
                 spriteRenderer.color;
+            telegraphColor = normalColor == Color.white
+                ? new Color(1f, 0.72f, 0.35f, 1f)
+                : Color.white;
         }
 
         fishController.Captured +=
@@ -273,7 +286,7 @@ public class MiniBossController : MonoBehaviour
             {
                 spriteRenderer.color =
                     bright
-                        ? Color.white
+                        ? telegraphColor
                         : normalColor;
             }
 

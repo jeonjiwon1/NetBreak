@@ -1,5 +1,17 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## Area 1 MiniBoss Giant Tuna 1차 자산 (2026-09-28)
+
+| 항목 | 내용 |
+|---|---|
+| 자산 | `Assets/Art/Fish/CoastMiniBoss/CoastMiniBoss_Swim.png` 및 `.meta`, `CoastMiniBoss_VisualProfile.asset` 및 `.meta` |
+| 출처·제작 | 프로젝트 내부 제작. 내장 ImageGen 거대 참치 초안을 형태 참고로 사용하고 `Tools/generate_coast_miniboss_tuna.py`에서 탑다운 픽셀 시트를 별도 제작. 외부 에셋 직접 사용 없음 |
+| 규격 | 352×352 투명 RGBA, 88×88 셀×16, E/N/NE/NW 각 4 수영 프레임, PPU 83·8 FPS·Point·무압축·Mipmap Off |
+| 연결 | `FishData_CoastMiniBoss.asset` → `CoastMiniBoss_VisualProfile.asset` → 16 Sprite. 공용 FishVisualController 재사용, Animator 없음. 기존 MiniBoss 돌진 예고 색 점멸은 실제 표시 Renderer에 적용 |
+| 검증·승인 | PNG·분할·참조 정적 확인. Unity Import·C# 컴파일·Pipeline Validate 성공, 관련 EditMode 23/23 통과. 사용자가 실제 MiniBoss Encounter의 Sprite·방향·수영·돌진·HUD·Resistance·포획·E Reward·도주 흐름과 기존 Fish/Boss Shark 정상 동작을 확인했고 관련 Console Error/Exception은 없었다. **Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending** |
+
+MiniBoss의 돌진·Resistance 220·HUD·E 보상과 기존 일반 Fish/Boss Shark 자산은 유지한다. 돌진/피격/포획 전용 애니메이션은 후속 후보이며 아직 미적용이다.
+
 ## Area 1 Boss Shark 1차 자산 (2026-09-28)
 
 | 항목 | 내용 |

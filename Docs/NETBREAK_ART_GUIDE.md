@@ -1,5 +1,9 @@
 # NETBREAK 아트 스타일 가이드 — VS-2 초안
 
+## Area 1 MiniBoss Giant Tuna 1차 아트 (2026-09-28, Prototype 승인)
+
+연안 MiniBoss는 탑다운 거대 참치다. 일반 Tuna보다 긴 유선형 몸통과 깊게 갈라진 큰 꼬리, 가늘게 휜 등·배 지느러미 및 소량의 금색 finlet으로 상위 개체를 구분한다. 남색 외곽·청록 등면·밝은 배색과 83 PPU 방향 규칙은 기존 Fish를 따른다. Boss Shark보다 좁고 빠른 실루엣을 유지한다. 88×88 셀의 E/N/NE/NW 4방향×4프레임 기본 수영만 있으며 돌진 예고는 현재 보이는 Sprite의 색 점멸을 사용한다. 돌진·피격·포획 전용 프레임과 Animator는 후속 후보다. 사용자가 Unity에서 Giant Tuna의 크기·스타일·방향·수영과 돌진 예고·이동·포획·E 보상 흐름을 확인했다. **Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending.**
+
 ## Area 1 Boss Shark 1차 아트 (2026-09-28, Prototype 승인)
 
 연안 Boss는 탑다운 상어다. 96×96 셀의 넓은 머리·뾰족한 주둥이, 위아래로 뻗은 가슴지느러미, 등지느러미와 갈라진 꼬리로 참치 및 MiniBoss와 실루엣을 구분한다. 기존 Fish처럼 남색 1~2픽셀 외곽, 청록 등면, 밝은 가장자리·배색을 쓰고 투명 여백을 둔다. 4방향×4프레임의 기본 수영만 제작했다. Phase별 별도 Sprite, 피격·포획·도주 전용 애니메이션은 후속 후보이며 현재 Phase 색 점멸·속도 변화·HUD를 유지한다. 사용자가 Unity에서 Boss의 크기·실루엣·방향·수영과 Phase·도주·포획 흐름을 확인했다. **Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending.**
