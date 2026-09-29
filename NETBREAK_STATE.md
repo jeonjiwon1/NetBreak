@@ -1,5 +1,15 @@
 # NETBREAK 인수인계
 
+## Area 1 Minimal Contextual Tutorial (2026-09-29, Unity 수동 검증 완료·Prototype 승인)
+
+- `PrototypeGameFlowManager`의 기존 오브젝트에 `Area1TutorialController`를 런타임으로 한 번 부착한다. 조업 시작, Lv2 Core/Q 및 Lv3 Partner/W 도구 획득, MiniBoss 포획 보상의 E 선택 완료, Shark Boss 시작에서만 한 줄 안내를 요청한다. 도구 문구는 실제 선택 도구에 따라 바뀐다. 보스 회유 횟수는 `BossEncounterController.MaxPasses`를 읽는다.
+- 기존 `GameCanvas`에 가로 640×64의 작은 Galmuri 패널을 런타임 생성한다. 하단 Hotbar 위에 놓고 Raycast를 받지 않는다. 한 번에 한 메시지만 표시하며 4.5초 후 사라지고, 선택 UI가 열리면 숨기고 시간을 멈춘다. 메시지 시간은 unscaled time이다. 보스 시작은 남은 일반 안내를 비운다. Run 성공·실패·Scene 재시작에서는 대기 메시지를 정리한다.
+- 완료 플래그는 `PlayerPrefs`의 `NetBreak.Area1Tutorial.v1.{Goal,CoreTool,PartnerTool,TacticalSkill,BossRule}` 키에 저장한다. 개발용 `Tools/NETBREAK/Reset Area 1 Tutorial Progress` 메뉴로 모두 초기화한다. Tutorial은 Gameplay 입력·물고기·Spawn·timeScale을 변경하지 않는다.
+- 성장 선택 UI와 TAB 관리창은 자체 제목·선택 설명이 있어 추가 안내를 생략했다. Puffer는 상태 표현, Squid는 먹물 충돌/암전, Giant Tuna는 경고·점멸·HUD로 전달하므로 별도 문구를 넣지 않았다. Boss의 회유 횟수는 HUD에도 있으나 첫 방문의 실패 규칙을 알리기 위해 한 줄을 유지한다. R은 Boss 포획 직후 Run이 종료되어 조작 안내를 넣지 않았다.
+- `git diff --check`, 새 파일의 공백 검사, Assets의 362개 `.meta` GUID 중복 검사, 실제 Q/W/E 입력·도구별 동작·HUD/보스 회유 직렬화 확인을 통과했다. 구현 당시 Unity 재컴파일 기록이 없어 컴파일·EditMode 테스트·Console을 통과로 기록하지 않았으며, 이후 사용자의 실제 Unity Play로 소스 컴파일을 확인했다. EditMode 테스트 실행과 Console Error 0 결과는 별도로 전달받지 않았다.
+- 사용자가 조업 시작, 선택한 Core/Q·Partner/W 도구별 조작, MiniBoss 보상 E, Shark Boss의 런타임 3회 회유 안내까지 5개 Step을 실제 Area 1에서 확인했다. 문구·위치·표시 방식은 Prototype에서 사용 가능하고 기존 HUD·Growth·Boss HUD 및 Gameplay Input을 심각하게 방해하지 않으며 과도하지 않다고 판단했다. 추가 Step 없이 Vertical Slice 다음 단계로 진행 가능하다. Growth 선택, TAB, Puffer, Squid, Giant Tuna Pattern, R 조작 및 Boss Pattern별 설명은 제외를 유지한다. External Playtest에서 문구·시점·시간·Step 수를 재평가할 수 있으며 현재 승인은 최종 Production UI/UX 승인이 아니다.
+- **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play) / Static Validation: Partial (위 정적 검사 통과) / EditMode Tests: Not Run / Unity Manual Tutorial Validation: Passed / Prototype Tutorial Approval: Approved / Final Production Approval: Pending.** Tutorial은 Gameplay/Input/Balance를 소유하지 않는 Presentation 계층이다. Scene/Prefab/ProjectSettings와 Gameplay·밸런스 수치는 변경하지 않았다. 이번 문서 정리에서 Code/UI/Gameplay/Audio/Scene/Prefab/Font Asset과 Git add/commit/push는 수행하지 않는다.
+
 ## Area 1 Normal / MiniBoss / Boss Prototype BGM (2026-09-29, Unity 수동 청각 검증 완료·Prototype 승인)
 
 - `Area1BgmController`가 기존 `PrototypeGameFlowManager` 오브젝트에 런타임으로 한 번 붙고 별도 자식 `Area1BgmSource`(2D, loop, pitch 1)를 소유한다. `ItemEffectManager`의 공용 one-shot SFX Source와 분리했다. `Resources/Area1BgmProfile.asset`이 세 Clip, 공통 Source 볼륨 0.22, 0.5초 전환 시간을 보관한다.

@@ -62,9 +62,11 @@ Area 1 Normal/MiniBoss/Boss Original BGM 세 곡과 런타임 전환은 사용�
 
 ### VS-6. UX-F4 최소 튜토리얼
 
-- 기존 Area 1 안에서 LURE → TRAP → CATCH, 핵심 조작과 포획 흐름, Core/Partner·Skill Tree·E/R, MiniBoss/Boss 규칙을 필요한 시점에 짧게 안내한다.
-- 기존 모달 UI와 월드 입력이 충돌하지 않게 하고 건너뛰기와 다시 보기 필요성을 검토한다.
-- 별도 튜토리얼 Scene 제작을 필수로 두지 않는다.
+Area 1의 5개 Contextual 안내는 사용자 Unity 수동 검증을 통과해 Vertical Slice Prototype으로 승인됐다. 실제 Unity Play로 소스 컴파일을 확인했으며 EditMode 테스트는 실행 기록이 없어 Not Run이다. Tutorial은 Gameplay/Input/Balance를 소유하지 않는 Presentation 계층이고 기존 HUD·Growth·Boss HUD와 조작을 심각하게 방해하지 않았다. Growth 선택, TAB, Puffer, Squid, Giant Tuna Pattern, R 조작 및 Boss Pattern별 안내는 추가하지 않는다. Final Production Approval은 Pending이며, 외부 플레이테스트에서 문구·표시 시점·시간·Step 수와 처음 보는 플레이어의 이해도를 재평가한다. 세부 상태는 [NETBREAK_STATE.md](../NETBREAK_STATE.md)를 따른다.
+
+- 기존 Area 1에서 포획 목표, 선택한 Core/Partner 도구 조작, E 획득 및 Boss 회유 규칙만 필요한 시점에 짧게 안내한다.
+- 기존 선택 UI와 월드 입력을 방해하지 않고 완료한 안내는 다음 Run에서 반복하지 않는다. 개발 검증용 Reset 메뉴를 제공한다.
+- 별도 튜토리얼 Scene은 만들지 않는다.
 
 ### VS-7. 버티컬 슬라이스 통합 검증
 

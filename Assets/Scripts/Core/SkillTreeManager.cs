@@ -187,6 +187,7 @@ public sealed class SkillTreeManager : MonoBehaviour
         isMandatoryAcquisition = false;
         acquisitionChoices.Clear();
         notice = $"{GetToolName(tool)} 획득 완료";
+        Area1TutorialController.Instance?.NotifyToolAcquired(mandatoryRole, tool);
         RunManager.Instance.ResolveLevelUp();
         return true;
     }

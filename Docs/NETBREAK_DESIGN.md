@@ -103,6 +103,9 @@ Area 1의 현재 Base Background는 Static Single PNG Prototype이며 Fish Shado
 콘셉트 참고 이미지의 배, 섬, 미니맵, 등대, UI 배치와 신규 장비는 확정 콘텐츠가 아니다. 실제 화면과 기능은 본 설계와 구현을 기준으로 한다. 세부 Sprite 크기, PPU, 카메라·렌더링 해상도, 팔레트, 애니메이션 규격은 아직 확정하지 않았으며 제작 기준과 검증 계획은 [NETBREAK_ART_GUIDE.md](NETBREAK_ART_GUIDE.md)를 따른다. 아트 방향 확정은 실제 에셋 제작·Unity 적용 완료를 뜻하지 않는다.
 
 ## UI·개발 방법
+
+Area 1 Minimal Contextual Tutorial은 조업 목표, Lv2/Lv3에서 고른 Q/W 도구의 실제 조작, MiniBoss 보상 E, Shark Boss 회유 규칙의 5개 안내로 구성한다. Growth 선택, TAB, Puffer, Squid, Giant Tuna Pattern, R 조작 및 Boss Pattern별 설명은 추가하지 않고 기존 UI/VFX/SFX/HUD를 활용한다. Tutorial은 Gameplay/Input/Balance를 소유하지 않는 Presentation 계층이며 입력과 시간 배율을 차단하지 않는다. `NetBreak.Area1Tutorial.v1.` PlayerPrefs 완료 플래그로 Run 간 중복을 막고 `Tools → NETBREAK → Reset Area 1 Tutorial Progress`로 개발 검증용 초기화를 한다. 사용자 Unity 수동 검증을 통과해 Vertical Slice Prototype으로 승인됐으며 Final Production Approval은 Pending이다. External Playtest 결과에 따라 문구·표시 시점·시간·Step 수를 재평가한다. 상세 검증 상태는 `../NETBREAK_STATE.md`를 따른다.
+
 주요 런타임 UI는 Canvas/TMP로 이관되어 있다. HUD, 준비/시작, 공지, 성장 관리, 도구/E/아이템 선택, 미니보스, 보스, 결과, 월드 피드백을 유지한다. Canvas/TextMeshPro/Button을 쓰며 Legacy Text를 추가하지 않는다. 현재 적용 폰트는 NanumGothic-Bold SDF, Dynamic atlas다. 정식 픽셀아트 UI의 우선 후보는 갈무리 9이며 HUD·버튼·숫자·짧은 라벨부터 검토한다. 실제 이관, 라이선스, 한글 글리프와 장문·혼합 문자의 가독성 및 기존 레이아웃 영향은 후속 작업에서 검증하며 모든 텍스트를 단일 폰트로 통일한다고 확정하지 않는다.
 
 관련 코드와 제어 흐름을 읽고 직렬화 참조를 보존하며 점진적으로 변경한다. Manager 중복, enum 재정렬, Scene/Prefab Inspector 참조 파손을 피한다. 의미 있는 변경 후 컴파일 및 Unity Console 확인을 진행한다. 구조 작업에 무관한 밸런스 수정은 하지 않는다. 자세한 영구 작업/Git 규칙은 `../AGENTS.md`를 따른다.

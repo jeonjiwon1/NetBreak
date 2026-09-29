@@ -130,9 +130,11 @@ public class PrototypeGameFlowManager : MonoBehaviour
             return;
         }
 
+        Instance = this;
+        if (GetComponent<Area1TutorialController>() == null)
+            gameObject.AddComponent<Area1TutorialController>();
         bgm = GetComponent<Area1BgmController>();
         if (bgm == null) bgm = gameObject.AddComponent<Area1BgmController>();
-        Instance = this;
     }
 
     private void Update()
@@ -245,6 +247,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
         bgm?.PlayNormal();
         isFishingStarted = true;
+        Area1TutorialController.Instance?.NotifyFishingStarted();
 
         if (fishSpawner != null)
         {
@@ -265,6 +268,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
         bgm?.PlayBoss();
         isBossEncounter = true;
+        Area1TutorialController.Instance?.NotifyBossStarted();
     }
 
     public void CompleteBossEncounter(
@@ -304,6 +308,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
     private void FinalizeBossResult(bool bossCaptured)
     {
+        Area1TutorialController.Instance?.ClearPending();
         bgm?.StopBgm();
         isGameEnded = true;
         isSuccess = bossCaptured;
@@ -312,6 +317,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
     public void FailMiniBossEncounter()
     {
+        Area1TutorialController.Instance?.ClearPending();
         if (isGameEnded)
         {
             return;

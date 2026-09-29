@@ -257,6 +257,7 @@ public sealed class TacticalSkillManager : MonoBehaviour
         isChoosing = false;
         canSelect = false;
         ResumeGameplaySpeed();
+        Area1TutorialController.Instance?.NotifyTacticalSkillAcquired();
         return true;
     }
 
