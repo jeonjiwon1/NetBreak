@@ -1,5 +1,12 @@
 # NETBREAK 인수인계
 
+## Area 1 MiniBoss / Boss Charge Warning·Start Prototype SFX (2026-09-29, Unity 수동 청각 검증 완료·Prototype 승인)
+
+- 사용자 청취에서 기존 짧은 “퉁” 계열이 Telegraph Warning보다 실제 Charge Start에 자연스럽다고 판단했다. 따라서 기존 참치·상어 별도 WAV `GiantTuna_ChargeTelegraph.wav`(0.26초), `SharkBoss_ChargeTelegraph.wav`(0.36초)는 **보존**하고 파일명은 역사적 이름으로 유지하되 재생 역할을 Charge Start로 옮겼다. 이후 새 Warning+Charge 타이밍도 사용자 Unity Play Mode에서 검증·승인했다.
+- 새 `GiantTuna_ChargeWarning.wav`(0.34초, 상승하는 가벼운 수중 압력)와 `SharkBoss_ChargeWarning.wav`(0.40초, 더 낮고 무거운 상승형 경고)를 각 Telegraph 시작에 한 번 요청한다. 점멸 중 추가 요청은 없고, 실제 돌진 속도 배율을 적용한 직후 기존 소리를 한 번 요청한다. Shark Phase 2/3은 각각 같은 Warning/Charge 쌍을 사용한다. Telegraph·돌진·Phase·시각·Gameplay 수치는 유지한다.
+- 네 파일은 PCM mono/44.1 kHz/16-bit의 프로젝트 내부 생성 Prototype이다. 기존 Charge 파일의 볼륨 0.44/0.50을 유지하고 새 Warning은 참치 0.42, 상어 0.48이다. `FishVisualProfile`이 두 역할의 클립/볼륨을 보유하고 `ItemEffectManager` 공용 one-shot Source를 공유한다. Pause·준비·Run 종료 요청 제한 및 공용 Source Pause/UnPause/Stop은 유지한다. 새 Warning 생성기는 `Tools/generate_charge_warning_sfx.ps1`이다.
+- `ChargeTelegraphAudioTests`는 두 역할의 Asset 참조와 Warning → Charge 요청 순서, 점멸·돌진 중 중복 없음, 참치 다음 예고, 상어 Phase 2/3 및 Disable 후 재등장을 검사하도록 갱신했으나 최종 코드 기준으로 실행하지 않았다. Codex는 WAV 헤더·길이·Profile GUID 참조·트리거 위치·`git diff --check`를 정적으로 확인했다. 사용자는 Unity Area 1 Play Mode에서 컴파일·실행을 확인하고, Giant Tuna의 예고음 1회·점멸 중 무반복·실제 Charge음 1회·볼륨과 두 역할의 구분을 검증했다. Shark Phase 2/3도 같은 순서와 보스다운 위계·재등장 후 정상 재생·중복 없음을 확인했다. 두 종 모두 기존 Telegraph Visual과 Audio Timing이 자연스럽고 기존 Tool/Squid/Puffer SFX와 충돌하지 않으며 Gameplay Timing 변화가 없었다. **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play 실행) / Static Validation: Passed (Codex의 WAV·GUID·트리거·diff 검사 범위) / EditMode Tests: Not Run (최종 코드) / Unity Manual Audio Validation: Passed / Prototype Audio Approval: Approved / Final Production Approval: Pending.** Capture/Escape/Result/Reward/Phase Change/BGM, Element/Synergy, Mixer/Bus와 최종 마스터링은 이번 승인에서 제외한다. 이번 문서 정리에서는 Code·Audio Asset을 변경하거나 Git add/commit/push를 하지 않는다.
+
 ## Shark Boss Charge Telegraph Sprite binding 수정 (2026-09-29, Unity 수동 검증 완료·Prototype 승인)
 
 - VFX/SFX Audit와 사용자 Unity 확인에서 Phase 2/3 감속·HUD·돌진은 정상이나 실제 Shark 본체가 예고 중 점멸하지 않는 문제를 확인했다. `BossBehaviorController.Awake`가 프리팹 루트의 `SpriteRenderer`를 저장하지만, `FishVisualController.Initialize`는 그 루트를 숨기고 런타임 `FishPixelVisual` 자식에 Shark Sprite를 표시한다. 또한 Shark VisualProfile의 기본 Tint와 기존 예고 밝은 색이 모두 흰색이라 Renderer 참조만 바꿔도 대비가 없다.

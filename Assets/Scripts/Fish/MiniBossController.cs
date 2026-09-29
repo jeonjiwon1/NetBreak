@@ -265,6 +265,9 @@ public class MiniBossController : MonoBehaviour
         isTelegraphing = true;
         isDashing = false;
 
+        ItemEffectManager.Instance?.PlayChargeWarningSound(
+            fishController.Data.VisualProfile);
+
         fishMovement
             .SetSpecialSpeedMultiplier(
                 windupSpeedMultiplier
@@ -322,6 +325,9 @@ public class MiniBossController : MonoBehaviour
                     .Data
                     .DashSpeedMultiplier
             );
+
+        ItemEffectManager.Instance?.PlayChargeStartSound(
+            fishController.Data.VisualProfile);
 
         yield return new WaitForSeconds(
             Mathf.Max(

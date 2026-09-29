@@ -221,6 +221,9 @@ public class BossBehaviorController : MonoBehaviour
         isRushing = false;
         isRecovering = false;
 
+        ItemEffectManager.Instance?.PlayChargeWarningSound(
+            fishController.Data.VisualProfile);
+
         BindDisplayRenderer();
 
         fishMovement
@@ -279,6 +282,9 @@ public class BossBehaviorController : MonoBehaviour
             .SetSpecialSpeedMultiplier(
                 rushMultiplier
             );
+
+        ItemEffectManager.Instance?.PlayChargeStartSound(
+            fishController.Data.VisualProfile);
 
         yield return new WaitForSeconds(
             rushDuration

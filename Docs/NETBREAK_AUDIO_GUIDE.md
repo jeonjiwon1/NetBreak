@@ -1,5 +1,13 @@
 # NETBREAK 오디오 가이드
 
+## Area 1 MiniBoss / Boss Charge Warning·Start Prototype (2026-09-29, Unity 수동 청각 검증 완료·Prototype 승인)
+
+사용자 청취 결과 기존 “퉁” 효과음은 Charge Start에 더 자연스럽다. 따라서 기존 별도 파일 `GiantTuna_ChargeTelegraph.wav`(0.26초)와 `SharkBoss_ChargeTelegraph.wav`(0.36초)를 보존하고 실제 돌진 시작으로 옮겼다. 이름의 `Telegraph`는 초기 제작 명칭이며 현재 재생 역할은 Charge Start다. 기존 볼륨 0.44/0.50을 유지한다.
+
+새 `GiantTuna_ChargeWarning.wav`(0.34초, Profile 볼륨 0.42)는 시작에서 끝으로 상승하는 가벼운 압력·Whoosh이고, `SharkBoss_ChargeWarning.wav`(0.40초, 0.48)는 더 낮고 무거운 상승형 경고다. 둘 다 Telegraph 길이보다 짧으며 Impact Accent를 넣지 않았다. 네 파일은 프로젝트 내부 합성 PCM mono/44.1 kHz/16-bit다. 새 Warning 생성기는 `Tools/generate_charge_warning_sfx.ps1`이다.
+
+이벤트 계약은 **Telegraph Start → Warning 1회 → 점멸/감속 → 실제 Charge Start → 기존 Charge 1회**다. 점멸 중 반복하지 않고 Shark Phase 2/3은 같은 쌍을 사용한다. `FishVisualProfile`의 두 역할을 `ItemEffectManager` 공용 one-shot Source로 재생하며 Pause·준비·Run 종료 제한과 Source Pause/UnPause/Stop을 공유한다. 사용자가 Unity Area 1 Play Mode에서 Giant Tuna의 예고감과 두 역할의 구분, Shark의 더 무거운 경고 위계, Phase 2/3·다음 Attempt, 각 이벤트 1회와 기존 Tool/Squid/Puffer 소리와의 조화를 확인했다. Visual과 Audio Timing도 자연스럽고 볼륨·강도에 Prototype 품질 문제가 없었다. **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play 실행) / Static Validation: Passed (Codex의 WAV·GUID·트리거·diff 검사 범위) / EditMode Tests: Not Run (최종 코드) / Unity Manual Audio Validation: Passed / Prototype Audio Approval: Approved / Final Production Approval: Pending.** Capture/Escape/Result/Reward/Phase Change/BGM, Element/Synergy, Mixer/Bus와 최종 loudness·mastering은 이번 승인에서 제외한다.
+
 ## VS-2D-4 Cast Net Open Prototype — Unity 수동 청각 검증 완료
 
 `Assets/Audio/SFX/Tools/CastNet_Open.wav`는 프로젝트 내부 합성 PCM mono/44.1 kHz/16-bit/0.34초의 로프·망·물소리다. 실제 cast 완료 뒤 공용 one-shot Source에서 재생한다. **1 cast = 기본 SFX 최대 1회**이며 다중 명중 Fish마다 반복하지 않는다. 같은 소리의 0.09초 중복 제한은 판정에 영향을 주지 않는다. 사용자가 Unity Play Mode에서 Hit/Miss의 사용음, 다중 명중 시 기본음 1회, 취소·UI 차단·Pause 중 불필요한 재생 없음과 Run 재시작 후 잔상 없음을 확인하고 현재 Prototype 품질을 승인했다. **Manual Audio Validation: Passed / Prototype Approval: Approved / Final Production Audio Approval: Pending.** Profile 볼륨 0.3과 최종 믹스는 출시용 확정값이 아니다.
@@ -46,7 +54,7 @@ VS-2C-1의 `Squid_InkRelease.wav`가 첫 프로젝트 내부 생성 Prototype SF
 
 ## 8. Boss SFX
 
-경고, 돌진, 회유 전환, 포획/마지막 도주를 서로 구분한다. 구현·믹스는 후속 단계다.
+현재 Area 1에서는 Giant Tuna와 Shark Boss의 돌진 예고 Warning과 실제 Charge Start를 각각 분리했다. 회유 전환, 포획/마지막 도주와 최종 믹스는 후속 단계다.
 
 ## 9. UI SFX
 
@@ -78,7 +86,7 @@ VS-2C-1의 `Squid_InkRelease.wav`가 첫 프로젝트 내부 생성 Prototype SF
 
 ## 16. Folder
 
-특수어 SFX는 `Assets/Audio/SFX/SpecialFish/`에 둔다. 후속 Tool, UI, Boss, BGM 폴더는 실제 자산이 생길 때 추가한다.
+특수어 SFX는 `Assets/Audio/SFX/SpecialFish/`, 현재 MiniBoss/Boss의 두 단계 돌진 SFX는 `Assets/Audio/SFX/Boss/`에 둔다. UI와 BGM 폴더는 실제 자산이 생길 때 추가한다.
 
 ## 17. Asset Manifest
 

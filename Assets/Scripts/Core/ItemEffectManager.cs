@@ -188,6 +188,7 @@ public sealed class ItemEffectManager : MonoBehaviour
     }
 
     public static ItemEffectManager Instance { get; private set; }
+    public event Action<AudioClip> ChargeSoundPlayed;
 
     private const string ElectricChainDamageId = "electric_synergy.chain_discharge";
     private const string ElectricThunderstormDamageId = "electric_synergy.thunderstorm";
@@ -484,6 +485,25 @@ public sealed class ItemEffectManager : MonoBehaviour
         EnsureSpecialFishAudio();
         squidInkAudio.PlayOneShot(presentation.InkClip, presentation.InkVolume);
         lastSquidInkSoundTime = Time.time;
+        return true;
+    }
+
+    public bool PlayChargeWarningSound(FishVisualProfile presentation) =>
+        PlayChargeSound(presentation != null ? presentation.ChargeWarningClip : null,
+            presentation != null ? presentation.ChargeWarningVolume : 0f);
+
+    public bool PlayChargeStartSound(FishVisualProfile presentation) =>
+        PlayChargeSound(presentation != null ? presentation.ChargeStartClip : null,
+            presentation != null ? presentation.ChargeStartVolume : 0f);
+
+    private bool PlayChargeSound(AudioClip clip, float volume)
+    {
+        if (clip == null || Time.timeScale <= 0f) return false;
+        PrototypeGameFlowManager flow = PrototypeGameFlowManager.Instance;
+        if (flow != null && (flow.IsPreparation || flow.IsGameEnded)) return false;
+        EnsureSpecialFishAudio();
+        squidInkAudio.PlayOneShot(clip, volume);
+        ChargeSoundPlayed?.Invoke(clip);
         return true;
     }
 

@@ -35,3 +35,7 @@ MonoBehaviour:
   framesPerSecond: 8
   visualScale: {x: 1, y: 1}
   tint: {r: 1, g: 1, b: 1, a: 1}
+  chargeWarningVolume: 0.42
+  chargeWarningClip: {fileID: 8300000, guid: 1414a696167b4ca48fc567bfbe8ff677, type: 3}
+  chargeStartVolume: 0.44
+  chargeStartClip: {fileID: 8300000, guid: 6b10de32502c40b9a4195c887fe63d65, type: 3}

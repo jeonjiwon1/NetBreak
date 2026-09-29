@@ -10,6 +10,11 @@ public sealed class FishVisualProfile : ScriptableObject
     [Min(0.1f)] [SerializeField] private float framesPerSecond = 8f;
     [SerializeField] private Vector2 visualScale = Vector2.one;
     [SerializeField] private Color tint = Color.white;
+    [Header("Charge Audio")]
+    [Range(0f, 1f)] [SerializeField] private float chargeWarningVolume = 0.4f;
+    [SerializeField] private AudioClip chargeWarningClip;
+    [Range(0f, 1f)] [SerializeField] private float chargeStartVolume = 0.4f;
+    [SerializeField] private AudioClip chargeStartClip;
 
     public Sprite[] HorizontalFrames => horizontalFrames;
     public Sprite[] VerticalFrames => verticalFrames;
@@ -18,6 +23,10 @@ public sealed class FishVisualProfile : ScriptableObject
     public float FramesPerSecond => framesPerSecond;
     public Vector2 VisualScale => visualScale;
     public Color Tint => tint;
+    public float ChargeWarningVolume => Mathf.Clamp01(chargeWarningVolume);
+    public AudioClip ChargeWarningClip => chargeWarningClip;
+    public float ChargeStartVolume => Mathf.Clamp01(chargeStartVolume);
+    public AudioClip ChargeStartClip => chargeStartClip;
 
     public bool IsValid => HasFourFrames(horizontalFrames) &&
                            HasFourFrames(verticalFrames) &&

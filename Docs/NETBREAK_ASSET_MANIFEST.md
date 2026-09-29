@@ -1,5 +1,16 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## Area 1 Charge Warning / Start Prototype SFX (2026-09-29)
+
+| 대상 | Asset ID | 경로 | 길이 / 규격 | 연결 및 역할 | 승인 |
+|---|---|---|---|---|---|
+| Giant Tuna Warning | SFX-MINIBOSS-CHARGE-WARNING-001 | `Assets/Audio/SFX/Boss/GiantTuna_ChargeWarning.wav` | 0.34초, PCM mono/44.1 kHz/16-bit | `CoastMiniBoss_VisualProfile.asset` 0.42; Telegraph 시작 1회 | Unity Manual Audio Validation: Passed; Prototype Audio Approval: Approved; Final Production Approval: Pending |
+| Giant Tuna Charge | SFX-MINIBOSS-CHARGE-TELEGRAPH-001 | `Assets/Audio/SFX/Boss/GiantTuna_ChargeTelegraph.wav` | 0.26초, PCM mono/44.1 kHz/16-bit | `CoastMiniBoss_VisualProfile.asset` 0.44; 실제 Charge 시작 1회. 파일명은 초기 명칭 | Unity Manual Audio Validation: Passed; Prototype Audio Approval: Approved; Final Production Approval: Pending |
+| Shark Boss Warning | SFX-BOSS-CHARGE-WARNING-001 | `Assets/Audio/SFX/Boss/SharkBoss_ChargeWarning.wav` | 0.40초, PCM mono/44.1 kHz/16-bit | `CoastBoss_VisualProfile.asset` 0.48; Phase 2/3 Telegraph 시작 1회 | Unity Manual Audio Validation: Passed; Prototype Audio Approval: Approved; Final Production Approval: Pending |
+| Shark Boss Charge | SFX-BOSS-CHARGE-TELEGRAPH-001 | `Assets/Audio/SFX/Boss/SharkBoss_ChargeTelegraph.wav` | 0.36초, PCM mono/44.1 kHz/16-bit | `CoastBoss_VisualProfile.asset` 0.50; Phase 2/3 실제 Charge 시작 1회. 파일명은 초기 명칭 | Unity Manual Audio Validation: Passed; Prototype Audio Approval: Approved; Final Production Approval: Pending |
+
+기존 Charge 파일은 `Tools/generate_charge_telegraph_sfx.ps1`, 새 Warning은 `Tools/generate_charge_warning_sfx.ps1`로 프로젝트 내부에서 직접 생성했다. 외부 소스나 라이선스 의존성은 없다. 네 파일은 공용 `ItemEffectManager` one-shot Source를 공유한다. 사용자 Unity Area 1 Play Mode에서 Giant Tuna와 Shark Phase 2/3·다음 Attempt의 Warning → Charge 순서, 각 1회, 청각 위계·볼륨·기존 SFX와의 조화를 확인해 Prototype을 승인했다. **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play 실행) / Static Validation: Passed (Codex의 WAV·GUID·트리거·diff 검사 범위) / EditMode Tests: Not Run (최종 코드) / Unity Manual Audio Validation: Passed / Prototype Audio Approval: Approved / Final Production Approval: Pending.** 기타 Boss/MiniBoss SFX, Element/Synergy, BGM, Mixer/Bus와 최종 loudness·mastering은 이번 승인에서 제외했다.
+
 ## AREA1-WATER-001 강도 조정 (2026-09-29, Prototype 승인)
 
 사용자 Game View에서 초기 효과가 거의 인지되지 않아 Renderer alpha **0.26 → 현재 0.40**, 속도 **(0.025, 0.012) → 현재 (0.035, 0.018) world unit/초**로 상향했다. 조정 후 미세한 Motion이 보이고 과하게 튀지 않아 Prototype으로 승인됐다. PNG·Import·GUID·단일 레이어·Sorting·unscaled time은 변경하지 않았다. 아래 2026-09-28 표의 초기 값과 Pending은 이력이다. **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play 가능) / Static Asset·Reference Validation: Passed (기존 정적 점검 범위) / EditMode Tests: Not Run (최종 조정 후) / Unity Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.**
