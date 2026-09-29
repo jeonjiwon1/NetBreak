@@ -27,6 +27,15 @@ public sealed class FishVisualController : MonoBehaviour
     private static Sprite shadowSprite;
 
     public bool UsesCustomVisual => profile != null;
+    public SpriteRenderer DisplayRenderer
+    {
+        get
+        {
+            SpriteRenderer renderer = profile != null ? customRenderer : prototypeRenderer;
+            return renderer != null && renderer.enabled && renderer.gameObject.activeInHierarchy
+                ? renderer : null;
+        }
+    }
     public int FrameIndex => frameIndex;
     public bool IsPlayingSpecial => specialProfile != null;
     public int SpecialFrame => specialFrame;

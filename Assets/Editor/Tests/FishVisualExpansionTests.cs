@@ -1,4 +1,5 @@
 #if UNITY_INCLUDE_TESTS
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -61,6 +62,81 @@ public sealed class FishVisualExpansionTests
         Assert.That(Fish("Sardine").VisualProfile, Is.SameAs(Profile("Sardine")));
         Assert.That(Fish("CoastMiniBoss").VisualProfile, Is.SameAs(Profile("CoastMiniBoss")));
         Assert.That(Fish("CoastBoss").VisualProfile, Is.SameAs(Profile("CoastBoss")));
+    }
+
+    [TestCase(2)]
+    [TestCase(3)]
+    public void BossTelegraphFlashesDisplayedSharkAndRestoresColor(int phase)
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Fish/Fish.prefab");
+        GameObject root = Own(Object.Instantiate(prefab));
+        root.SetActive(false);
+        FishController fish = root.GetComponent<FishController>();
+        fish.Initialize(Fish("CoastBoss"));
+        root.SetActive(true);
+
+        BossBehaviorController boss = root.GetComponent<BossBehaviorController>();
+        FishVisualController visual = root.GetComponent<FishVisualController>();
+        SpriteRenderer shark = root.transform.Find("FishPixelVisual").GetComponent<SpriteRenderer>();
+        SpriteRenderer shadow = root.transform.Find("FishUnderwaterShadow").GetComponent<SpriteRenderer>();
+        SpriteRenderer fallback = root.GetComponent<SpriteRenderer>();
+        Assert.That(visual.DisplayRenderer, Is.SameAs(shark));
+        Assert.That(fallback.enabled, Is.False);
+
+        Color normal = shark.color;
+        Color shadowColor = shadow.color;
+        Color fallbackColor = fallback.color;
+        boss.SetPhase(phase);
+        IEnumerator rush = (IEnumerator)typeof(BossBehaviorController)
+            .GetMethod("ExecuteRush", BindingFlags.Instance | BindingFlags.NonPublic)
+            .Invoke(boss, null);
+        Assert.That(rush.MoveNext(), Is.True);
+        Assert.That(boss.IsTelegraphing, Is.True);
+        Assert.That(shark.color, Is.Not.EqualTo(normal));
+        Assert.That(shadow.color, Is.EqualTo(shadowColor));
+        Assert.That(fallback.color, Is.EqualTo(fallbackColor));
+
+        visual.Tick(0.125f, Vector2.up);
+        Assert.That(visual.DisplayRenderer, Is.SameAs(shark));
+        Assert.That(shark.color, Is.Not.EqualTo(normal));
+        Assert.That(shadow.color, Is.EqualTo(shadowColor));
+
+        for (int i = 0; i < 20 && boss.IsTelegraphing; i++)
+            Assert.That(rush.MoveNext(), Is.True);
+        Assert.That(boss.IsTelegraphing, Is.False);
+        Assert.That(shark.color, Is.EqualTo(normal));
+        Assert.That(shadow.color, Is.EqualTo(shadowColor));
+    }
+
+    [Test]
+    public void BossTelegraphRestoresColorAcrossDisableAndPoolReuse()
+    {
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Fish/Fish.prefab");
+        GameObject root = Own(Object.Instantiate(prefab));
+        root.SetActive(false);
+        FishController fish = root.GetComponent<FishController>();
+        fish.Initialize(Fish("CoastBoss"));
+        root.SetActive(true);
+        BossBehaviorController boss = root.GetComponent<BossBehaviorController>();
+        SpriteRenderer shark = root.transform.Find("FishPixelVisual").GetComponent<SpriteRenderer>();
+        Color normal = shark.color;
+        boss.SetPhase(2);
+        IEnumerator rush = (IEnumerator)typeof(BossBehaviorController)
+            .GetMethod("ExecuteRush", BindingFlags.Instance | BindingFlags.NonPublic)
+            .Invoke(boss, null);
+        Assert.That(rush.MoveNext(), Is.True);
+        Assert.That(shark.color, Is.Not.EqualTo(normal));
+
+        root.SetActive(false);
+        Assert.That(shark.color, Is.EqualTo(normal));
+        fish.Initialize(Fish("Sardine"));
+        root.SetActive(true);
+        Assert.That(root.GetComponent<FishVisualController>().DisplayRenderer, Is.SameAs(shark));
+        root.SetActive(false);
+        fish.Initialize(Fish("CoastBoss"));
+        root.SetActive(true);
+        Assert.That(shark.color, Is.EqualTo(normal));
+        Assert.That(root.GetComponent<FishVisualController>().DisplayRenderer, Is.SameAs(shark));
     }
 
     [TestCase("Sardine")]

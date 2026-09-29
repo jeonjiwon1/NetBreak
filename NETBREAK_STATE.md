@@ -1,5 +1,12 @@
 # NETBREAK 인수인계
 
+## Shark Boss Charge Telegraph Sprite binding 수정 (2026-09-29, Unity 수동 검증 완료·Prototype 승인)
+
+- VFX/SFX Audit와 사용자 Unity 확인에서 Phase 2/3 감속·HUD·돌진은 정상이나 실제 Shark 본체가 예고 중 점멸하지 않는 문제를 확인했다. `BossBehaviorController.Awake`가 프리팹 루트의 `SpriteRenderer`를 저장하지만, `FishVisualController.Initialize`는 그 루트를 숨기고 런타임 `FishPixelVisual` 자식에 Shark Sprite를 표시한다. 또한 Shark VisualProfile의 기본 Tint와 기존 예고 밝은 색이 모두 흰색이라 Renderer 참조만 바꿔도 대비가 없다.
+- `FishVisualController.DisplayRenderer`로 현재 활성화된 실제 Fish Visual Renderer를 제공하고 Boss는 매 Telegraph 시작 때 이를 다시 바인딩한다. 기존 흰색 Tint를 기준으로 흰색일 때만 점멸 단계의 alpha를 0.35로 낮춰 본체가 보이게 점멸하도록 했다. 다른 Tint에서는 기존 흰색 단계와 원색 사이를 전환한다. 방향 전환은 동일 Renderer의 Sprite/flip만 바꾸므로 점멸 대상이 유지된다. Telegraph 종료 및 Boss Disable/Capture/Escape 때 바인딩된 Renderer의 원래 색을 복구하고 참조를 해제한다. 재등장·풀 재사용 시 Fish Visual 초기화와 다음 Telegraph 바인딩을 사용한다. Shadow 및 숨겨진 루트 Renderer는 변경하지 않는다.
+- Phase 2/3 실제 Sprite 바인딩·색 변화/복구·방향 전환·Shadow/루트 비변경과 Disable/풀 재사용을 확인하는 EditMode 테스트 코드를 추가했다. 수정 당시 Unity Editor 프로세스가 열려 있어 Codex는 Unity Import/컴파일·EditMode 실행·Console과 Game View를 확인하지 못했다. 대신 소스·직렬화 흐름과 변경 diff를 정적으로 검사해 통과했다. 기존 Boss Phase/Charge 수치·타이밍·HUD·보상·Scene/Prefab/Asset은 수정하지 않았다. EditMode 테스트는 최종 코드 기준으로 실행하지 않았다.
+- 후속 사용자 Unity Area 1 Boss Encounter 검증에서 Import/컴파일과 실제 Play가 정상이며 Phase 1, Phase 2/3 Charge Telegraph의 감속·실제 Shark 본체 Sprite 점멸·종료 후 원래 Color/Alpha 복구·Charge 실행이 정상임을 확인했다. 방향 전환 중에도 본체 점멸이 유지되고 1/2차 Escape 후 재등장에서도 정상이며, 숨겨진 Root Renderer와 Fish Shadow 등 다른 Renderer는 점멸하지 않았다. Capture/Run Fail 등 기존 Boss 흐름이 정상이고 이번 작업 관련 Console Error/Exception은 없었다. 기존 P1인 실제 Shark Visual Renderer에 점멸이 적용되지 않는 문제는 해결됐다. **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play) / Static Validation: Passed (Codex의 기존 소스·직렬화 흐름 및 diff 검사 범위) / EditMode Tests: Not Run (최종 코드) / Unity Manual Validation: Passed / Boss Telegraph Prototype Approval: Approved / 기존 Shark Boss Art Prototype Approval: Approved (유지) / Final Production Approval: Pending.** 이번 문서 정리에서는 Code·Asset 변경, Unity Editor·Computer Use 실행, git add/commit/push를 하지 않는다.
+
 ## Squid Ink Attack P0 타이밍 수정 (2026-09-29, Unity 수동 검증 완료·Prototype 승인)
 
 - VFX/SFX Audit에서 기존 `ReleaseInk`가 그물·낚싯대 `DisableTemporarily`를 공격 시작 전에 호출해, 원인인 먹물 Release·Projectile·Impact보다 도구 중단이 먼저 보이는 P0 문제를 확인했다. 아래 VS-2C 기록의 즉시 중단 설명은 수정 전 이력이다.

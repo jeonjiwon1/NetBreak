@@ -29,11 +29,13 @@ public class BossBehaviorController : MonoBehaviour
 
     private FishController fishController;
     private FishMovement fishMovement;
+    private FishVisualController fishVisualController;
     private SpriteRenderer spriteRenderer;
 
     private Coroutine behaviorCoroutine;
 
     private Color normalColor;
+    private Color telegraphColor;
 
     private bool isBoss;
 
@@ -63,8 +65,8 @@ public class BossBehaviorController : MonoBehaviour
         fishMovement =
             GetComponent<FishMovement>();
 
-        spriteRenderer =
-            GetComponentInChildren<SpriteRenderer>();
+        fishVisualController =
+            GetComponent<FishVisualController>();
     }
 
     private void OnEnable()
@@ -89,12 +91,6 @@ public class BossBehaviorController : MonoBehaviour
         if (!isBoss)
         {
             return;
-        }
-
-        if (spriteRenderer != null)
-        {
-            normalColor =
-                spriteRenderer.color;
         }
 
         behaviorCoroutine =
@@ -225,6 +221,8 @@ public class BossBehaviorController : MonoBehaviour
         isRushing = false;
         isRecovering = false;
 
+        BindDisplayRenderer();
+
         fishMovement
             .SetSpecialSpeedMultiplier(
                 windupMultiplier
@@ -246,7 +244,7 @@ public class BossBehaviorController : MonoBehaviour
             {
                 spriteRenderer.color =
                     bright
-                        ? Color.white
+                        ? telegraphColor
                         : normalColor;
             }
 
@@ -320,6 +318,22 @@ public class BossBehaviorController : MonoBehaviour
         }
     }
 
+    private void BindDisplayRenderer()
+    {
+        RestoreColor();
+        fishVisualController ??= GetComponent<FishVisualController>();
+        spriteRenderer = fishVisualController != null
+            ? fishVisualController.DisplayRenderer
+            : null;
+        if (spriteRenderer == null) return;
+
+        normalColor = spriteRenderer.color;
+        // A white flash is invisible on the shark's white visual tint.
+        telegraphColor = normalColor == Color.white
+            ? new Color(1f, 1f, 1f, 0.35f)
+            : Color.white;
+    }
+
     private void OnDisable()
     {
         if (behaviorCoroutine != null)
@@ -345,6 +359,7 @@ public class BossBehaviorController : MonoBehaviour
         }
 
         RestoreColor();
+        spriteRenderer = null;
 
         currentPhase = 1;
 
