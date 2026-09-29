@@ -1,5 +1,23 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## AREA1-WATER-001 강도 조정 (2026-09-29, Prototype 승인)
+
+사용자 Game View에서 초기 효과가 거의 인지되지 않아 Renderer alpha **0.26 → 현재 0.40**, 속도 **(0.025, 0.012) → 현재 (0.035, 0.018) world unit/초**로 상향했다. 조정 후 미세한 Motion이 보이고 과하게 튀지 않아 Prototype으로 승인됐다. PNG·Import·GUID·단일 레이어·Sorting·unscaled time은 변경하지 않았다. 아래 2026-09-28 표의 초기 값과 Pending은 이력이다. **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play 가능) / Static Asset·Reference Validation: Passed (기존 정적 점검 범위) / EditMode Tests: Not Run (최종 조정 후) / Unity Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.**
+
+## AREA1-WATER-001 — 미세한 수면 빛 타일 (2026-09-28, 사용자 검증 대기)
+
+| 항목 | 1차 구현 당시 값 (이력) |
+|---|---|
+| Asset | `Assets/Resources/Area1/CoastWaterCaustics.png` (새 GUID, 256×256 RGBA) |
+| 생성 | `Tools/generate_area1_water_overlay.py`의 고정 시드 주기적 셀 패턴 |
+| Import | Sprite Single/Full Rect, 16 PPU, Point, 무 Mipmap, 무압축, Physics Shape 생성 안 함 |
+| 연결 | `Area1BackgroundController` → `Area1WaterOverlay`, Scene/Prefab 참조 추가 없음 |
+| 시각 값 | 단일 레이어, Renderer alpha 0.26, PNG 최대 alpha 76/255, 속도 `(0.025, 0.012)` world unit/초, unscaled time |
+| 순서 | Default: 배경 -1000, Water -999, Fish Shadow -1, Fish 0 |
+| 승인 | Implementation Complete: Complete / Static Validation: Partial / Unity Manual Validation: Pending / Prototype Approval: Pending / Final Production Approval: Pending |
+
+`CoastBackground.png` 원본과 기존 Fish Shadow PNG는 수정하지 않았다. 실제 Unity Import·컴파일·Console·EditMode 및 Game View 밝기/반복 Seam/가독성 확인은 대기 중이다.
+
 ## Fish Shadow 가시성 수정 (2026-09-28)
 
 `FishShadow.png`와 `.meta`는 가시성 수정 때 변경하지 않았다. 첫 사용자 Game View에서 그림자가 거의 보이지 않아 PNG 알파와 Renderer alpha의 중복 곱을 확인했고, `FishVisualController` Renderer alpha만 0.48→0.8로 수정했다. 합성 알파는 약 0.23/0.35/0.45이며 Asset GUID·Import·Sprite 크기는 유지된다. 자산·참조·계산 정적 검사는 통과했다. 사용자가 수정 후 Area 1을 Play해 C# 소스 실행과 그림자 가시성·크기·Offset·어군 혼잡도·기존 Fish/Background 가독성을 확인하고 Prototype으로 승인했다. **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play) / Asset·Reference Static Checks: Passed / EditMode Tests: Not Run / Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.** Water Motion/Overlay는 후속 단계다. 아래 1차 구현의 Pending 수치는 수정 전 이력이다.
@@ -136,11 +154,11 @@ Visual Iteration 2에서 `Assets/Resources/UI/Area1/`의 `panel`, `slot`, `butto
 | 권리 | 사용자 제공 원본의 최종 소유·배포 권한과 출시 사용 승인은 별도 확인 |
 | 형식·Import | 1672×941 불투명 RGB PNG, Sprite Single, Point, Mipmap Off, PPU 32, 기본 무압축, Max Size 2048. Import 축소 없음 |
 | 표현·경로 | 일반 어군/Boss 1차 좌상단→우하단, Boss 2차 좌하단→우상단, Boss 3차 좌측→우측 지그재그 및 요청된 우상단→좌하단 보호. 중앙 열린 바다, 상·하단 일부만 물 아래 모래·작은 장식 |
-| 연결 | `Area1BackgroundController`가 Main Scene 로드 시 `Resources.Load<Sprite>`로 Main Camera 자식 SpriteRenderer(-1000)에 단일 이미지 연결·카메라 맞춤·중복 방지. 이전 수면 오버레이 제거 |
+| 연결 | `Area1BackgroundController`가 Main Scene 로드 시 `Resources.Load<Sprite>`로 Main Camera 자식 SpriteRenderer(-1000)에 단일 이미지를 연결·카메라 맞춤·중복 방지. 당시 `Area1SurfaceFlow`는 제거했으며 현재 Water Overlay는 별도 Runtime Presentation Layer |
 | 검증 | 이전 Asset·meta·Scene 좌표·참조·코드 정적 점검에 이어 사용자가 실제 Unity Play Mode에서 밝기·Fish/Tool/VFX 가독성·Spawn/Exit·일반 Fish 및 Boss 경로의 시각 충돌을 확인. 이번 문서 갱신에서 Unity 재검증은 하지 않음 |
 | 시각 검증·승인 | Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Art Approval: Pending |
 
-현재 단일 PNG는 Area 1 Vertical Slice에서 사용 승인된 Prototype 방식이며 Final Production Architecture 확정이 아니다. 약간의 이질감·정적인 느낌은 원인 미확정으로 후반 Polish 검토에 남긴다. 아래 톤·흐름 개선 기록은 이전 후보의 역사적 자료다.
+현재 단일 PNG는 Area 1 Vertical Slice에서 사용 승인된 **Static Single PNG Prototype Base**이며 Fish Shadow와 Water Overlay를 별도 Presentation Layer로 더했다. 물빛은 정지 이미지처럼 느껴지는 문제를 완화한다. **Final Production Background Architecture는 Pending / TBD**다. Production 단계에서 필요하면 Base·Decoration·Water를 모듈화하거나 Layered 구조로 확장할 수 있고 기존 PNG를 Base Layer로 유지할 수도 있다. 지금 구조를 재구축하지 않는다. 아래 톤·흐름 개선 기록은 이전 후보의 역사적 자료다.
 
 ## AREA1-BG-001 — 탑다운 연안 배경 톤·수면 흐름 개선 (이전 후보 기록, 2026-09-27)
 

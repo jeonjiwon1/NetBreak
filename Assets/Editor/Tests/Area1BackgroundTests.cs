@@ -28,6 +28,25 @@ public sealed class Area1BackgroundTests
     }
 
     [Test]
+    public void WaterSpriteIsTransparentAndUsesPixelImportSettings()
+    {
+        const string path = "Assets/Resources/Area1/CoastWaterCaustics.png";
+        TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
+        Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+
+        Assert.That(importer, Is.Not.Null);
+        Assert.That(importer.textureType, Is.EqualTo(TextureImporterType.Sprite));
+        Assert.That(importer.spriteImportMode, Is.EqualTo(SpriteImportMode.Single));
+        Assert.That(importer.filterMode, Is.EqualTo(FilterMode.Point));
+        Assert.That(importer.mipmapEnabled, Is.False);
+        Assert.That(importer.textureCompression, Is.EqualTo(TextureImporterCompression.Uncompressed));
+        Assert.That(importer.spritePixelsPerUnit, Is.EqualTo(16f));
+        Assert.That(sprite, Is.Not.Null);
+        Assert.That(sprite.rect.size, Is.EqualTo(new Vector2(256f, 256f)));
+        Assert.That(Resources.Load<Sprite>(Area1BackgroundController.WaterResourcePath), Is.SameAs(sprite));
+    }
+
+    [Test]
     public void BackgroundIsOpaqueAndBottomIsMostlyWater()
     {
         const string path = "Assets/Resources/Area1/CoastBackground.png";
@@ -83,8 +102,9 @@ public sealed class Area1BackgroundTests
 
             Transform visual = cameraObject.transform.Find("Area1CoastBackground");
             Assert.That(visual, Is.Not.Null);
-            Assert.That(cameraObject.transform.Find("Area1SurfaceFlow"), Is.Null);
-            Assert.That(cameraObject.transform.childCount, Is.EqualTo(1));
+            Transform water = cameraObject.transform.Find("Area1WaterOverlay");
+            Assert.That(water, Is.Not.Null);
+            Assert.That(cameraObject.transform.childCount, Is.EqualTo(2));
             SpriteRenderer renderer = visual.GetComponent<SpriteRenderer>();
             Assert.That(renderer.sortingOrder,
                 Is.EqualTo(Area1BackgroundController.BackgroundSortingOrder));
@@ -92,12 +112,31 @@ public sealed class Area1BackgroundTests
             Assert.That(visual.GetComponent<Collider2D>(), Is.Null);
             Assert.That(visual.GetComponent<Collider>(), Is.Null);
             Assert.That(visual.GetComponent<Canvas>(), Is.Null);
+            Assert.That(water.childCount, Is.EqualTo(9));
+            foreach (SpriteRenderer tile in water.GetComponentsInChildren<SpriteRenderer>())
+            {
+                Assert.That(tile.sortingLayerID, Is.EqualTo(renderer.sortingLayerID));
+                Assert.That(tile.sortingOrder, Is.EqualTo(Area1WaterOverlay.SortingOrder));
+                Assert.That(tile.sortingOrder, Is.LessThan(-1));
+                Assert.That(tile.color.a, Is.EqualTo(0.40f).Within(0.001f));
+                Assert.That(tile.GetComponent<Collider2D>(), Is.Null);
+                Assert.That(tile.GetComponent<Collider>(), Is.Null);
+            }
             Assert.That(visual.localScale.y * sprite.bounds.size.y,
                 Is.EqualTo(13f).Within(0.001f));
             Assert.That(visual.localScale.x * sprite.bounds.size.x,
                 Is.EqualTo(13f * 16f / 9f).Within(0.001f));
             controller.Initialize(camera, sprite);
-            Assert.That(cameraObject.transform.childCount, Is.EqualTo(1));
+            Assert.That(cameraObject.transform.childCount, Is.EqualTo(2));
+
+            Area1WaterOverlay overlay = cameraObject.GetComponent<Area1WaterOverlay>();
+            Vector3 before = water.localPosition;
+            overlay.Advance(10f);
+            Assert.That(water.localPosition.x, Is.GreaterThan(before.x));
+            Assert.That(water.localPosition.y, Is.GreaterThan(before.y));
+            overlay.Advance(320f);
+            Assert.That(Mathf.Abs(water.localPosition.x), Is.LessThanOrEqualTo(8f));
+            Assert.That(Mathf.Abs(water.localPosition.y), Is.LessThanOrEqualTo(8f));
 
             camera.orthographicSize = 5f;
             controller.FitToCamera();

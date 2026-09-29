@@ -1,5 +1,15 @@
 # NETBREAK 아트 스타일 가이드 — VS-2 초안
 
+## Area 1 물빛 강도 조정 (2026-09-29, Prototype 승인)
+
+사용자 Game View에서 초기 물빛은 변화가 잘 인지되지 않을 만큼 약했다. PNG는 유지하고 단일 Overlay의 Renderer alpha를 **0.26 → 현재 0.40**, 이동 속도를 **(0.025, 0.012) → 현재 (0.035, 0.018) world unit/초**로 올렸다. 사용자가 조정 후 미세한 Water/Caustics Motion을 확인했고 효과가 과하게 튀지 않아 Vertical Slice Prototype으로 승인했다. 아래 1차 구현 값과 Pending은 조정 전 이력이다. **Implementation Complete: Complete / Source Compile: Passed (Unity Play 가능) / Static Asset·Reference Validation: Passed (기존 정적 점검 범위) / EditMode Tests: Not Run (최종 조정 후) / Unity Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.**
+
+현재 Area 1 Base Background는 `CoastBackground.png`의 **Static Single PNG Prototype**이고, Fish Shadow와 Water Overlay는 별도 Presentation Layer다. 원본 PNG는 Water 작업에서 수정하지 않았다. 반복 타일 Water Sprite는 Background 위·Fish Shadow 아래에서 `Time.unscaledDeltaTime`으로 느리게 움직이며 x1/x2/x3 배속과 독립적이고 Collider·Input·Gameplay 영향이 없다. 현재 구성을 Prototype 기준으로 사용한다. **Final Production Background Architecture는 Pending / TBD**이며, 필요하면 Production 단계에서 Base·Decoration·Water를 더 모듈화하거나 Layered 구조로 확장할 수 있다. 기존 PNG를 Base Layer로 유지할 수도 있으며 지금 구조를 재구축하지 않는다.
+
+## Area 1 물빛 Overlay 1차 (2026-09-28, 시각 승인 대기)
+
+정적 `CoastBackground.png` 위에만 낮은 강도의 픽셀 카우스틱스 타일을 한 층 더한다. 256×256 투명 RGBA, 16 PPU, Point, 무 Mipmap, 무압축이고 큰 불규칙한 셀 경계의 밝은 Cyan/White를 사용한다. PNG alpha 0/24/50/76에 Renderer alpha 0.26을 곱해 Fish·그림자보다 약하게 보이도록 시작한다. Default Sorting은 배경 -1000 → 물빛 -999 → Fish Shadow -1 → Fish 0이다. `(0.025, 0.012)` world unit/초의 unscaled 이동이며 반복 타일로 가장자리 빈 공간을 막는다. 원본 배경 PNG, 기존 Fish Shadow와 승인된 Art는 변경하지 않았다. 실제 밝은 모래·산호, 일반어 다수, MiniBoss/Boss와 배속별 움직임은 사용자 Game View 검증 후 조정한다. **Implementation Complete: Complete / Static Validation: Partial / Unity Manual Validation: Pending / Prototype Approval: Pending / Final Production Approval: Pending.**
+
 ## Fish Shadow 가시성 수정 (2026-09-28, Prototype 승인)
 
 사용자 Area 1 Game View에서 1차 그림자가 거의 보이지 않았다. PNG 알파 72/112/144와 Renderer alpha 0.48의 중복 적용으로 합성 알파가 약 0.14/0.21/0.27에 그쳤고, Fish 몸체 뒤에 가려진 면적을 제외하면 작은 어종의 대비가 약했다. Renderer alpha만 0.8로 조정해 약 0.23/0.35/0.45로 높였다. Sprite·크기·간격·Sorting은 유지한다. 사용자가 재검증에서 밝은 바다 위 가시성, Fish보다 낮은 시각 우선순위, 여러 Fish가 있을 때의 화면 정돈, 자연스러운 수중 깊이감, 적절한 크기·Offset 및 Fish Sprite/Background 가독성을 확인했다. 폭 0.78·높이 0.44·아래 간격 0.18·Renderer alpha 0.8을 Prototype 시각 기준으로 승인했다. **Unity Manual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.** Water Motion/Overlay는 별도 후속 작업이다. 아래 alpha 0.48과 Pending은 수정 전 1차 구현 이력이다.

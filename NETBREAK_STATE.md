@@ -1,5 +1,24 @@
 # NETBREAK 인수인계
 
+## Area 1 Water Motion / Background Architecture 현재 기준 (2026-09-29, Prototype 승인)
+
+- 사용자 Unity Area 1 Game View에서 강도 조정 후 미세한 Water/Caustics Motion이 실제로 보이고 과하게 튀지 않음을 확인했다. 초기 alpha 0.26·속도 (0.025, 0.012)는 너무 약했다. **현재 코드 기준은 Renderer alpha 0.40, 속도 (0.035, 0.018) world unit/초**다. 아래 강도 조정·최초 구현 항목의 Pending과 이전 수치는 해당 시점의 이력이다.
+- 현재 Base Background는 `CoastBackground.png` **Static Single PNG Prototype**이다. 원본 PNG는 이번 Water 작업에서 수정하지 않았다. Background와 1레이어 Water Overlay는 Main Camera에 런타임 연결되고 Fish Shadow는 Fish 자식으로 표시되는 별도 Presentation Layer다. Overlay는 반복 Sprite를 화면에 맞춰 타일로 배치하고 `Time.unscaledDeltaTime`으로 천천히 이동해 x1/x2/x3 Gameplay Speed와 독립적이다. Default Sorting은 Background -1000 < Water -999 < Fish Shadow -1 < Fish 0이며 Collider·Input·Gameplay 영향은 없다. 현재 표현은 Vertical Slice Prototype 기준으로 승인됐다.
+- **Final Production Background Architecture: Pending / TBD.** 현재 PNG는 Prototype Base로 계속 사용하며, Production 단계에서 필요하면 Base Background와 Decoration/Water Presentation을 더 모듈화하거나 Layered 구조로 확장할 수 있다. 기존 PNG를 반드시 폐기한다는 결정은 없고 지금 구조를 재구축하지 않는다.
+- **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play 가능) / Static Asset·Reference Validation: Passed (기존 PNG 규격·alpha·GUID 고유성·Resources 경로·정렬·Collider/Input 소스 점검 범위) / EditMode Tests: Not Run (최종 조정 후) / Unity Manual Visual Validation: Passed / Prototype Approval: Approved / Final Production Approval: Pending.** 사용자가 Console Error 0이나 전체 Gameplay·VFX 항목별 재검증 결과를 별도로 전달한 것은 아니다.
+
+## Area 1 Water Overlay 강도 1차 조정 (2026-09-29, Unity 재검증 대기)
+
+- 사용자 실제 Game View 검증에서 기존 물빛은 "뭐가 바뀌었는지 잘 모르겠다"고 느낄 만큼 약했다. `Area1WaterOverlay`의 Renderer alpha를 **0.26 → 0.40**, scroll speed를 **(0.025, 0.012) → (0.035, 0.018) world unit/초**로 상향했다. PNG·단일 레이어·타일 수·Default Sorting(-999)·unscaled time·Collider 없음·배경 원본·Fish Shadow·Gameplay는 그대로다. PNG 최대 alpha 76/255 기준 최대 합성 alpha는 약 0.077 → 0.119다.
+- 아래 2026-09-28 기록의 값은 조정 전 기준이다. 새 강도의 Unity Import/컴파일·Console·EditMode·Game View 재검증은 아직 수행하지 않았다. **Implementation: Complete / Static Validation: Partial / Unity Manual Validation: Pending / Prototype Approval: Pending / Final Production Approval: Pending.**
+
+## Area 1 Subtle Water Motion / Overlay 1차 (2026-09-28, Unity 수동 검증 대기)
+
+- Scene/Prefab 변경 없이 기존 `Area1BackgroundController`가 Main Scene의 Main Camera에 `Area1WaterOverlay`를 붙인다. 배경 Sprite와 카메라의 런타임 연결을 재사용하며 `Resources/Area1/CoastWaterCaustics.png`의 256×256 RGBA/16 PPU/Point/무 Mipmap/무압축 타일을 로드한다. 배경 원본 PNG와 Fish·Shadow·Route·Tool·UI·Gameplay는 변경하지 않았다.
+- 같은 Default Sorting Layer에서 배경 -1000 < 물빛 -999 < Fish Shadow -1 < Fish 0이다. 배경의 공유 Sprite Material을 사용한다. 카메라 Orthographic Size 6.5, 전체 Viewport, 기본 16:9에서 표시 범위는 약 23.11×13 world unit이고 물빛 타일은 16×16 world unit이다. 초기 3×3 타일은 카메라 비율/크기에 따라 필요한 수로 갱신한다. Collider, Raycaster, 입력 컴포넌트는 없다.
+- 단일 레이어의 낮은 밝기 픽셀 카우스틱스를 Renderer alpha 0.26으로 표시한다. PNG alpha는 0/24/50/76으로 유효 최대 합성 alpha는 약 0.077이다. `(0.025, 0.012)` world unit/초로 움직이고 `Time.unscaledDeltaTime`을 사용하여 x1/x2/x3 배속에서 물빛 속도를 일정하게 유지한다. 반복 가능한 타일과 한 타일 단위 위치 순환으로 화면 가장자리를 채운다. 최종 강도·반복 무늬·Fish Shadow 대비는 사용자 Game View 검증에서 조정한다.
+- 정적 검사: PNG 크기/alpha 분포, 새 GUID 고유성, 소스의 Sorting·Collider/Input 부재와 `git diff --check`를 확인했다. EditMode 테스트는 새 자산 설정·중복 생성·정렬·Collider 부재·카메라 맞춤·이동을 검사하도록 확장했다. 열린 Unity 인스턴스로 인해 이번 변경의 Unity 컴파일, Asset Import, EditMode 실행, Console은 아직 확인하지 못했다. **Implementation Complete: Complete / Static Validation: Partial / Unity Manual Validation: Pending / Prototype Approval: Pending / Final Production Approval: Pending.** Git add/commit/push는 사용자 지시에 따라 하지 않는다.
+
 ## Fish Shadow 가시성 수정 (2026-09-28, 사용자 수동 검증 완료·Prototype 승인)
 
 - 사용자 Area 1 Game View 검증에서 Fish는 정상이나 그림자가 거의 식별되지 않았다. 이전 구현의 PNG 알파 72/112/144에 Renderer alpha 0.48이 다시 곱해져 실제 중심 알파가 최대 약 0.271이었다. 그림자 일부는 Fish Sprite 아래에 가려지므로 노출 면적과 대비가 더 줄었다. 정어리 기준 그림자 월드 크기는 약 0.301×0.170, 아래 간격은 약 0.069(83 PPU에서 약 25×14px, 5.76px)다. 같은 Default Sorting Layer에서 배경 -1000, 그림자 -1, Fish 0으로 정렬되며 PNG의 Runtime Import 기록이 있어 Sorting/자산 누락보다 낮은 합성 알파가 확인된 원인이다. 다만 실제 Play Hierarchy 상태는 이번 작업에서 직접 관찰하지 않았다.

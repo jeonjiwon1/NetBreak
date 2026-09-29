@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public sealed class Area1BackgroundController : MonoBehaviour
 {
     public const string ResourcePath = "Area1/CoastBackground";
+    public const string WaterResourcePath = "Area1/CoastWaterCaustics";
     public const int BackgroundSortingOrder = -1000;
 
     private Camera targetCamera;
@@ -62,6 +63,15 @@ public sealed class Area1BackgroundController : MonoBehaviour
 
         lastSize = -1f;
         FitToCamera();
+
+        Sprite waterSprite = Resources.Load<Sprite>(WaterResourcePath);
+        if (waterSprite != null)
+        {
+            Area1WaterOverlay overlay = GetComponent<Area1WaterOverlay>();
+            if (overlay == null)
+                overlay = gameObject.AddComponent<Area1WaterOverlay>();
+            overlay.Initialize(camera, waterSprite, backgroundRenderer);
+        }
     }
 
     private void LateUpdate()

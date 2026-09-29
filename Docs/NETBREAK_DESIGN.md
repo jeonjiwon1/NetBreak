@@ -96,6 +96,8 @@ Area 1 MiniBoss는 거대 참치 기반 방향별 기본 수영 Sprite를 연결
 
 정식 아트의 1차 방향은 **밝고 읽기 쉬운 탑다운 픽셀아트**다. 간결한 픽셀 표현을 기본으로 삼고 특수어, MiniBoss, Boss와 주요 전투 연출에는 상대적으로 풍부한 디테일을 포인트로 사용한다. 대규모 어군에서도 개체·역할·포획 상태가 읽히도록 중앙 전투 구역의 복잡도를 낮추고, 배경보다 물고기·도구·상태·VFX가 우선 보이게 한다. 어종은 색상만이 아니라 실루엣으로 구분하고 도구는 장식보다 기능과 사용 위치를 명확히 표현한다.
 
+Area 1의 현재 Base Background는 Static Single PNG Prototype이며 Fish Shadow와 미세한 Water Overlay를 별도 Presentation Layer로 사용한다. 이 구성은 Vertical Slice Prototype 기준으로 승인됐으나 Final Production Background Architecture는 미정이다. Production 단계에서 필요하면 Base·Decoration·Water의 모듈화 또는 Layered 구성을 검토하며 현재 PNG를 Base Layer로 유지할 수도 있다. 현 단계에서 배경 구조를 재구축하지 않는다.
+
 콘셉트 참고 이미지의 배, 섬, 미니맵, 등대, UI 배치와 신규 장비는 확정 콘텐츠가 아니다. 실제 화면과 기능은 본 설계와 구현을 기준으로 한다. 세부 Sprite 크기, PPU, 카메라·렌더링 해상도, 팔레트, 애니메이션 규격은 아직 확정하지 않았으며 제작 기준과 검증 계획은 [NETBREAK_ART_GUIDE.md](NETBREAK_ART_GUIDE.md)를 따른다. 아트 방향 확정은 실제 에셋 제작·Unity 적용 완료를 뜻하지 않는다.
 
 ## UI·개발 방법
