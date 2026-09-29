@@ -12,7 +12,7 @@ public static class ItemSystemUIGenerator
     private const string MenuPath = "NETBREAK/UI/Setup Item System UI";
     private const string CanvasName = "GameCanvas";
     private const string RootName = "ItemSystemUI";
-    private const string FontName = "NanumGothic-Bold SDF";
+    private const string FontName = "Galmuri11 Bold SDF";
     private static readonly Vector2 ElementLevelPosition = new(-240f, -242f);
     private static readonly Vector2 ElementLevelSize = new(200f, 84f);
     private static readonly Vector2 ElementTooltipPosition = new(-470f, -70f);

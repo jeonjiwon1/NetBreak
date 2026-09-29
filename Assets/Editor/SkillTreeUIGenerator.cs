@@ -19,7 +19,7 @@ public static class SkillTreeUIGenerator
         "NETBREAK/UI/Migrate Skill Tree UI To Compact Graph";
     private const string CanvasName = "GameCanvas";
     private const string RootName = "SkillTreeUI";
-    private const string FontName = "NanumGothic-Bold SDF";
+    private const string FontName = "Galmuri11 Bold SDF";
 
     private static readonly Color PanelColor = new(0.035f, 0.075f, 0.11f, 0.97f);
     private static readonly Color SurfaceColor = new(0.08f, 0.15f, 0.2f, 0.96f);
@@ -102,7 +102,7 @@ public static class SkillTreeUIGenerator
 
             string fontMessage = font != null
                 ? $"폰트: {font.name} ({font.atlasPopulationMode})"
-                : "NanumGothic-Bold SDF를 찾지 못해 TMP 기본 폰트를 사용했습니다.";
+                : "Galmuri11 Bold SDF를 찾지 못해 TMP 기본 폰트를 사용했습니다.";
             Debug.Log(
                 $"SkillTreeUIGenerator: '{gameCanvas.name}' 아래에 완전한 SkillTreeUI를 생성하고 연결했습니다. " +
                 fontMessage,

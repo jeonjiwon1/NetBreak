@@ -26,6 +26,8 @@ public class BossHUD : MonoBehaviour
 
     private void Start()
     {
+        Area1HUDSkin.StyleEncounterPanel(bossPanel, resistanceFill);
+        Area1HUDSkin.StyleEncounterPanel(escapePanel, null);
         if (bossPanel != null)
         {
             bossPanel.SetActive(false);

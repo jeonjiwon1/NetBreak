@@ -6,10 +6,10 @@ using UnityEngine;
 public static class TMPFontBatchReplacer
 {
     private const string TargetFontName =
-        "NanumGothic-Bold SDF";
+        "Galmuri11 Bold SDF";
 
     [MenuItem(
-        "Tools/NETBREAK/Apply NanumGothic Bold To Scene TMP"
+        "Tools/NETBREAK/Apply Galmuri Bold To Scene TMP"
     )]
     private static void ApplyFontToScene()
     {

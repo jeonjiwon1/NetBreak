@@ -15,7 +15,7 @@ public static class GrowthManagementUIGenerator
     private const string NavigationName = "GrowthNavigation";
     private const string SkillPageName = "SkillTreePage";
     private const string ItemPageName = "ItemPage";
-    private const string FontName = "NanumGothic-Bold SDF";
+    private const string FontName = "Galmuri11 Bold SDF";
 
     private static readonly Color PanelColor =
         new(0.035f, 0.075f, 0.11f, 0.98f);

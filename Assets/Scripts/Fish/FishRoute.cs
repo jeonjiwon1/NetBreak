@@ -4,6 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(LineRenderer))]
 public class FishRoute : MonoBehaviour
 {
+    public static bool ShowDeveloperGuides { get; set; }
     [Header("Route Points")]
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private List<Transform> waypoints = new();
@@ -385,6 +386,7 @@ public class FishRoute : MonoBehaviour
 
     private bool ShouldShowRoutePreview()
     {
+        if (!ShowDeveloperGuides) return false;
         if (!showRoutePreview)
         {
             return false;
@@ -447,6 +449,7 @@ public class FishRoute : MonoBehaviour
 
     private bool ShouldShowRouteLabels()
     {
+        if (!ShowDeveloperGuides) return false;
         if (!showRouteLabels)
         {
             return false;
@@ -611,6 +614,7 @@ public class FishRoute : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (Application.isPlaying && !ShowDeveloperGuides) return;
         if (spawnPoint == null ||
             destinationPoint == null)
         {

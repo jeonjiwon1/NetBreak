@@ -67,6 +67,15 @@ internal static class Area1HUDSkin
         image.raycastTarget = blockRaycasts;
     }
 
+    internal static void StyleEncounterPanel(GameObject panel, Image resistanceFill)
+    {
+        if (panel == null) return;
+        SetFrame(panel.GetComponent<Image>(), "ref_hud_board", false);
+        Area1Typography.ApplyToHierarchy(panel.transform);
+        if (resistanceFill != null)
+            resistanceFill.color = new Color32(132, 239, 229, 255);
+    }
+
     internal static Image[] ApplyStatic(
         Transform canvas,
         TMP_Text goldText,
@@ -190,7 +199,7 @@ internal static class Area1HUDSkin
         text.enableAutoSizing = minimumSize < size;
         text.fontSizeMin = minimumSize;
         text.fontSizeMax = size;
-        text.enableWordWrapping = false;
+        text.textWrappingMode = TextWrappingModes.NoWrap;
         text.overflowMode = TextOverflowModes.Truncate;
         text.alignment = alignment;
         text.margin = new Vector4(1f, 0f, 1f, 0f);

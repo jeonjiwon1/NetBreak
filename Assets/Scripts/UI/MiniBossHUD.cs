@@ -30,6 +30,8 @@ public class MiniBossHUD : MonoBehaviour
 
     private void Start()
     {
+        Area1HUDSkin.StyleEncounterPanel(miniBossPanel, resistanceFill);
+        Area1HUDSkin.StyleEncounterPanel(rewardPanel, null);
         if (miniBossPanel != null)
         {
             miniBossPanel.SetActive(false);

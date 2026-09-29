@@ -57,6 +57,7 @@ public class PrototypeHUDCanvas : MonoBehaviour
 
     private void Awake()
     {
+        Area1Typography.ApplyToHierarchy(transform);
         landingNet = FindFirstObjectByType<LandingNetController>();
         bait = BaitController.Instance != null
             ? BaitController.Instance
@@ -70,6 +71,10 @@ public class PrototypeHUDCanvas : MonoBehaviour
             preparationPanel, startFishingButton);
         experienceFill = Area1HUDSkin.CreateExperienceGauge(expText);
         BuildHotbar();
+
+        Area1HUDSkin.SetFrame(announcementPanel != null
+            ? announcementPanel.GetComponent<Image>() : null, "ref_hud_board", false);
+        Area1Typography.Apply(announcementText, Area1Typography.Role.Body);
 
         if (startFishingButton != null)
         {
@@ -325,7 +330,7 @@ public class PrototypeHUDCanvas : MonoBehaviour
         Area1Typography.Apply(keyText, Area1Typography.Role.Key);
         keyText.fontSize = 15f;
         keyText.enableAutoSizing = false;
-        keyText.enableWordWrapping = false;
+        keyText.textWrappingMode = TextWrappingModes.NoWrap;
         keyText.overflowMode = TextOverflowModes.Truncate;
         keyText.alignment = TextAlignmentOptions.Center;
         keyText.color = new Color(0.94f, 0.98f, 0.96f);
@@ -348,7 +353,7 @@ public class PrototypeHUDCanvas : MonoBehaviour
         slotText.enableAutoSizing = true;
         slotText.fontSizeMin = 15f;
         slotText.fontSizeMax = 16f;
-        slotText.enableWordWrapping = false;
+        slotText.textWrappingMode = TextWrappingModes.NoWrap;
         slotText.overflowMode = TextOverflowModes.Truncate;
         slotText.color = new Color(0.96f, 0.96f, 0.84f);
 

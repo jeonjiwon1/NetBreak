@@ -9,7 +9,7 @@ using UnityEngine;
 public sealed class FishingRodInterferenceVisualTests
 {
     private const string FontPath =
-        "Assets/UI/Fonts/NanumGothic-Bold SDF.asset";
+        "Assets/Resources/UI/Fonts/Galmuri11 Bold SDF.asset";
 
     private readonly List<UnityEngine.Object> ownedObjects = new();
 
@@ -68,7 +68,7 @@ public sealed class FishingRodInterferenceVisualTests
         Assert.That(rod.IsInkInterferenceVisible, Is.True);
         Assert.That(status.gameObject.activeSelf, Is.True);
         Assert.That(status.text, Is.EqualTo("먹물 방해"));
-        Assert.That(status.font.name, Is.EqualTo("NanumGothic-Bold SDF"));
+        Assert.That(status.font.name, Is.EqualTo("Galmuri11 Bold SDF"));
         Assert.That(
             rod.transform.Find("InkInterferenceStatus"),
             Is.EqualTo(status.transform),

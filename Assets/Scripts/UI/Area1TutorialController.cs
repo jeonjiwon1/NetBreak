@@ -162,7 +162,7 @@ public sealed class Area1TutorialController : MonoBehaviour
         label.fontSize = 23f;
         label.color = new Color32(247, 239, 207, 255);
         label.alignment = TextAlignmentOptions.Center;
-        label.enableWordWrapping = true;
+        label.textWrappingMode = TextWrappingModes.Normal;
         label.raycastTarget = false;
     }
 

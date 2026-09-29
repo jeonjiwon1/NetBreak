@@ -476,11 +476,6 @@ public class FishSpawner : MonoBehaviour
             4f
         );
 
-        ShowAnnouncement(
-            "복어 출현 - 그물 포획을 방해합니다.",
-            specialFishWarningTime
-        );
-
         yield return new WaitForSeconds(
             specialFishWarningTime
         );
@@ -519,11 +514,6 @@ public class FishSpawner : MonoBehaviour
         SetStage(
             4,
             "특수어 조업"
-        );
-
-        ShowAnnouncement(
-            "오징어 출현 - 주변 설치 어구를 먹물로 정지시킵니다.",
-            specialFishWarningTime
         );
 
         yield return new WaitForSeconds(

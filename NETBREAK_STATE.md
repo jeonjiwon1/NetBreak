@@ -1,5 +1,24 @@
 # NETBREAK 인수인계
 
+## TMP Font Stabilization 최종 정리 및 Area 1 Full Run 검증 (2026-09-29, Prototype 승인)
+
+- 사용자가 Area 1 시작부터 Result까지 Full Run을 완료했다. 한국어/Galmuri 글리프 깨짐·□ 없음, Tutorial·Growth/TAB·Giant Tuna/Shark 저항 UI·Puffer/Squid 표현·구 첫 등장 팝업 제거·자홍색 경로선 숨김·Gameplay 정상. Full Run에서 `Importer(NativeFormatImporter) generated inconsistent result` 경고는 재발하지 않았다. Result는 정상 진행에 명백한 문제 보고가 없었던 수준이며 세부 Production UI 품질 승인으로 확대하지 않는다.
+- Full Run 전후의 SDF diff를 사용자가 직접 비교하지는 않았다. 네 폰트의 정리 전 직렬화에서 `m_ClearDynamicDataOnBuild: 1 → 0`만 의도적 설정이고 글리프·문자·Atlas·index·packing 변화는 GENERATED CHURN임을 재확인했다. 정리 전 파일은 무시되는 `Logs/TMPFontCleanupBackup_20260929/`에 백업했다. HEAD의 완전한 에셋 데이터에 해당 설정만 반영해 최종 네 SDF diff는 각각 한 줄이다. GUID·Source Font·Material·fallback·Dynamic Mode·원래 Atlas 데이터와 Runtime Font Clone은 유지한다. Scene/Prefab, Tutorial/Gameplay/UI Layout은 이번 정리에서 수정하지 않았다.
+- Unity 6000.3.11f1 배치 컴파일 성공, Font 안정화 테스트 **6/6**, 전체 EditMode **280/280 Passed**, 네 에셋 연속 강제 임포트의 파일 바이트 불변, 테스트 로그의 해당 경고 없음, 전체 `git diff --check` 통과. **Unity Manual Font/Presentation Validation: Passed / Integrated Area 1 Full Run: Passed / Prototype Font Stabilization Approval: Approved / Prototype Presentation Cleanup Approval: Approved / Final Production Approval: Pending.** Unity 재시작 전후의 별도 Git diff 비교, 전체 문자열·해상도별 Production 가독성은 후속 관찰 항목이다. Git add/commit/push는 사용자 지시로 수행하지 않았다.
+
+## TMP Font Importer Warning 후속 안정화 (2026-09-29, 정리 전 조사 기록)
+
+- Galmuri11/Bold 경고의 실제 스택은 TMP의 렌더 후 예약 재임포트(`TMP_EditorResourceManager.DoPostRenderUpdates` → `AssetDatabase.ImportAsset`)였다. Dynamic Multi Atlas의 새 Texture2D 하위 에셋 추가가 재임포트를 등록한다. 이전 Nanum Bold 로그에는 Editor 종료 시 Dynamic 데이터 삭제 직후 임포트와 경고가 기록돼 있다. Unity 내부 artifact ID 차이의 더 낮은 수준 원인은 미확인이다.
+- 기존 네 폰트 에셋 변경은 버리지 않았다. 현재 Galmuri11 글리프 138→235/Atlas 2→3, Bold 117→111/2→2, Nanum Regular 10→10/1→1, Nanum Bold 295→66/4→1이다. Source Font·Material·fallback·GUID는 유지되고 `m_ClearDynamicDataOnBuild`는 네 에셋 모두 1→0이다. Galmuri/Nanum Bold의 잔여 글리프·Atlas diff는 과거 생성 데이터와 현재 생성 데이터의 혼합이라 원인 확인 없이 원복하지 않는다.
+- `Area1Typography`는 Galmuri 두 폰트와 Nanum Bold fallback을 메모리 전용 Dynamic 복제본으로 사용해 주요 Canvas의 글리프 생성이 원본을 수정하지 않도록 했다. `Area1FontStabilityTests`는 복제본 글리프 추가 후 원본 파일 불변과 네 에셋의 연속 강제 임포트 파일 불변을 확인했다. Unity 6000.3.11f1 배치 컴파일 성공, 전체 EditMode **280/280 Passed**, 실행 로그의 Importer 경고 없음. 실제 Play, Editor 재시작 뒤 Dirty 재발, Console 및 한국어 UI 확인은 Pending이다. 기존 Scene 원본 Nanum 참조와 낚싯대 월드 라벨의 Galmuri Bold 직접 참조는 별도 잔여 경로다. Git add/commit/push는 사용자 지시로 수행하지 않았다.
+
+## Legacy Prototype Presentation Cleanup + TMP Font Stabilization (2026-09-29, Full Run 전 기록)
+
+- 시작 당시 Working Tree에는 Galmuri11/Bold, NanumGothic Regular/Bold TMP 에셋 네 개의 Unity 직렬화 변경만 있었다. 실제 diff에서 Dynamic 글리프·문자 표와 Atlas 축소를 확인했다. 설치된 TextMeshPro 패키지는 `Clear Dynamic Data On Build`가 켜진 Dynamic 에셋을 Editor 종료/빌드 전에 비운다. 네 에셋의 해당 설정을 Unity `SerializedObject`로 껐으며 기존 변경을 버리지 않았다. 추가 글리프의 1회 기록은 가능하므로 전체 Run/Unity 재시작 후 반복 Dirty 여부는 Pending이다.
+- Main Scene TMP 113개 중 Nanum Bold 109, Nanum Regular 1, TMP 기본 3개를 직렬화 참조한다. Scene/Prefab YAML을 수정하지 않고 GameCanvas 활성·비활성 텍스트에 Galmuri를 런타임 적용한다. 월드 먹물 라벨과 UI 생성기도 Galmuri로 이관하고 Nanum은 fallback으로 보존했다. 기존 Scene 직렬화 참조의 영구 이관과 전체 글리프/장문 검증은 후속이다.
+- 복어·오징어 첫 등장 구형 설명 공지를 제거했다. 기존 4초 대기와 전투·Spawn 수치는 그대로다. Giant Tuna/Shark Resistance 패널과 일반 공지에 현재 Pixel 프레임·폰트를 적용했다. Boss Phase/회유·회복, MiniBoss 보상은 유지했다. 자홍색 경로선/라벨은 기본 숨김과 개발 플래그로 전환했다.
+- Unity Refresh 뒤 최종 코드 컴파일 완료, 컴파일 로그의 C# error 없음과 변경 중 Console Error 0을 확인했다. Play Mode 기본 HUD와 경로선 숨김을 확인했다. 최종 변경 후 전체 EditMode 테스트 274/274 통과했다. Puffer/Squid/MiniBoss/Boss/Result의 실제 화면과 폰트 재시작 Dirty 확인은 Pending이다. 상세 감사·수동 절차는 `Docs/NETBREAK_PRESENTATION_CLEANUP.md`를 따른다. Git add/commit/push는 사용자 지시로 수행하지 않는다.
+
 ## Area 1 Minimal Contextual Tutorial (2026-09-29, Unity 수동 검증 완료·Prototype 승인)
 
 - `PrototypeGameFlowManager`의 기존 오브젝트에 `Area1TutorialController`를 런타임으로 한 번 부착한다. 조업 시작, Lv2 Core/Q 및 Lv3 Partner/W 도구 획득, MiniBoss 포획 보상의 E 선택 완료, Shark Boss 시작에서만 한 줄 안내를 요청한다. 도구 문구는 실제 선택 도구에 따라 바뀐다. 보스 회유 횟수는 `BossEncounterController.MaxPasses`를 읽는다.

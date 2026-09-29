@@ -32,9 +32,9 @@ internal static class GalmuriFontAssetSetup
         EnsureFolder(OutputDirectory);
 
         TMP_FontAsset fallback = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(NanumPath);
-        EnsureFont(regularSource, "Galmuri11 SDF", fallback);
-        EnsureFont(boldSource, "Galmuri11 Bold SDF", fallback);
-        AssetDatabase.SaveAssets();
+        bool created = EnsureFont(regularSource, "Galmuri11 SDF", fallback);
+        created |= EnsureFont(boldSource, "Galmuri11 Bold SDF", fallback);
+        if (created) AssetDatabase.SaveAssets();
     }
 
     private static void EnsureFolder(string path)
@@ -45,17 +45,17 @@ internal static class GalmuriFontAssetSetup
             path.Substring(separator + 1));
     }
 
-    private static void EnsureFont(Font source, string name, TMP_FontAsset fallback)
+    private static bool EnsureFont(Font source, string name, TMP_FontAsset fallback)
     {
         string path = OutputDirectory + "/" + name + ".asset";
-        if (AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(path) != null) return;
+        if (AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(path) != null) return false;
 
         TMP_FontAsset font = TMP_FontAsset.CreateFontAsset(source, 90, 9,
             GlyphRenderMode.SDFAA, 1024, 1024, AtlasPopulationMode.Dynamic, true);
         if (font == null)
         {
             Debug.LogError("Galmuri TMP Font Asset creation failed: " + name);
-            return;
+            return false;
         }
 
         font.name = name;
@@ -64,10 +64,21 @@ internal static class GalmuriFontAssetSetup
         if (fallback != null)
             font.fallbackFontAssetTable = new List<TMP_FontAsset> { fallback };
 
+        // Keep generated glyph data across Editor sessions. Build validation
+        // remains responsible for checking the supported character set.
+        SerializedObject serializedFont = new SerializedObject(font);
+        SerializedProperty clearOnBuild = serializedFont.FindProperty("m_ClearDynamicDataOnBuild");
+        if (clearOnBuild != null)
+        {
+            clearOnBuild.boolValue = false;
+            serializedFont.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         AssetDatabase.CreateAsset(font, path);
         AssetDatabase.AddObjectToAsset(font.atlasTexture, font);
         AssetDatabase.AddObjectToAsset(font.material, font);
         EditorUtility.SetDirty(font);
         Debug.Log("Created " + path);
+        return true;
     }
 }

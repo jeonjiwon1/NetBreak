@@ -11,7 +11,7 @@ public class FishingRodController : MonoBehaviour
         "먹물 방해";
 
     private const string PreferredStatusFontName =
-        "NanumGothic-Bold SDF";
+        "Galmuri11 Bold SDF";
 
     private static TMP_FontAsset cachedStatusFont;
 
@@ -621,6 +621,13 @@ public class FishingRodController : MonoBehaviour
 
     private static TMP_FontAsset ResolveStatusFont()
     {
+        if (cachedStatusFont != null)
+        {
+            return cachedStatusFont;
+        }
+
+        cachedStatusFont = Resources.Load<TMP_FontAsset>(
+            "UI/Fonts/Galmuri11 Bold SDF");
         if (cachedStatusFont != null)
         {
             return cachedStatusFont;
