@@ -1,5 +1,15 @@
 # NETBREAK 아트·오디오 에셋 목록
 
+## Area 1 Original Prototype BGM (2026-09-29, Unity 청취 완료·Prototype 승인)
+
+| Track | Asset ID | 경로 | 규격·길이·BPM | 역할·상태 |
+|---|---|---|---|---|
+| Normal | BGM-AREA1-NORMAL-001 | `Assets/Audio/BGM/Area1/Area1_Normal.wav` | mono PCM 16-bit/22.05 kHz, 153.60초, 100 BPM | Gameplay 기본; Unity 수동 청취 Passed, Prototype Approved |
+| MiniBoss | BGM-AREA1-MINIBOSS-001 | `Assets/Audio/BGM/Area1/Area1_MiniBoss.wav` | 동일, 24.00초, 120 BPM | Giant Tuna Encounter; Unity 수동 청취 Passed, Prototype Approved |
+| Boss | BGM-AREA1-BOSS-001 | `Assets/Audio/BGM/Area1/Area1_Boss.wav` | 동일, 약 82.29초, 140 BPM | Shark Encounter 3회 회유 유지; Unity 수동 청취 Passed, Prototype Approved |
+
+세 곡 모두 `Tools/generate_area1_bgm.py`에서 결정론적으로 직접 생성했다. 외부 음원·라이선스 의존성은 없다. `Resources/Area1BgmProfile.asset`에 세 Clip과 Source 볼륨 0.22, 0.5초 fade를 연결했다. Import는 Streaming/Vorbis quality 0.8 설정이다. 사용자가 Unity에서 Gameplay 전환·Boss Attempt 간 유지·Run 정리·배속 독립과 기존 SFX 가독성을 확인했다. 작곡·음색 완성도는 Production 단계에서 재검토할 수 있으며 현재 WAV를 최종판으로 확정하지 않았다. **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play) / Static Validation: Passed (기존 Codex WAV·GUID·참조·diff 검사 범위) / EditMode Tests: Not Run / Unity Manual Audio Validation: Passed / Prototype BGM Approval: Approved / Final Production Approval: Pending.**
+
 ## Area 1 Charge Warning / Start Prototype SFX (2026-09-29)
 
 | 대상 | Asset ID | 경로 | 길이 / 규격 | 연결 및 역할 | 승인 |

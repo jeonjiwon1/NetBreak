@@ -53,6 +53,8 @@
 
 ### VS-5. SFX 및 최소 BGM 적용
 
+Area 1 Normal/MiniBoss/Boss Original BGM 세 곡과 런타임 전환은 사용자 Unity 검증을 거쳐 Vertical Slice Prototype으로 승인됐다. 작곡·편곡·악기 구성·Mix/Mastering, Audio Mixer/Bus, Music Volume Setting, Result/Victory/Failure Music, Dynamic/Adaptive Music, Boss Phase Variant와 Area 2~6 BGM은 후속 Production 범위다. 현재 WAV를 최종판으로 확정하거나 VS-5 전체 SFX·최종 믹스 완료로 해석하지 않는다.
+
 - 도구 사용·적중, 포획·보상, 스킬·특수어, Boss 경고·상태 전환에 필요한 SFX를 적용한다.
 - 기본 조업 음악과 필요 시 Boss 음악을 마련한다. 정식 트랙 수는 사전 고정하지 않는다.
 - 다수 물고기 동시 포획 등에서 SFX가 과다 중첩되지 않도록 재생 제한·우선순위 정책을 둔다.

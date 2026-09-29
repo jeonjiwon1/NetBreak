@@ -358,6 +358,8 @@ public class FishSpawner : MonoBehaviour
             0.8f,
             0.9f
         );
+
+        PrototypeGameFlowManager.Instance?.GetComponent<Area1BgmController>()?.PlayMiniBoss();
     }
 
     // =========================================================
@@ -591,6 +593,11 @@ public class FishSpawner : MonoBehaviour
                     FishSpecialType.MiniBoss
             );
 
+        if (spawnedMiniBoss != null)
+        {
+            PrototypeGameFlowManager.Instance?.GetComponent<Area1BgmController>()?.PlayMiniBoss();
+        }
+
         Coroutine supportSpawning =
             StartCoroutine(
                 RunAmbientWindow(
@@ -637,6 +644,8 @@ public class FishSpawner : MonoBehaviour
 
             yield break;
         }
+
+        PrototypeGameFlowManager.Instance?.GetComponent<Area1BgmController>()?.PlayNormal();
 
         TacticalSkillManager tacticalSkills =
             RunManager.Instance != null

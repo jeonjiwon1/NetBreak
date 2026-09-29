@@ -1,5 +1,12 @@
 # NETBREAK 인수인계
 
+## Area 1 Normal / MiniBoss / Boss Prototype BGM (2026-09-29, Unity 수동 청각 검증 완료·Prototype 승인)
+
+- `Area1BgmController`가 기존 `PrototypeGameFlowManager` 오브젝트에 런타임으로 한 번 붙고 별도 자식 `Area1BgmSource`(2D, loop, pitch 1)를 소유한다. `ItemEffectManager`의 공용 one-shot SFX Source와 분리했다. `Resources/Area1BgmProfile.asset`이 세 Clip, 공통 Source 볼륨 0.22, 0.5초 전환 시간을 보관한다.
+- Normal은 `StartFishing`에서 시작한다. Giant Tuna 실제 생성 뒤 MiniBoss로 전환하고, 포획하면 Normal로 돌아온다. 미포획은 기존 Run Failure와 함께 정지한다. Shark Boss Encounter 시작 때 Boss로 전환하며 1→2→3회 회유 사이에는 재요청하지 않는다. Boss 완료/실패, 결과, Restart에는 정지한다. TAB/성장 선택 등 기존 `timeScale=0` 중에는 BGM을 임의로 Pause하지 않으며 페이드는 unscaled time이다. 게임 x1/x2/x3도 음악 pitch에 영향이 없다.
+- `Tools/generate_area1_bgm.py`가 외부 음악 없이 22.05 kHz/16-bit/mono Original WAV 세 개를 결정론적으로 생성한다. Normal 100 BPM/153.60초, MiniBoss 120 BPM/24.00초, Boss 140 BPM/약 82.29초. 마디 단위 루프와 순환 잔향을 사용하며 Unity Import는 Streaming/Vorbis 0.8 설정이다. 세 곡은 Vertical Slice의 Gameplay 흐름과 전투 중요도 위계 확인을 위한 Original Prototype Asset이며 최종 WAV로 확정하지 않았다.
+- Codex는 정적 WAV 규격·길이·경계 불연속(16-bit 샘플 차이 0/56/32), 359개 `.meta` GUID 고유성, Profile의 세 Clip 참조, 트리거 위치와 `git diff --check`를 확인했다. 사용자는 Unity에서 Import·컴파일과 Area 1 Play를 확인했다. Gameplay 시작 Normal, Giant Tuna의 MiniBoss 전환·종료 후 처리, Shark Boss 전환과 Attempt 사이 Track 유지, Result/Restart/New Run의 수명, x1/x2/x3의 정상 속도·Pitch를 검증했다. 기존 Tool/Squid/Puffer와 Giant Tuna/Shark Warning·Charge SFX가 BGM 위에서도 정상적으로 들리고 Gameplay 정보를 심각하게 가리지 않으며 관련 Console Error/Exception은 없었다. 음악의 작곡·음색 완성도에는 아쉬움이 있으나 현재 Vertical Slice Prototype 용도로 승인하고 추가 제작 없이 다음 작업으로 진행한다. Composition·Arrangement·Instrumentation·Mix·Mastering과 WAV 교체 여부는 Final Production에서 재검토할 수 있다. **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play) / Static Validation: Passed (위 Codex 정적 검사 범위) / EditMode Tests: Not Run / Unity Manual Audio Validation: Passed / Prototype BGM Approval: Approved / Final Production Approval: Pending.** Scene/Prefab/ProjectSettings와 기존 Gameplay/SFX 수치는 변경하지 않았다. 이번 문서 정리에서는 코드·WAV·Profile·Test를 변경하거나 git add/commit/push를 하지 않는다.
+
 ## Area 1 MiniBoss / Boss Charge Warning·Start Prototype SFX (2026-09-29, Unity 수동 청각 검증 완료·Prototype 승인)
 
 - 사용자 청취에서 기존 짧은 “퉁” 계열이 Telegraph Warning보다 실제 Charge Start에 자연스럽다고 판단했다. 따라서 기존 참치·상어 별도 WAV `GiantTuna_ChargeTelegraph.wav`(0.26초), `SharkBoss_ChargeTelegraph.wav`(0.36초)는 **보존**하고 파일명은 역사적 이름으로 유지하되 재생 역할을 Charge Start로 옮겼다. 이후 새 Warning+Charge 타이밍도 사용자 Unity Play Mode에서 검증·승인했다.

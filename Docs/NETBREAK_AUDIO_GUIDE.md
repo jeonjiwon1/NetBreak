@@ -1,5 +1,11 @@
 # NETBREAK 오디오 가이드
 
+## Area 1 Prototype BGM (2026-09-29, Unity 청취 완료·Prototype 승인)
+
+Area 1에는 프로젝트 내부 생성 Original Loop 세 곡을 연결했다. `Assets/Audio/BGM/Area1/`의 Normal(100 BPM, 153.60초)은 밝은 플럭·벨과 가벼운 리듬, MiniBoss(120 BPM, 24.00초)는 거대 참치 돌진에 맞춘 빠른 펄스, Boss(140 BPM, 약 82.29초)는 상어의 최종 Encounter를 위한 낮은 음역과 강한 리듬이다. 세 곡 모두 22.05 kHz/16-bit/mono WAV이며 Unity Import는 Streaming/Vorbis quality 0.8이다. 현재 WAV는 Gameplay 흐름과 음악적 위계 확인용 Prototype이며 최종판으로 확정하지 않았다.
+
+`PrototypeGameFlowManager`가 `Area1BgmController`를 한 번 부착한다. Controller의 전용 2D loop AudioSource와 `Resources/Area1BgmProfile.asset`의 세 Clip, 공통 Source 볼륨 0.22, 0.5초 fade를 사용한다. 기존 `ItemEffectManager` SFX one-shot Source와 Mixer 없이 독립적이다. Gameplay 시작 Normal → MiniBoss 생성 MiniBoss → 포획 후 Normal → Boss Encounter 시작 Boss → Result/Restart Stop이다. MiniBoss 실패도 Stop, Boss 회유 1/2/3 동안 같은 곡을 유지한다. 동일 Track 재요청은 재시작하지 않는다. Fade는 unscaled time이고 pitch 1을 유지해 x1/x2/x3과 무관하다. 기존 성장/선택 `timeScale=0`은 BGM Pause로 취급하지 않는다. 사용자가 Unity에서 전환·수명·배속 독립, Tool/Squid/Puffer와 Giant Tuna/Shark Warning·Charge SFX의 가독성, 관련 Console Error/Exception 없음을 확인했다. 음악 작곡·음색 완성도에는 아쉬움이 있어 Composition·Arrangement·Instrumentation·Mix·Mastering은 Production 단계에서 재검토할 수 있다. **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play) / Static Validation: Passed (기존 Codex 정적 검사 범위) / EditMode Tests: Not Run / Unity Manual Audio Validation: Passed / Prototype BGM Approval: Approved / Final Production Approval: Pending.**
+
 ## Area 1 MiniBoss / Boss Charge Warning·Start Prototype (2026-09-29, Unity 수동 청각 검증 완료·Prototype 승인)
 
 사용자 청취 결과 기존 “퉁” 효과음은 Charge Start에 더 자연스럽다. 따라서 기존 별도 파일 `GiantTuna_ChargeTelegraph.wav`(0.26초)와 `SharkBoss_ChargeTelegraph.wav`(0.36초)를 보존하고 실제 돌진 시작으로 옮겼다. 이름의 `Telegraph`는 초기 제작 명칭이며 현재 재생 역할은 Charge Start다. 기존 볼륨 0.44/0.50을 유지한다.
@@ -62,7 +68,7 @@ VS-2C-1의 `Squid_InkRelease.wav`가 첫 프로젝트 내부 생성 Prototype SF
 
 ## 10. BGM 방향
 
-밝은 해역과 성장하는 판타지 어부의 분위기를 유지한다. 일반 조업과 보스 긴장감의 전환 방식, 루프 길이와 곡 수는 미정이다. 이번 단계에 BGM은 없다.
+밝은 해역과 성장하는 판타지 어부의 분위기를 유지한다. 위 Area 1 세 곡과 전환은 Vertical Slice Prototype으로 승인됐으며 최종 음악 제작과 믹스는 대기 중이다.
 
 ## 11. File Format
 
@@ -86,7 +92,7 @@ VS-2C-1의 `Squid_InkRelease.wav`가 첫 프로젝트 내부 생성 Prototype SF
 
 ## 16. Folder
 
-특수어 SFX는 `Assets/Audio/SFX/SpecialFish/`, 현재 MiniBoss/Boss의 두 단계 돌진 SFX는 `Assets/Audio/SFX/Boss/`에 둔다. UI와 BGM 폴더는 실제 자산이 생길 때 추가한다.
+특수어 SFX는 `Assets/Audio/SFX/SpecialFish/`, 현재 MiniBoss/Boss의 두 단계 돌진 SFX는 `Assets/Audio/SFX/Boss/`에 둔다. Area 1 BGM은 `Assets/Audio/BGM/Area1/`에 둔다. UI SFX 폴더는 실제 자산이 생길 때 추가한다.
 
 ## 17. Asset Manifest
 
@@ -104,4 +110,4 @@ VS-2C-1의 `Squid_InkRelease.wav`가 첫 프로젝트 내부 생성 Prototype SF
 
 ## 20. 미정
 
-최종 loudness, Audio Mixer/버스, 전체 우선순위, 공간화, 다른 효과별 동시 상한, 플랫폼 압축, BGM 구조, 접근성 옵션은 아직 확정하지 않았다.
+최종 loudness, Audio Mixer/버스, 전체 우선순위, 공간화, 다른 효과별 동시 상한, 플랫폼 압축, BGM의 출시용 구조, 접근성 옵션은 아직 확정하지 않았다.

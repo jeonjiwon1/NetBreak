@@ -37,6 +37,8 @@ public class PrototypeGameFlowManager : MonoBehaviour
     private float currentTestSpeedMultiplier = 1f;
     private bool isBossRewardPending;
 
+    private Area1BgmController bgm;
+
     public bool IsBossEncounter =>
         isBossEncounter;
 
@@ -128,6 +130,8 @@ public class PrototypeGameFlowManager : MonoBehaviour
             return;
         }
 
+        bgm = GetComponent<Area1BgmController>();
+        if (bgm == null) bgm = gameObject.AddComponent<Area1BgmController>();
         Instance = this;
     }
 
@@ -239,6 +243,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
             return;
         }
 
+        bgm?.PlayNormal();
         isFishingStarted = true;
 
         if (fishSpawner != null)
@@ -258,6 +263,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
             return;
         }
 
+        bgm?.PlayBoss();
         isBossEncounter = true;
     }
 
@@ -273,6 +279,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
         isBossEncounter = false;
 
+        bgm?.StopBgm();
         SignatureSkillManager signature = SignatureSkillManager.Instance;
         if (bossCaptured && signature != null &&
             signature.TryConsumeUnlockNotification(out string notification))
@@ -297,6 +304,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
     private void FinalizeBossResult(bool bossCaptured)
     {
+        bgm?.StopBgm();
         isGameEnded = true;
         isSuccess = bossCaptured;
         Time.timeScale = 0f;
@@ -314,6 +322,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
         isBossEncounter = false;
         isGameEnded = true;
         isSuccess = false;
+        bgm?.StopBgm();
         failureDescription = "미니보스 포획 실패";
 
         Time.timeScale = 0f;
@@ -417,6 +426,7 @@ public class PrototypeGameFlowManager : MonoBehaviour
 
     public void RestartPrototype()
     {
+        bgm?.StopBgm();
         Time.timeScale = 1f;
 
         Scene currentScene =
