@@ -345,22 +345,35 @@ public sealed class SquidInkPresentationTests
     public void NetIsDisabledOnlyWhenItsProjectileImpacts()
     {
         rod.transform.position = new Vector2(10f, 0f);
-        GameObject netObject = Own(new GameObject("Ink Test Net"));
+        int attacks = 0;
+        squid.InkPresentationTriggered += _ => attacks++;
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+            "Assets/Prefabs/Gear/Net.prefab");
+        Assert.That(prefab, Is.Not.Null);
+        GameObject netObject = Own(UnityEngine.Object.Instantiate(prefab));
         netObject.transform.position = Vector2.right;
-        netObject.AddComponent<SpriteRenderer>();
-        BoxCollider2D collider = netObject.AddComponent<BoxCollider2D>();
-        collider.isTrigger = true;
-        netObject.AddComponent<Rigidbody2D>();
-        NetController net = netObject.AddComponent<NetController>();
+        BoxCollider2D collider = netObject.GetComponent<BoxCollider2D>();
+        NetController net = netObject.GetComponent<NetController>();
         Invoke(net, "Awake");
+        Physics2D.SyncTransforms();
+        Assert.That(collider.enabled, Is.True);
+        Assert.That(Physics2D.OverlapCircleAll(fish.transform.position, fish.Data.InkRange),
+            Does.Contain(collider));
         Release();
+        Assert.That(attacks, Is.EqualTo(1));
         Assert.That(net.IsOperational, Is.True);
         visual.Tick(.25f, Vector2.right);
         object pool = Field(effects, "combatVfxPool");
+        Assert.That(CountActive("SquidInkProjectileVisual"), Is.EqualTo(1));
         Invoke(pool, "Tick", .11f);
         Assert.That(net.IsOperational, Is.True);
         Invoke(pool, "Tick", .11f);
+        Assert.That(CountActive("SquidInkImpactVisual"), Is.EqualTo(1));
         Assert.That(net.IsOperational, Is.False);
+        float deadline = (float)Field(net, "specialDisabledUntil");
+        Assert.That(deadline - Time.time, Is.EqualTo(2.5f).Within(.001f));
+        Invoke(squid, "TickPendingImpacts", .22f);
+        Assert.That((float)Field(net, "specialDisabledUntil"), Is.EqualTo(deadline));
     }
 
     [Test]

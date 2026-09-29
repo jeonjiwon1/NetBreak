@@ -15,7 +15,11 @@ public sealed class ChargeTelegraphAudioTests
     public void TearDown()
     {
         if (fishObject != null) Object.DestroyImmediate(fishObject);
-        if (audioObject != null) Object.DestroyImmediate(audioObject);
+        if (audioObject != null)
+        {
+            InvokeLifecycle(audioObject.GetComponent<ItemEffectManager>(), "OnDisable");
+            Object.DestroyImmediate(audioObject);
+        }
     }
 
     [Test]
@@ -81,6 +85,7 @@ public sealed class ChargeTelegraphAudioTests
                 fishObject.SetActive(false);
                 fish.Initialize(LoadFish("CoastBoss"));
                 fishObject.SetActive(true);
+                InvokeLifecycle(boss, "OnEnable");
             }
             boss.SetPhase(attempt == 1 ? 2 : 3);
             IEnumerator rush = InvokeCoroutine(boss, "ExecuteRush");
@@ -108,7 +113,9 @@ public sealed class ChargeTelegraphAudioTests
     private ItemEffectManager CreateAudio()
     {
         audioObject = new GameObject("Charge audio test");
-        return audioObject.AddComponent<ItemEffectManager>();
+        ItemEffectManager audio = audioObject.AddComponent<ItemEffectManager>();
+        InvokeLifecycle(audio, "Awake");
+        return audio;
     }
 
     private FishController CreateFish(string name)
@@ -117,10 +124,20 @@ public sealed class ChargeTelegraphAudioTests
         fishObject = Object.Instantiate(prefab);
         fishObject.SetActive(false);
         FishController fish = fishObject.GetComponent<FishController>();
+        InvokeLifecycle(fish, "Awake");
+        InvokeLifecycle(fishObject.GetComponent<FishMovement>(), "Awake");
+        InvokeLifecycle(fishObject.GetComponent<MiniBossController>(), "Awake");
+        InvokeLifecycle(fishObject.GetComponent<BossBehaviorController>(), "Awake");
         fish.Initialize(LoadFish(name));
         fishObject.SetActive(true);
+        InvokeLifecycle(fishObject.GetComponent<MiniBossController>(), "OnEnable");
+        InvokeLifecycle(fishObject.GetComponent<BossBehaviorController>(), "OnEnable");
         return fish;
     }
+
+    private static void InvokeLifecycle(MonoBehaviour behavior, string method) =>
+        behavior.GetType().GetMethod(method,
+            BindingFlags.Instance | BindingFlags.NonPublic).Invoke(behavior, null);
 
     private static IEnumerator InvokeCoroutine(MonoBehaviour behavior, string method) =>
         (IEnumerator)behavior.GetType().GetMethod(method,

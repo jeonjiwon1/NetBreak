@@ -1,5 +1,6 @@
 #if UNITY_INCLUDE_TESTS
 using NUnit.Framework;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -23,15 +24,20 @@ public sealed class Area1BgmTests
         GameObject host = new GameObject("BgmTestHost");
         try
         {
+            AudioSource sfxSource = host.AddComponent<AudioSource>();
             Area1BgmController controller = host.AddComponent<Area1BgmController>();
+            // EditMode does not dispatch MonoBehaviour.Awake for this test object.
+            typeof(Area1BgmController).GetMethod("Awake",
+                BindingFlags.Instance | BindingFlags.NonPublic).Invoke(controller, null);
             AudioSource source = controller.Source;
             Assert.That(source, Is.Not.Null);
             Assert.That(source.gameObject, Is.Not.SameAs(host));
+            Assert.That(source, Is.Not.SameAs(sfxSource));
             Assert.That(source.loop, Is.True);
             Assert.That(source.playOnAwake, Is.False);
             Assert.That(source.spatialBlend, Is.EqualTo(0f));
             Assert.That(source.pitch, Is.EqualTo(1f));
-            Assert.That(host.GetComponentsInChildren<AudioSource>().Length, Is.EqualTo(1));
+            Assert.That(host.GetComponentsInChildren<AudioSource>().Length, Is.EqualTo(2));
         }
         finally
         {

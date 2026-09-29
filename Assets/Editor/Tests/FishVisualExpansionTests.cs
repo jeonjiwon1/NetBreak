@@ -72,8 +72,10 @@ public sealed class FishVisualExpansionTests
         GameObject root = Own(Object.Instantiate(prefab));
         root.SetActive(false);
         FishController fish = root.GetComponent<FishController>();
+        InitializeBossFixture(root);
         fish.Initialize(Fish("CoastBoss"));
         root.SetActive(true);
+        InvokeBossLifecycle(root, "OnEnable");
 
         BossBehaviorController boss = root.GetComponent<BossBehaviorController>();
         FishVisualController visual = root.GetComponent<FishVisualController>();
@@ -115,8 +117,10 @@ public sealed class FishVisualExpansionTests
         GameObject root = Own(Object.Instantiate(prefab));
         root.SetActive(false);
         FishController fish = root.GetComponent<FishController>();
+        InitializeBossFixture(root);
         fish.Initialize(Fish("CoastBoss"));
         root.SetActive(true);
+        InvokeBossLifecycle(root, "OnEnable");
         BossBehaviorController boss = root.GetComponent<BossBehaviorController>();
         SpriteRenderer shark = root.transform.Find("FishPixelVisual").GetComponent<SpriteRenderer>();
         Color normal = shark.color;
@@ -128,16 +132,33 @@ public sealed class FishVisualExpansionTests
         Assert.That(shark.color, Is.Not.EqualTo(normal));
 
         root.SetActive(false);
+        InvokeBossLifecycle(root, "OnDisable");
         Assert.That(shark.color, Is.EqualTo(normal));
         fish.Initialize(Fish("Sardine"));
         root.SetActive(true);
         Assert.That(root.GetComponent<FishVisualController>().DisplayRenderer, Is.SameAs(shark));
         root.SetActive(false);
+        InvokeBossLifecycle(root, "OnDisable");
         fish.Initialize(Fish("CoastBoss"));
         root.SetActive(true);
+        InvokeBossLifecycle(root, "OnEnable");
         Assert.That(shark.color, Is.EqualTo(normal));
         Assert.That(root.GetComponent<FishVisualController>().DisplayRenderer, Is.SameAs(shark));
     }
+
+    private static void InitializeBossFixture(GameObject root)
+    {
+        InvokeLifecycle(root.GetComponent<FishController>(), "Awake");
+        InvokeLifecycle(root.GetComponent<FishMovement>(), "Awake");
+        InvokeBossLifecycle(root, "Awake");
+    }
+
+    private static void InvokeBossLifecycle(GameObject root, string method) =>
+        InvokeLifecycle(root.GetComponent<BossBehaviorController>(), method);
+
+    private static void InvokeLifecycle(MonoBehaviour behavior, string method) =>
+        behavior.GetType().GetMethod(method,
+            BindingFlags.Instance | BindingFlags.NonPublic).Invoke(behavior, null);
 
     [TestCase("Sardine")]
     [TestCase("Mackerel")]
