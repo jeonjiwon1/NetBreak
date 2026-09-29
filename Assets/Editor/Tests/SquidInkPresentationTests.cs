@@ -93,7 +93,7 @@ public sealed class SquidInkPresentationTests
     }
 
     [Test]
-    public void SuccessfulGameplayImmediatelyDisablesRodAndTriggersOnePresentation()
+    public void SuccessfulAttackWaitsForImpactBeforeDisablingRod()
     {
         int events = 0;
         squid.InkPresentationTriggered += _ => events++;
@@ -101,9 +101,21 @@ public sealed class SquidInkPresentationTests
         BoxCollider2D probe = rod.GetComponent<BoxCollider2D>();
         Assert.That(events, Is.EqualTo(1),
             $"range={fish.Data.InkRange}, hits={Physics2D.OverlapCircleAll(fish.transform.position, fish.Data.InkRange).Length}, rod={rod.transform.position}, enabled={probe.enabled}, active={probe.gameObject.activeInHierarchy}, bounds={probe.bounds}, queryTriggers={Physics2D.queriesHitTriggers}");
-        Assert.That(rod.IsInkInterferenceActive, Is.True);
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
         Assert.That(visual.IsPlayingSpecial, Is.True);
         Assert.That(effects.ActiveCombatVfxCount, Is.Zero);
+        visual.Tick(.125f, Vector2.right);
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
+        visual.Tick(.125f, Vector2.right);
+        object pool = Field(effects, "combatVfxPool");
+        Invoke(pool, "Tick", .11f);
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
+        Invoke(pool, "Tick", .11f);
+        Assert.That(rod.IsInkInterferenceActive, Is.True);
+        float deadline = (float)Field(rod, "specialDisabledUntil");
+        Invoke(squid, "TickPendingImpacts", .22f);
+        Invoke(pool, "Tick", .3f);
+        Assert.That((float)Field(rod, "specialDisabledUntil"), Is.EqualTo(deadline));
     }
 
     [Test]
@@ -190,7 +202,7 @@ public sealed class SquidInkPresentationTests
     {
         Release();
         visual.Tick(.25f, Vector2.right);
-        Assert.That(rod.IsInkInterferenceActive, Is.True);
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
         Transform projectile = FindActive("SquidInkProjectileVisual");
         Assert.That(projectile, Is.Not.Null);
         Assert.That((Vector2)projectile.position, Is.EqualTo(Vector2.zero));
@@ -206,6 +218,7 @@ public sealed class SquidInkPresentationTests
         Invoke(pool, "Tick", .11f);
         Assert.That(CountActive("SquidInkProjectileVisual"), Is.Zero);
         Assert.That(CountActive("SquidInkImpactVisual"), Is.EqualTo(1));
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
         Assert.That((Vector2)FindActive("SquidInkImpactVisual").position,
             Is.EqualTo(Vector2.right));
         Invoke(pool, "Tick", .3f);
@@ -235,13 +248,119 @@ public sealed class SquidInkPresentationTests
     }
 
     [Test]
-    public void MissingPresentationProfileLeavesGameplayWorking()
+    public void MissingPresentationProfileStillDisablesAtFallbackImpactTime()
     {
         SetField(squid, "presentationProfile", null);
         Assert.DoesNotThrow(Release);
-        Assert.That(rod.IsInkInterferenceActive, Is.True);
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
         Assert.That(visual.IsPlayingSpecial, Is.False);
         Assert.That(CountActive("SquidInkBurstVisual"), Is.Zero);
+        Invoke(squid, "TickPendingImpacts", .11f);
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
+        Invoke(squid, "TickPendingImpacts", .11f);
+        Assert.That(rod.IsInkInterferenceActive, Is.True);
+    }
+
+    [Test]
+    public void MissingEffectManagerStillDisablesAtFallbackImpactTime()
+    {
+        effects.gameObject.SetActive(false);
+        Release();
+        visual.Tick(.25f, Vector2.right);
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
+        Invoke(squid, "TickPendingImpacts", .11f);
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
+        Invoke(squid, "TickPendingImpacts", .11f);
+        Assert.That(rod.IsInkInterferenceActive, Is.True);
+    }
+
+    [Test]
+    public void PoolClearStillAllowsGameplayFallback()
+    {
+        Release();
+        visual.Tick(.25f, Vector2.right);
+        object pool = Field(effects, "combatVfxPool");
+        Invoke(pool, "Clear");
+        Invoke(pool, "Tick", 1f);
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
+        Invoke(squid, "TickPendingImpacts", .22f);
+        Assert.That(rod.IsInkInterferenceActive, Is.True);
+    }
+
+    [Test]
+    public void SquidRemovalCancelsPendingDisable()
+    {
+        Release();
+        visual.Tick(.25f, Vector2.right);
+        object pool = Field(effects, "combatVfxPool");
+        squid.gameObject.SetActive(false);
+        Invoke(pool, "Tick", .22f);
+        Invoke(squid, "TickPendingImpacts", .22f);
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
+    }
+
+    [Test]
+    public void RunEndBlocksBothDelayedImpactPaths()
+    {
+        GameObject flowObject = Own(new GameObject("Ink Test Flow"));
+        PrototypeGameFlowManager flow = flowObject.AddComponent<PrototypeGameFlowManager>();
+        Invoke(flow, "Awake");
+        flow.StartFishing();
+        Release();
+        visual.Tick(.25f, Vector2.right);
+        SetField(flow, "isGameEnded", true);
+        Invoke(Field(effects, "combatVfxPool"), "Tick", .22f);
+        Invoke(squid, "TickPendingImpacts", .22f);
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
+        Invoke(flow, "OnDisable");
+    }
+
+    [Test]
+    public void FallbackThenPresentationCallbackDisablesOnlyOnce()
+    {
+        Release();
+        visual.Tick(.25f, Vector2.right);
+        object pool = Field(effects, "combatVfxPool");
+        Invoke(squid, "TickPendingImpacts", .11f);
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
+        Invoke(squid, "TickPendingImpacts", .11f);
+        Assert.That(rod.IsInkInterferenceActive, Is.True);
+        float deadline = (float)Field(rod, "specialDisabledUntil");
+        Invoke(pool, "Tick", .22f);
+        Assert.That((float)Field(rod, "specialDisabledUntil"), Is.EqualTo(deadline));
+    }
+
+    [Test]
+    public void MovingTargetBeforeImpactDoesNotDisableIt()
+    {
+        Release();
+        visual.Tick(.25f, Vector2.right);
+        rod.transform.position = new Vector2(3f, 0f);
+        Invoke(Field(effects, "combatVfxPool"), "Tick", .22f);
+        Invoke(squid, "TickPendingImpacts", .22f);
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
+    }
+
+    [Test]
+    public void NetIsDisabledOnlyWhenItsProjectileImpacts()
+    {
+        rod.transform.position = new Vector2(10f, 0f);
+        GameObject netObject = Own(new GameObject("Ink Test Net"));
+        netObject.transform.position = Vector2.right;
+        netObject.AddComponent<SpriteRenderer>();
+        BoxCollider2D collider = netObject.AddComponent<BoxCollider2D>();
+        collider.isTrigger = true;
+        netObject.AddComponent<Rigidbody2D>();
+        NetController net = netObject.AddComponent<NetController>();
+        Invoke(net, "Awake");
+        Release();
+        Assert.That(net.IsOperational, Is.True);
+        visual.Tick(.25f, Vector2.right);
+        object pool = Field(effects, "combatVfxPool");
+        Invoke(pool, "Tick", .11f);
+        Assert.That(net.IsOperational, Is.True);
+        Invoke(pool, "Tick", .11f);
+        Assert.That(net.IsOperational, Is.False);
     }
 
     [Test]

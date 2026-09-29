@@ -96,15 +96,13 @@ public sealed class CombatVfxTests
         Assert.That((Vector2)FindActiveVisual("SquidInkProjectileVisual").position,
             Is.EqualTo(Vector2.zero));
 
-        float firstDeadline =
-            GetPrivateField<float>(rod, "specialDisabledUntil");
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
 
         ReleaseInk(second);
 
-        Assert.That(
-            GetPrivateField<float>(rod, "specialDisabledUntil"),
-            Is.GreaterThan(firstDeadline + 2f));
         Assert.That(manager.ActiveCombatVfxCount, Is.EqualTo(4));
+        InvokePrivate(GetPrivateField<object>(manager, "combatVfxPool"), "Tick", .22f);
+        Assert.That(rod.IsInkInterferenceActive, Is.True);
         Assert.That(
             rod.GetComponentsInChildren<TMPro.TextMeshPro>(true).Length,
             Is.EqualTo(1));
@@ -608,7 +606,7 @@ public sealed class CombatVfxTests
     }
 
     [Test]
-    public void FullVisualPoolDoesNotDelaySquidInterference()
+    public void FullVisualPoolAppliesSquidInterferenceAtImpact()
     {
         for (int i = 0; i < 48; i++)
             manager.ShowSquidInkAttack(Vector2.zero, new Vector2(i, 0f), inkProfile);
@@ -625,6 +623,8 @@ public sealed class CombatVfxTests
 
         ReleaseInk(squid);
 
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
+        InvokePrivate(GetPrivateField<object>(manager, "combatVfxPool"), "Tick", .22f);
         Assert.That(rod.IsInkInterferenceActive, Is.True);
         Assert.That(rod.IsInkInterferenceVisible, Is.True);
         Assert.That(rod.IsOperational, Is.False);

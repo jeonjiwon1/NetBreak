@@ -148,6 +148,7 @@ internal sealed class CombatVfxPool
         public float ImpactDuration;
         public float ImpactSize;
         public int ImpactSortingOrder;
+        public Action OnImpact;
     }
 
     private struct PendingImpact
@@ -159,6 +160,7 @@ internal sealed class CombatVfxPool
         public float Size;
         public int SortingOrder;
         public CombatVfxPriority Priority;
+        public Action OnImpact;
     }
 
     private readonly Transform owner;
@@ -255,7 +257,8 @@ internal sealed class CombatVfxPool
         string objectName, Sprite[] frames, Vector2 origin, Vector2 target,
         float duration, float size, int sortingOrder, string impactName,
         Sprite[] impactFrames, float impactDuration, float impactSize,
-        int impactSortingOrder, CombatVfxPriority priority)
+        int impactSortingOrder, CombatVfxPriority priority,
+        Action onImpact = null)
     {
         if (frames == null || impactFrames == null ||
             impactFrames.Length == 0 || duration <= 0f)
@@ -276,6 +279,7 @@ internal sealed class CombatVfxPool
             entry.ImpactDuration = impactDuration;
             entry.ImpactSize = impactSize;
             entry.ImpactSortingOrder = impactSortingOrder;
+            entry.OnImpact = onImpact;
             break;
         }
         return renderer;
@@ -325,7 +329,8 @@ internal sealed class CombatVfxPool
                         Duration = entry.ImpactDuration,
                         Size = entry.ImpactSize,
                         SortingOrder = entry.ImpactSortingOrder,
-                        Priority = entry.Priority
+                        Priority = entry.Priority,
+                        OnImpact = entry.OnImpact
                     });
                 Release(entry);
             }
@@ -343,8 +348,10 @@ internal sealed class CombatVfxPool
         for (int i = 0; i < pendingImpacts.Count; i++)
         {
             PendingImpact impact = pendingImpacts[i];
-            AcquireSpriteTransient(impact.Name, impact.Frames, impact.Position,
+            SpriteRenderer visual = AcquireSpriteTransient(
+                impact.Name, impact.Frames, impact.Position,
                 impact.Duration, impact.Size, impact.SortingOrder, impact.Priority);
+            if (visual != null) impact.OnImpact?.Invoke();
         }
         pendingImpacts.Clear();
     }
@@ -558,6 +565,7 @@ internal sealed class CombatVfxPool
         entry.ImpactDuration = 0f;
         entry.ImpactSize = 0f;
         entry.ImpactSortingOrder = 0;
+        entry.OnImpact = null;
         entry.GameObject.SetActive(false);
         ActiveCount = Mathf.Max(0, ActiveCount - 1);
     }

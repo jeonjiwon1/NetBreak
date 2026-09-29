@@ -333,7 +333,8 @@ public sealed class ItemEffectManager : MonoBehaviour
     public void ShowSquidInkAttack(
         Vector2 origin,
         Vector2 target,
-        SquidInkPresentationProfile presentation)
+        SquidInkPresentationProfile presentation,
+        Action onImpact = null)
     {
         if (presentation == null || !presentation.HasProjectile || !presentation.HasImpact)
             return;
@@ -344,8 +345,10 @@ public sealed class ItemEffectManager : MonoBehaviour
             origin, target, settings.SquidTrajectoryDuration, 1.3f, 30,
             "SquidInkImpactVisual", presentation.ImpactFrames,
             settings.SquidImpactDuration, 1.3f, 30,
-            CombatVfxPriority.RepeatedHit);
+            CombatVfxPriority.RepeatedHit, onImpact);
     }
+
+    public float SquidInkTravelDuration => GetCombatVfxSettings().SquidTrajectoryDuration;
 
     public void ShowSquidInkBurst(Vector2 origin, SquidInkPresentationProfile presentation)
     {

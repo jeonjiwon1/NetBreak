@@ -42,7 +42,7 @@ VS-2C-1의 `Squid_InkRelease.wav`가 첫 프로젝트 내부 생성 Prototype SF
 
 ## 7. Special Fish SFX
 
-오징어 먹물은 물기 섞인 낮은 분사음 한 번이다. 성공한 방해 판정 뒤 공격 애니메이션의 Release 프레임에 재생한다. 복어 그물 중단은 다른 음색의 짧고 둔탁한 물방울형 접촉음이며 실제 중단 성공 직후 재생한다.
+오징어 먹물은 물기 섞인 낮은 분사음 한 번이다. 공격 대상 선택 뒤 애니메이션의 Release 프레임에 재생한다. 실제 도구 중단은 Controller가 Projectile 이동 시간 뒤 유효성을 재확인해 적용하며, Impact Presentation 실패에도 대체 경로로 보장한다. 후속 Squid Timing Fix에서 사용자가 기존 SFX와 Impact 시점 도구 중단의 자연스러운 연결을 확인했다. **Timing Fix Unity Manual Validation: Passed / Timing Fix Prototype Approval: Approved / Final Production Approval: Pending.** 복어 그물 중단은 다른 음색의 짧고 둔탁한 물방울형 접촉음이며 실제 중단 성공 직후 재생한다.
 
 ## 8. Boss SFX
 

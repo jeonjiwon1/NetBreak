@@ -1,5 +1,11 @@
 # NETBREAK 인수인계
 
+## Squid Ink Attack P0 타이밍 수정 (2026-09-29, Unity 수동 검증 완료·Prototype 승인)
+
+- VFX/SFX Audit에서 기존 `ReleaseInk`가 그물·낚싯대 `DisableTemporarily`를 공격 시작 전에 호출해, 원인인 먹물 Release·Projectile·Impact보다 도구 중단이 먼저 보이는 P0 문제를 확인했다. 아래 VS-2C 기록의 즉시 중단 설명은 수정 전 이력이다.
+- 대상 종류·범위·중복 제거·공격 간격·2.5초 중단 시간은 유지한다. 공격 시작 시 대상 참조와 위치를 저장하고 기존 8 FPS 공격의 세 번째 프레임에서 Release한다. 기존 Scene의 0.22초 Projectile 이동 시간을 `ItemEffectManager` 설정에서 읽어 Controller의 대체 타이머와 Presentation에 함께 사용한다. 정상 Impact 콜백 또는 Controller 타이머 중 먼저 도달한 경로가 단발 완료 가드를 통과해 대상 유효성·원위치·Run 및 물고기 생명주기를 다시 확인한 뒤 중단한다. 이동·제거·비활성화된 대상에는 적용하거나 재표적하지 않는다. 다른 먹물 효과와 겹치면 기존 도구 API의 종료 시각 최댓값 정책을 유지한다. Pool 정리 시 Presentation 콜백은 폐기하지만 Gameplay 타이머는 유지한다. Presentation 프로필·VFX Manager 누락 또는 Pool 포화에도 예상 Impact 시점에 유효 대상 중단을 적용한다. 오징어 비활성화·Run 종료는 지연 효과를 취소한다.
+- Squid Sprite, Puff·Projectile·Impact PNG, Release SFX, FPS·프레임·2.5초 중단 시간, Puffer와 다른 도구/어종은 수정하지 않았다. 타이밍·대상 소실·중복·정리 계약의 EditMode 테스트 코드를 갱신했으나 이번 최종 코드 기준으로 실행하지 않았다. Codex의 이전 정적 참조·직렬화 값 검토와 `git diff --check`는 통과했다. 별도 MSBuild 시도는 .NET Framework 4.7.1 참조 어셈블리 부재로 실패했다. 이후 사용자가 실제 Unity Area 1 Play Mode에서 공격 시작·Release 전·Projectile 이동 중 도구 정상 작동, Impact와 거의 동시 중단, 암전 연결, 약 2.5초 뒤 복구, 낚싯대·그물 대상, 기존 Squid VFX/SFX와 자연스러운 인과관계를 확인했고 이번 수정 관련 문제는 없었다. 실제 Unity Play 실행으로 소스 컴파일을 확인했으며 Console Error 0이나 EditMode 실행 결과는 별도로 확인한 것으로 기록하지 않는다. 기존 P0인 선행 도구 중단은 해결됐다. **Implementation Complete: Complete / Source Compile: Passed (사용자 Unity Play) / Static Validation: Partial (기수행 정적 검사 범위) / EditMode Tests: Not Run (이번 최종 코드) / Unity Manual Validation: Passed / 기존 Squid Art Asset Prototype Approval: Approved / Squid Timing Fix Prototype Approval: Approved / Final Production Approval: Pending.** 사용자 지시에 따라 git add/commit/push는 하지 않는다.
+
 ## Area 1 Water Motion / Background Architecture 현재 기준 (2026-09-29, Prototype 승인)
 
 - 사용자 Unity Area 1 Game View에서 강도 조정 후 미세한 Water/Caustics Motion이 실제로 보이고 과하게 튀지 않음을 확인했다. 초기 alpha 0.26·속도 (0.025, 0.012)는 너무 약했다. **현재 코드 기준은 Renderer alpha 0.40, 속도 (0.035, 0.018) world unit/초**다. 아래 강도 조정·최초 구현 항목의 Pending과 이전 수치는 해당 시점의 이력이다.

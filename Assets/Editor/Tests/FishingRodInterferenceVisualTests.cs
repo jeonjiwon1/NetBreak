@@ -14,6 +14,7 @@ public sealed class FishingRodInterferenceVisualTests
     private readonly List<UnityEngine.Object> ownedObjects = new();
 
     private PrototypeGameFlowManager flow;
+    private ItemEffectManager effects;
 
     [SetUp]
     public void SetUp()
@@ -26,12 +27,15 @@ public sealed class FishingRodInterferenceVisualTests
             "The existing Korean TMP font must be available for the world status label.");
 
         flow = CreateFlow("Fishing Rod Visual Test Flow");
+        effects = Own(new GameObject("Ink Test Effects")).AddComponent<ItemEffectManager>();
+        InvokePrivate(effects, "Awake");
     }
 
     [TearDown]
     public void TearDown()
     {
         Time.timeScale = 1f;
+        if (effects != null) InvokePrivate(effects, "OnDisable");
 
         for (int i = ownedObjects.Count - 1; i >= 0; i--)
         {
@@ -144,19 +148,18 @@ public sealed class FishingRodInterferenceVisualTests
         SquidController longSquid =
             CreateSquid(Vector2.zero, 2.5f, 3f);
 
-        ReleaseInk(shortSquid);
-        float firstDeadline =
-            GetPrivateField<float>(rod, "specialDisabledUntil");
-
-        ReleaseInk(longSquid);
+        Physics2D.SyncTransforms();
+        InvokePrivate(shortSquid, "ReleaseInk");
+        InvokePrivate(longSquid, "ReleaseInk");
+        Assert.That(rod.IsInkInterferenceActive, Is.False);
+        object pool = GetPrivateField<object>(effects, "combatVfxPool");
+        pool.GetType().GetMethod("Tick").Invoke(pool, new object[] { .22f });
         float extendedDeadline =
             GetPrivateField<float>(rod, "specialDisabledUntil");
 
         ReleaseInk(shortSquid);
 
-        Assert.That(
-            extendedDeadline,
-            Is.GreaterThan(firstDeadline + 1f));
+        Assert.That(rod.IsInkInterferenceActive, Is.True);
         Assert.That(
             GetPrivateField<float>(rod, "specialDisabledUntil"),
             Is.EqualTo(extendedDeadline));
@@ -478,11 +481,17 @@ public sealed class FishingRodInterferenceVisualTests
         return text;
     }
 
-    private static void ReleaseInk(
+    private void ReleaseInk(
         SquidController squid)
     {
         Physics2D.SyncTransforms();
         InvokePrivate(squid, "ReleaseInk");
+        object pool = GetPrivateField<object>(effects, "combatVfxPool");
+        if (pool != null)
+        {
+            MethodInfo tick = pool.GetType().GetMethod("Tick");
+            tick.Invoke(pool, new object[] { .22f });
+        }
     }
 
     private static void ForceInterferenceExpired(
