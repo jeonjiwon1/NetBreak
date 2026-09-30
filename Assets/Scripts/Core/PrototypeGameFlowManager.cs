@@ -131,6 +131,8 @@ public class PrototypeGameFlowManager : MonoBehaviour
         }
 
         Instance = this;
+        if (!Application.isEditor && !Debug.isDebugBuild)
+            Time.timeScale = 1f;
         if (GetComponent<Area1TutorialController>() == null)
             gameObject.AddComponent<Area1TutorialController>();
         bgm = GetComponent<Area1BgmController>();

@@ -70,6 +70,8 @@ Area 1의 5개 Contextual 안내는 사용자 Unity 수동 검증을 통과해 V
 
 ### VS-7. 버티컬 슬라이스 통합 검증
 
+2026-09-30 External Playtest RC1은 Runtime 개발 요소 제한, Fresh Start 안내, 전체 EditMode 280/280 통과와 Windows x86_64 Release 빌드에 이어 사용자 Standalone 첫 실행·Tutorial·전체 성공/실패 Result·Restart·x1 고정·Player.log 검증을 통과했다. **External Playtest Ready: Approved**이며 Area 1 Vertical Slice RC1을 외부 사용자에게 테스트 목적으로 전달할 수 있다. 이는 최종 출시 품질 승인이 아니며 **Final Production Approval: Pending**이다. Prototype BGM 최종 품질, Audio Mix/Mastering, Art/Presentation polish와 Area 2~6은 후속이다. Route arrow/current indicator는 외부 플레이테스트에서 실제 방향 가독성 문제가 확인될 때만 검토한다. 배포/관찰 절차는 [NETBREAK_EXTERNAL_PLAYTEST_GUIDE.md](NETBREAK_EXTERNAL_PLAYTEST_GUIDE.md), 질문은 [NETBREAK_EXTERNAL_PLAYTEST_FEEDBACK.md](NETBREAK_EXTERNAL_PLAYTEST_FEEDBACK.md)를 따른다.
+
 - Windows Build 생성·실행·재실행, 정상 성공/실패 Run과 새 Run 초기화를 확인한다.
 - 주요 해상도, 다수 물고기 상황의 성능, 전투 연출과 UI 가독성, 오디오 믹싱·중첩을 점검한다.
 - Console Error, 누락 참조, 입력 누수·모달 중첩과 진행 불가 결함을 확인한다.

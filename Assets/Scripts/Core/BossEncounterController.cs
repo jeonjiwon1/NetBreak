@@ -452,7 +452,7 @@ public class BossEncounterController : MonoBehaviour
 
             StartSupportFishLoop();
 
-            if (showDebugLogs)
+            if (showDebugLogs && (Application.isEditor || Debug.isDebugBuild))
             {
                 Debug.Log(
                     $"[BOSS] {currentPass}/{maxPasses} 회유 시작 | " +
@@ -481,7 +481,7 @@ public class BossEncounterController : MonoBehaviour
 
             if (bossCapturedThisPass)
             {
-                if (showDebugLogs)
+                if (showDebugLogs && (Application.isEditor || Debug.isDebugBuild))
                 {
                     Debug.Log(
                         $"[BOSS] {bossData.FishName} 포획 성공!"
@@ -501,7 +501,7 @@ public class BossEncounterController : MonoBehaviour
 
             if (currentPass >= maxPasses)
             {
-                if (showDebugLogs)
+                if (showDebugLogs && (Application.isEditor || Debug.isDebugBuild))
                 {
                     Debug.Log(
                         $"[BOSS] {maxPasses}차 회유 실패. Run 실패."
@@ -543,7 +543,7 @@ public class BossEncounterController : MonoBehaviour
                     lastResistanceBeforeRecovery
                 );
 
-            if (showDebugLogs)
+            if (showDebugLogs && (Application.isEditor || Debug.isDebugBuild))
             {
                 Debug.Log(
                     $"[BOSS] {currentPass}차 회유 종료 | " +
@@ -566,7 +566,7 @@ public class BossEncounterController : MonoBehaviour
                 nextRoute
             );
 
-            if (showDebugLogs &&
+            if (showDebugLogs && (Application.isEditor || Debug.isDebugBuild) &&
                 nextRoute != null)
             {
                 Debug.Log(
@@ -824,7 +824,7 @@ public class BossEncounterController : MonoBehaviour
             );
         }
 
-        if (showDebugLogs)
+        if (showDebugLogs && (Application.isEditor || Debug.isDebugBuild))
         {
             Debug.Log(
                 $"[BOSS] Phase {currentPhase} 진입!"

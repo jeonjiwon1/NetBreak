@@ -57,6 +57,10 @@ public class PrototypeHUDCanvas : MonoBehaviour
 
     private void Awake()
     {
+        Transform testSpeedPanel = transform.Find("TestSpeedPanel");
+        if (testSpeedPanel != null && !Application.isEditor && !Debug.isDebugBuild)
+            testSpeedPanel.gameObject.SetActive(false);
+
         Area1Typography.ApplyToHierarchy(transform);
         landingNet = FindFirstObjectByType<LandingNetController>();
         bait = BaitController.Instance != null

@@ -49,6 +49,9 @@ public class PrototypeHUD : MonoBehaviour
             resultPanel.SetActive(false);
         }
 
+        if (resultJobText != null)
+            resultJobText.gameObject.SetActive(false);
+
         SetWorldFeedbackVisible(
             false,
             false,

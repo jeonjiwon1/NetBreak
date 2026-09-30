@@ -167,7 +167,7 @@ public class FishSpawner : MonoBehaviour
 
         hasStarted = true;
 
-        if (bossTestMode)
+        if ((Application.isEditor || Debug.isDebugBuild) && bossTestMode)
         {
             StartCoroutine(
                 RunBossTestSequence()
@@ -176,7 +176,7 @@ public class FishSpawner : MonoBehaviour
             return;
         }
 
-        if (miniBossTestMode)
+        if ((Application.isEditor || Debug.isDebugBuild) && miniBossTestMode)
         {
             StartCoroutine(
                 RunMiniBossTestSequence()
